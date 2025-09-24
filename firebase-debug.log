@@ -1,0 +1,157 @@
+[debug] [2025-09-24T03:22:52.192Z] ----------------------------------------------------------------------
+[debug] [2025-09-24T03:22:52.196Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Yorman Romero\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js serve
+[debug] [2025-09-24T03:22:52.196Z] CLI Version:   14.17.0
+[debug] [2025-09-24T03:22:52.196Z] Platform:      win32
+[debug] [2025-09-24T03:22:52.197Z] Node Version:  v22.19.0
+[debug] [2025-09-24T03:22:52.197Z] Time:          Tue Sep 23 2025 22:22:52 GMT-0500 (hora estándar de Perú)
+[debug] [2025-09-24T03:22:52.197Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-09-24T03:22:52.521Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-09-24T03:22:52.522Z] > authorizing via signed-in user (r.yorman@gmail.com)
+[debug] [2025-09-24T03:22:52.522Z] [iam] checking project studio-1299955846-26083 for permissions ["firebase.projects.get"]
+[debug] [2025-09-24T03:22:52.523Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:22:52.523Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:22:52.524Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/studio-1299955846-26083:testIamPermissions [none]
+[debug] [2025-09-24T03:22:52.524Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/studio-1299955846-26083:testIamPermissions x-goog-quota-user=projects/studio-1299955846-26083
+[debug] [2025-09-24T03:22:52.524Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/studio-1299955846-26083:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2025-09-24T03:22:53.522Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/studio-1299955846-26083:testIamPermissions 200
+[debug] [2025-09-24T03:22:53.523Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/studio-1299955846-26083:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2025-09-24T03:22:53.524Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:22:53.524Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:22:53.524Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/studio-1299955846-26083 [none]
+[debug] [2025-09-24T03:22:53.788Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/studio-1299955846-26083 200
+[debug] [2025-09-24T03:22:53.789Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/studio-1299955846-26083 {"projectNumber":"197849744080","projectId":"studio-1299955846-26083","lifecycleState":"ACTIVE","name":"Mis Gastos Mensuales","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2025-09-22T02:34:43.274631Z"}
+[info] 
+[info] === Serving from 'C:\Users\Yorman Romero\OneDrive\Documentos\DEV\html\Mis Gastos Mensuales'...
+[info] 
+[debug] [2025-09-24T03:22:53.794Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:22:53.794Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:22:53.794Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/studio-1299955846-26083 [none]
+[debug] [2025-09-24T03:22:54.246Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/studio-1299955846-26083 200
+[debug] [2025-09-24T03:22:54.246Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/studio-1299955846-26083 {"projectId":"studio-1299955846-26083","projectNumber":"197849744080","displayName":"Mis Gastos Mensuales","name":"projects/studio-1299955846-26083","resources":{"hostingSite":"studio-1299955846-26083"},"state":"ACTIVE","etag":"1_6d18bbd2-c6f9-418a-ab83-554447eb94be"}
+[debug] [2025-09-24T03:22:59.111Z] defaultcredentials: writing to file C:\Users\Yorman Romero\AppData\Roaming\firebase\r_yorman_gmail.com_application_default_credentials.json
+[debug] [2025-09-24T03:22:59.116Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:22:59.116Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:22:59.116Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/studio-1299955846-26083/sites pageToken=&pageSize=10
+[debug] [2025-09-24T03:23:00.301Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/studio-1299955846-26083/sites 200
+[debug] [2025-09-24T03:23:00.302Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/studio-1299955846-26083/sites {"sites":[{"name":"projects/studio-1299955846-26083/sites/studio-1299955846-26083","defaultUrl":"https://studio-1299955846-26083.web.app","appId":"1:197849744080:web:19db086a78cf7384d7d4d5","type":"DEFAULT_SITE"}]}
+[debug] [2025-09-24T03:23:00.302Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:23:00.302Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:23:00.302Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:197849744080:web:19db086a78cf7384d7d4d5/config [none]
+[debug] [2025-09-24T03:23:01.265Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:197849744080:web:19db086a78cf7384d7d4d5/config 200
+[debug] [2025-09-24T03:23:01.266Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/-/webApps/1:197849744080:web:19db086a78cf7384d7d4d5/config {"projectId":"studio-1299955846-26083","appId":"1:197849744080:web:19db086a78cf7384d7d4d5","storageBucket":"studio-1299955846-26083.firebasestorage.app","apiKey":"AIzaSyDLoQ7EQv4B3l8Nat-1R13Zr_CT_YEeAvA","authDomain":"studio-1299955846-26083.firebaseapp.com","messagingSenderId":"197849744080"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 15.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[warn] !  This integration expects Node version 16, 18, or 20. You're running version 22, problems may be encountered. 
+[debug] [2025-09-24T03:24:06.088Z] [web frameworks] effective firebase.json:  {
+  "hosting": [
+    {
+      "source": ".",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "frameworksBackend": {
+        "region": "us-central1"
+      },
+      "site": "studio-1299955846-26083",
+      "rewrites": [
+        {
+          "source": "**",
+          "function": {
+            "functionId": "ssrstudio12999558462608",
+            "region": "us-central1",
+            "pinTag": true
+          }
+        }
+      ],
+      "redirects": [],
+      "headers": [
+        {
+          "source": "**/*.[jt]s",
+          "headers": [
+            {
+              "key": "Set-Cookie",
+              "value": "__FIREBASE_DEFAULTS__=eyJjb25maWciOnsicHJvamVjdElkIjoic3R1ZGlvLTEyOTk5NTU4NDYtMjYwODMiLCJhcHBJZCI6IjE6MTk3ODQ5NzQ0MDgwOndlYjoxOWRiMDg2YTc4Y2Y3Mzg0ZDdkNGQ1Iiwic3RvcmFnZUJ1Y2tldCI6InN0dWRpby0xMjk5OTU1ODQ2LTI2MDgzLmZpcmViYXNlc3RvcmFnZS5hcHAiLCJhcGlLZXkiOiJBSXphU3lETG9RN0VRdjRCM2w4TmF0LTFSMTNacl9DVF9ZRWVBdkEiLCJhdXRoRG9tYWluIjoic3R1ZGlvLTEyOTk5NTU4NDYtMjYwODMuZmlyZWJhc2VhcHAuY29tIiwibWVzc2FnaW5nU2VuZGVySWQiOiIxOTc4NDk3NDQwODAifSwiX2F1dGhUb2tlblN5bmNVUkwiOiIvX19zZXNzaW9uIn0; SameSite=Strict; Expires=2027-08-19T14:04:06.088Z; Path=/;"
+            }
+          ]
+        }
+      ],
+      "cleanUrls": true,
+      "public": ".firebase\\studio-1299955846-26083\\hosting",
+      "webFramework": "next_ssr"
+    }
+  ],
+  "functions": [
+    {
+      "source": ".firebase\\studio-1299955846-26083\\functions",
+      "codebase": "firebase-frameworks-studio-1299955846-26083"
+    }
+  ]
+}
+[debug] [2025-09-24T03:24:06.168Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:24:06.169Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:24:06.169Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/studio-1299955846-26083/sites 
+[warn] !  functions: Application Default Credentials detected. Non-emulated services will access production using these credentials. Be careful! {"metadata":{"emulator":{"name":"functions"},"message":"Application Default Credentials detected. Non-emulated services will access production using these credentials. Be careful!"}}
+[debug] [2025-09-24T03:24:06.217Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:24:06.217Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:24:06.218Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/studio-1299955846-26083/adminSdkConfig [none]
+[debug] [2025-09-24T03:24:06.769Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/studio-1299955846-26083/adminSdkConfig 200
+[debug] [2025-09-24T03:24:06.769Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/studio-1299955846-26083/adminSdkConfig {"projectId":"studio-1299955846-26083","storageBucket":"studio-1299955846-26083.firebasestorage.app"}
+[debug] [2025-09-24T03:24:07.429Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/studio-1299955846-26083/sites 200
+[debug] [2025-09-24T03:24:07.429Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/studio-1299955846-26083/sites {"sites":[{"name":"projects/studio-1299955846-26083/sites/studio-1299955846-26083","defaultUrl":"https://studio-1299955846-26083.web.app","appId":"1:197849744080:web:19db086a78cf7384d7d4d5","type":"DEFAULT_SITE"}]}
+[debug] [2025-09-24T03:24:07.430Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:24:07.430Z] Checked if tokens are valid: true, expires at: 1758686260364
+[debug] [2025-09-24T03:24:07.430Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/studio-1299955846-26083/webApps/1:197849744080:web:19db086a78cf7384d7d4d5/config [none]
+[debug] [2025-09-24T03:24:08.301Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/studio-1299955846-26083/webApps/1:197849744080:web:19db086a78cf7384d7d4d5/config 200
+[debug] [2025-09-24T03:24:08.302Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/studio-1299955846-26083/webApps/1:197849744080:web:19db086a78cf7384d7d4d5/config {"projectId":"studio-1299955846-26083","appId":"1:197849744080:web:19db086a78cf7384d7d4d5","storageBucket":"studio-1299955846-26083.firebasestorage.app","apiKey":"AIzaSyDLoQ7EQv4B3l8Nat-1R13Zr_CT_YEeAvA","authDomain":"studio-1299955846-26083.firebaseapp.com","messagingSenderId":"197849744080"}
+[info] i  functions: Watching "C:\Users\Yorman Romero\OneDrive\Documentos\DEV\html\Mis Gastos Mensuales\.firebase\studio-1299955846-26083\functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"C:\\Users\\Yorman Romero\\OneDrive\\Documentos\\DEV\\html\\Mis Gastos Mensuales\\.firebase\\studio-1299955846-26083\\functions\" for Cloud Functions..."}}
+[info] i  hosting[studio-1299955846-26083]: Serving hosting files from: .firebase\studio-1299955846-26083\hosting {"metadata":{"emulator":{"name":"hosting"},"message":"Serving hosting files from: \u001b[1m.firebase\\studio-1299955846-26083\\hosting\u001b[22m"}}
+[info] +  hosting[studio-1299955846-26083]: Local server: http://localhost:5000 {"metadata":{"emulator":{"name":"hosting"},"message":"Local server: \u001b[4m\u001b[1mhttp://localhost:5000\u001b[22m\u001b[24m"}}
+[debug] [2025-09-24T03:24:08.377Z] Validating nodejs source
+[debug] [2025-09-24T03:24:18.410Z] checkFunctionsSDKVersion was unable to fetch information from NPM Error: spawnSync C:\WINDOWS\system32\cmd.exe ETIMEDOUT
+    at Object.spawnSync (node:internal/child_process:1120:20)
+    at Object.spawnSync (node:child_process:901:24)
+    at Function.spawnSync [as sync] (C:\Users\Yorman Romero\AppData\Roaming\npm\node_modules\firebase-tools\node_modules\cross-spawn\index.js:26:23)
+    at Object.getLatestSDKVersion (C:\Users\Yorman Romero\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\runtimes\node\versioning.js:54:25)
+    at Object.checkFunctionsSDKVersion (C:\Users\Yorman Romero\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\runtimes\node\versioning.js:74:32)
+    at Delegate.validate (C:\Users\Yorman Romero\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\runtimes\node\index.js:89:20)
+    at FunctionsEmulator.discoverTriggers (C:\Users\Yorman Romero\AppData\Roaming\npm\node_modules\firebase-tools\lib\emulator\functionsEmulator.js:320:35)
+    at async FunctionsEmulator.loadTriggers (C:\Users\Yorman Romero\AppData\Roaming\npm\node_modules\firebase-tools\lib\emulator\functionsEmulator.js:362:34)
+    at async FunctionsEmulator.connect (C:\Users\Yorman Romero\AppData\Roaming\npm\node_modules\firebase-tools\lib\emulator\functionsEmulator.js:282:13)
+    at async FunctionsServer.connect (C:\Users\Yorman Romero\AppData\Roaming\npm\node_modules\firebase-tools\lib\serve\functions.js:57:9)
+    at async Promise.all (index 0)
+    at async serve (C:\Users\Yorman Romero\AppData\Roaming\npm\node_modules\firebase-tools\lib\serve\index.js:34:5)
+[debug] [2025-09-24T03:24:18.411Z] > [functions] package.json contents: {
+  "main": "server.js",
+  "dependencies": {
+    "firebase-frameworks": "^0.11.0",
+    "firebase-functions": "^6.0.1",
+    "firebase-admin": "^11.11.1"
+  },
+  "engines": {
+    "node": "20"
+  }
+}
+[debug] [2025-09-24T03:24:18.411Z] Building nodejs source
+[debug] [2025-09-24T03:24:18.411Z] Failed to find version of module node: reached end of search path C:\Users\Yorman Romero\OneDrive\Documentos\DEV\html\Mis Gastos Mensuales\.firebase\studio-1299955846-26083\functions\node_modules
+[warn] !  functions: Your requested "node" version "20" doesn't match your global version "22". Using node@22 from host. 
+[info] i  functions: Loaded environment variables from .env. 
+[debug] [2025-09-24T03:24:18.418Z] Could not find functions.yaml. Must use http discovery
+[debug] [2025-09-24T03:24:18.430Z] Found firebase-functions binary at 'C:\Users\Yorman Romero\OneDrive\Documentos\DEV\html\Mis Gastos Mensuales\.firebase\studio-1299955846-26083\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8990
+
+[debug] [2025-09-24T03:24:19.252Z] Got response from /__/functions.yaml {"endpoints":{"ssrstudio12999558462608":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["us-central1"],"labels":{},"httpsTrigger":{},"entryPoint":"ssrstudio12999558462608"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] +  functions: Loaded functions definitions from source: ssrstudio12999558462608. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: ssrstudio12999558462608."}}
+[info] +  functions[us-central1-ssrstudio12999558462608]: http function initialized (http://localhost:5001/studio-1299955846-26083/us-central1/ssrstudio12999558462608). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://localhost:5001/studio-1299955846-26083/us-central1/ssrstudio12999558462608)."}}
+[info] Shutting down...

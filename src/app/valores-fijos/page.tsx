@@ -29,7 +29,8 @@ export default function FixedValuesPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!isLoading && user?.role !== 'Edición') {
+    // Correct logic: if loading is finished AND the user's role is NOT 'Edición'
+    if (!isLoading && user && user.role !== 'Edición') {
       router.push('/');
     }
   }, [user, isLoading, router]);
@@ -39,6 +40,12 @@ export default function FixedValuesPage() {
     defaultValues: fixedValues,
   });
 
+  // Update form default values when fixedValues from context changes
+  useEffect(() => {
+    form.reset(fixedValues);
+  }, [fixedValues, form]);
+
+
   const onSubmit = (data: FixedValuesForm) => {
     setFixedValues(data);
     toast({
@@ -47,10 +54,14 @@ export default function FixedValuesPage() {
     });
   };
   
-  if (isLoading || user?.role !== 'Edición') {
+  // This component should only render content for 'Edición' users or during loading.
+  if (isLoading || !user || user.role !== 'Edición') {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>Cargando o redirigiendo...</p>
+      <div className="flex flex-col h-full">
+         <PageHeader title="Valores Fijos" />
+         <main className="flex-1 overflow-auto p-4 md:p-6 flex items-center justify-center">
+            <p>Cargando o redirigiendo...</p>
+         </main>
       </div>
     );
   }

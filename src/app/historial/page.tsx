@@ -16,41 +16,15 @@ type CombinedData = {
   total: number;
 };
 
-export default function HistorialPage() {
-  const { waterData, electricityData, internetData } = useApp();
+type CombinedDataMap = { [key: string]: CombinedData };
 
-  const combinedData: { [key: string]: CombinedData } = {};
+const formatCurrency = (amount: number | undefined) => {
+    if (amount === undefined || amount === null) return '$0.00';
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+};
 
-  const processData = () => {
-    const allRecords = [
-      ...waterData.map(d => ({ ...d, type: 'water' })),
-      ...electricityData.map(d => ({ ...d, type: 'electricity' })),
-      ...internetData.map(d => ({ ...d, type: 'internet' }))
-    ];
-
-    allRecords.forEach(record => {
-      const key = `${record.month}-${record.year}`;
-      if (!combinedData[key]) {
-        combinedData[key] = { water: null, electricity: null, internet: null, total: 0 };
-      }
-      
-      const value = 'monthlyCost' in record ? record.monthlyCost : record.totalToPay;
-
-      if (record.type === 'water') combinedData[key].water = record as WaterRecord;
-      if (record.type === 'electricity') combinedData[key].electricity = record as ElectricityRecord;
-      if (record.type === 'internet') combinedData[key].internet = record as InternetRecord;
-      
-      combinedData[key].total += value;
-    });
-  };
-
-  processData();
-
-  const sortedMonths = Object.keys(combinedData);
-
-  const handlePrint = (monthKey: string) => {
+const handlePrint = (monthKey: string, data: CombinedData) => {
     const [month, year] = monthKey.split('-');
-    const data = combinedData[monthKey];
     
     const printWindow = window.open('', '_blank');
     if (printWindow) {
@@ -137,12 +111,39 @@ export default function HistorialPage() {
       printWindow.document.close();
       printWindow.print();
     }
+};
+
+export default function HistorialPage() {
+  const { waterData, electricityData, internetData } = useApp();
+
+  const combinedData: CombinedDataMap = {};
+
+  const processData = () => {
+    const allRecords = [
+      ...waterData.map(d => ({ ...d, type: 'water' })),
+      ...electricityData.map(d => ({ ...d, type: 'electricity' })),
+      ...internetData.map(d => ({ ...d, type: 'internet' }))
+    ];
+
+    allRecords.forEach(record => {
+      const key = `${record.month}-${record.year}`;
+      if (!combinedData[key]) {
+        combinedData[key] = { water: null, electricity: null, internet: null, total: 0 };
+      }
+      
+      const value = 'monthlyCost' in record ? record.monthlyCost : record.totalToPay;
+
+      if (record.type === 'water') combinedData[key].water = record as WaterRecord;
+      if (record.type === 'electricity') combinedData[key].electricity = record as ElectricityRecord;
+      if (record.type === 'internet') combinedData[key].internet = record as InternetRecord;
+      
+      combinedData[key].total += value;
+    });
   };
-  
-  const formatCurrency = (amount: number | undefined) => {
-    if (amount === undefined || amount === null) return '$0.00';
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-  };
+
+  processData();
+
+  const sortedMonths = Object.keys(combinedData);
   
   const handleExportCSV = () => {
     const headers = ['Año', 'Mes', 'Agua', 'Electricidad', 'Internet', 'Total del Mes'];
@@ -196,7 +197,7 @@ export default function HistorialPage() {
                                       <div className="font-bold text-lg">{month} {year}</div>
                                       <div className="text-sm font-bold text-primary">{formatCurrency(data.total)}</div>
                                   </div>
-                                  <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey)}>
+                                  <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey, data)}>
                                     <Printer className="h-4 w-4" />
                                   </Button>
                               </div>
@@ -228,7 +229,7 @@ export default function HistorialPage() {
                         <TableHead className="text-right">Agua</TableHead>
                         <TableHead className="text-right">Electricidad</TableHead>
                         <TableHead className="text-right">Internet</TableHead>
-                        <TableHead className="text-right font-bold">Total del Mes</TableHead>
+                        <TableHead className="text-right font-bold text-primary">Total del Mes</TableHead>
                         <TableHead className="text-center">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -247,7 +248,7 @@ export default function HistorialPage() {
                             <TableCell className="text-right">{formatCurrency(data.internet?.monthlyCost)}</TableCell>
                             <TableCell className="text-right font-bold text-primary">{formatCurrency(data.total)}</TableCell>
                             <TableCell className="text-center">
-                              <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey)}>
+                              <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey, data)}>
                                 <Printer className="h-4 w-4" />
                               </Button>
                             </TableCell>

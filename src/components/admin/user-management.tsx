@@ -81,14 +81,13 @@ export function UserManagement({ onEdit }: UserManagementProps) {
                   </div>
                 </div>
                 <div className='flex flex-wrap justify-end gap-2'>
-                   <Button variant="ghost" size="icon" onClick={() => onEdit(u)} disabled={user?.id === u.id}>
+                   <Button variant="ghost" size="icon" onClick={() => onEdit(u)}>
                     <FilePenLine className="h-4 w-4" />
                   </Button>
                   <Button 
                     variant="ghost" 
                     size="icon" 
                     onClick={() => handleToggleStatus(u.id, u.status)}
-                    disabled={user?.id === u.id}
                     className={u.status === 'Activo' ? 'text-destructive hover:text-destructive' : 'text-green-600 hover:text-green-600'}
                   >
                     {u.status === 'Activo' ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />}
@@ -124,14 +123,13 @@ export function UserManagement({ onEdit }: UserManagementProps) {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => onEdit(u)} disabled={user?.id === u.id}>
+                    <Button variant="ghost" size="icon" onClick={() => onEdit(u)}>
                       <FilePenLine className="h-4 w-4" />
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="icon"
                       onClick={() => handleToggleStatus(u.id, u.status)}
-                      disabled={user?.id === u.id}
                       className={u.status === 'Activo' ? 'text-destructive hover:text-destructive' : 'text-green-600 hover:text-green-600'}
                     >
                       {u.status === 'Activo' ? <ToggleLeft className="h-4 w-4" /> : <ToggleRight className="h-4 w-4" />}

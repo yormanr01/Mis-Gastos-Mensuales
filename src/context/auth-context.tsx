@@ -10,6 +10,7 @@ import {
   signInWithEmailAndPassword, 
   signOut, 
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail as firebaseSendPasswordResetEmail,
   type User as FirebaseUser
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, collection, getDocs, updateDoc } from "firebase/firestore";
@@ -24,6 +25,7 @@ interface AuthContextType {
   addUser: (user: Omit<User, 'id' | 'status'> & { password: string }) => Promise<void>;
   updateUser: (user: Partial<User> & { id: string }) => Promise<void>;
   toggleUserStatus: (userId: string, currentStatus: UserStatus) => Promise<void>;
+  sendPasswordResetEmail: (email: string) => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -146,17 +148,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
   
   const toggleUserStatus = async (userId: string, currentStatus: UserStatus) => {
-    if (auth.currentUser?.uid === userId) {
-      throw new Error("No puedes cambiar el estado de tu propio usuario.");
-    }
     const userDocRef = doc(db, 'users', userId);
     const newStatus = currentStatus === 'Activo' ? 'Inactivo' : 'Activo';
     await updateDoc(userDocRef, { status: newStatus });
     await fetchUsers();
   };
 
+  const sendPasswordResetEmail = async (email: string) => {
+    try {
+      await firebaseSendPasswordResetEmail(auth, email);
+    } catch (error: any) {
+      if (error.code === 'auth/user-not-found') {
+        throw new Error('No existe un usuario con este correo electrónico.');
+      }
+      throw new Error('No se pudo enviar el correo de restablecimiento.');
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, users, isLoading, fetchUsers, login, logout, addUser, updateUser, toggleUserStatus }}>
+    <AuthContext.Provider value={{ user, users, isLoading, fetchUsers, login, logout, addUser, updateUser, toggleUserStatus, sendPasswordResetEmail }}>
       {children}
     </AuthContext.Provider>
   );

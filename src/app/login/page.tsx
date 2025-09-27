@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { CircleDollarSign, Eye, EyeOff } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ResetPasswordForm } from '@/components/forms/reset-password-form';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -18,6 +20,8 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login, user, isLoading } = useAuth();
   const router = useRouter();
+  const [isResetFormOpen, setResetFormOpen] = useState(false);
+
 
   useEffect(() => {
     if (!isLoading && user) {
@@ -93,6 +97,24 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff /> : <Eye />}
                 </Button>
               </div>
+            </div>
+             <div className="text-right">
+              <Dialog open={isResetFormOpen} onOpenChange={setResetFormOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="link" type="button" className="p-0 h-auto text-sm">
+                    ¿Olvidaste tu contraseña?
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Recuperar Contraseña</DialogTitle>
+                    <DialogDescription>
+                      Ingresa tu correo electrónico para enviarte un enlace de restablecimiento.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <ResetPasswordForm setOpen={setResetFormOpen} />
+                </DialogContent>
+              </Dialog>
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full" disabled={isSubmitting}>

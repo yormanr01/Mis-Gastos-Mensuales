@@ -122,7 +122,7 @@ export function ElectricidadTable({ onEdit, data, isLoading }: ElectricidadTable
               <div className="flex justify-between items-start">
                 <div>
                   <div className="font-bold">{record.month} {record.year}</div>
-                  <div className="text-sm text-muted-foreground">{formatCurrency(record.totalToPay)}</div>
+                  <div className="text-sm font-bold text-primary">{formatCurrency(record.totalToPay)}</div>
                 </div>
                 <Badge variant={record.status === 'Pagado' ? 'secondary' : 'destructive'}>
                   {record.status}
@@ -187,7 +187,7 @@ export function ElectricidadTable({ onEdit, data, isLoading }: ElectricidadTable
                   <TableCell className="text-right">{formatCurrency(record.totalInvoiced)}</TableCell>
                   <TableCell className="text-right">{formatNumber(record.kwhConsumption)}</TableCell>
                   <TableCell className="text-right">{formatCurrency(record.kwhCost)}</TableCell>
-                  <TableCell className="text-right font-medium">{formatCurrency(record.totalToPay)}</TableCell>
+                  <TableCell className="text-right font-bold text-primary">{formatCurrency(record.totalToPay)}</TableCell>
                   <TableCell className="text-center">
                     <Badge variant={record.status === 'Pagado' ? 'secondary' : 'destructive'}>
                       {record.status}

@@ -104,7 +104,7 @@ export function InternetTable({ onEdit, data, isLoading }: InternetTableProps) {
               <div className="flex justify-between items-start">
                 <div>
                   <div className="font-bold">{record.month} {record.year}</div>
-                  <div className="text-sm text-muted-foreground">{formatCurrency(record.monthlyCost)}</div>
+                  <div className="text-sm font-bold text-primary">{formatCurrency(record.monthlyCost)}</div>
                 </div>
                 {user?.role === 'Edición' && (
                   <div className="flex justify-end gap-2">
@@ -153,7 +153,7 @@ export function InternetTable({ onEdit, data, isLoading }: InternetTableProps) {
                 <TableRow key={record.id}>
                   <TableCell>{record.year}</TableCell>
                   <TableCell>{record.month}</TableCell>
-                  <TableCell className="text-right font-medium">{formatCurrency(record.monthlyCost)}</TableCell>
+                  <TableCell className="text-right font-bold text-primary">{formatCurrency(record.monthlyCost)}</TableCell>
                   {user?.role === 'Edición' && (
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon" onClick={() => onEdit(record)}>

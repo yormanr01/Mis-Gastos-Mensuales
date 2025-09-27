@@ -26,6 +26,17 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { Button } from '../ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const menuItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -99,10 +110,26 @@ export function MainSidebar() {
             <p className="text-muted-foreground">{user?.role}</p>
          </div>
          <SidebarSeparator />
-         <Button variant="ghost" onClick={handleLogout} className="w-full">
-            <LogOut />
-            <span className="group-data-[state=collapsed]:hidden">Cerrar Sesión</span>
-         </Button>
+         <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" className="w-full">
+              <LogOut />
+              <span className="group-data-[state=collapsed]:hidden">Cerrar Sesión</span>
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Estás seguro de que quieres cerrar sesión?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Serás redirigido a la pantalla de inicio de sesión.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleLogout}>Continuar</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </SidebarFooter>
     </>
   );

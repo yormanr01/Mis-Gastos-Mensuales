@@ -92,11 +92,16 @@ export function ElectricidadForm({ setOpen, recordToEdit }: ElectricidadFormProp
 
   async function onSubmit(values: ElectricityFormValues) {
     setIsSubmitting(true);
+    
+    const calculatedKwhCost = (Number(values.totalInvoiced) > 0 && Number(values.kwhConsumption) > 0) ? Number(values.totalInvoiced) / Number(values.kwhConsumption) : 0;
+    const calculatedConsumptionMeter = Number(values.currentMeter) > Number(values.previousMeter) ? Math.round(Number(values.currentMeter) - Number(values.previousMeter)) : 0;
+    const calculatedTotalToPay = calculatedConsumptionMeter * calculatedKwhCost;
+    
     const finalValues = {
         ...values,
-        kwhCost: parseFloat(kwhCost.toFixed(2)),
-        consumptionMeter,
-        totalToPay
+        kwhCost: parseFloat(calculatedKwhCost.toFixed(2)),
+        consumptionMeter: calculatedConsumptionMeter,
+        totalToPay: parseFloat(calculatedTotalToPay.toFixed(2))
     };
 
     try {

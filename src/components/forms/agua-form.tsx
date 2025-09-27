@@ -76,7 +76,7 @@ export function AguaForm({ setOpen, recordToEdit }: AguaFormProps) {
 
   async function onSubmit(values: WaterFormValues) {
     setIsSubmitting(true);
-    const totalToPay = values.totalInvoiced - values.discount;
+    const totalToPay = parseFloat((values.totalInvoiced - values.discount).toFixed(2));
     
     try {
         if (recordToEdit) {

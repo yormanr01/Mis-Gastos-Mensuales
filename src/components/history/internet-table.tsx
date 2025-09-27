@@ -12,9 +12,9 @@ import {
   TableBody,
   TableCell,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '../ui/button';
-import { FilePenLine, Trash2 } from 'lucide-react';
+import { FilePenLine, Trash2, Download } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,6 +53,23 @@ export function InternetTable({ onEdit, data, isLoading }: InternetTableProps) {
     })
   }
 
+  const handleExportCSV = () => {
+    const headers = ['Año', 'Mes', 'Costo Mensual'];
+    const csvContent = [
+      headers.join(','),
+      ...data.map(r => [r.year, r.month, r.monthlyCost].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', 'historial_internet.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const renderSkeleton = () => (
     [...Array(3)].map((_, i) => (
       <TableRow key={i}>
@@ -90,16 +107,14 @@ export function InternetTable({ onEdit, data, isLoading }: InternetTableProps) {
                   <div className="text-sm text-muted-foreground">{formatCurrency(record.monthlyCost)}</div>
                 </div>
                 {user?.role === 'Edición' && (
-                  <div className="flex flex-wrap justify-end gap-2">
-                    <Button variant="outline" size="sm" onClick={() => onEdit(record)}>
-                      <FilePenLine className="mr-2 h-4 w-4" />
-                      Editar
+                  <div className="flex justify-end gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => onEdit(record)}>
+                      <FilePenLine className="h-4 w-4" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                         <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                           <Trash2 className="mr-2 h-4 w-4" />
-                           Eliminar
+                         <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                           <Trash2 className="h-4 w-4" />
                          </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
@@ -146,7 +161,7 @@ export function InternetTable({ onEdit, data, isLoading }: InternetTableProps) {
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                           <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
@@ -171,6 +186,12 @@ export function InternetTable({ onEdit, data, isLoading }: InternetTableProps) {
           </Table>
         </div>
       </CardContent>
+       <CardFooter className="flex justify-end">
+        <Button variant="outline" onClick={handleExportCSV} disabled={data.length === 0}>
+          <Download className="mr-2 h-4 w-4" />
+          Exportar a CSV
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

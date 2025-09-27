@@ -13,9 +13,9 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '../ui/button';
-import { FilePenLine, Trash2 } from 'lucide-react';
+import { FilePenLine, Trash2, Download } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,6 +51,33 @@ export function ElectricidadTable({ onEdit, data, isLoading }: ElectricidadTable
         description: "El registro de electricidad ha sido eliminado.",
     })
   }
+
+  const handleExportCSV = () => {
+    const headers = [
+      'Año', 'Mes', 'Total Facturado', 'Consumo kWh', 'Costo kWh', 
+      'Contador Anterior', 'Contador Actual', 'Consumo Contador', 
+      'Total a Pagar', 'Estado'
+    ];
+    const csvContent = [
+      headers.join(','),
+      ...data.map(r => 
+        [
+          r.year, r.month, r.totalInvoiced, r.kwhConsumption, r.kwhCost,
+          r.previousMeter, r.currentMeter, r.consumptionMeter,
+          r.totalToPay, r.status
+        ].join(',')
+      )
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', 'historial_electricidad.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const renderSkeleton = () => (
     [...Array(3)].map((_, i) => (
@@ -107,16 +134,14 @@ export function ElectricidadTable({ onEdit, data, isLoading }: ElectricidadTable
                 <div className="flex justify-between"><span>Costo kWh:</span> <span>{formatCurrency(record.kwhCost)}</span></div>
               </div>
               {user?.role === 'Edición' && (
-                <div className="mt-4 flex flex-wrap justify-end gap-2">
-                  <Button variant="outline" size="sm" onClick={() => onEdit(record)}>
-                    <FilePenLine className="mr-2 h-4 w-4" />
-                    Editar
+                <div className="mt-4 flex justify-end gap-2">
+                  <Button variant="ghost" size="icon" onClick={() => onEdit(record)}>
+                    <FilePenLine className="h-4 w-4" />
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                       <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                         <Trash2 className="mr-2 h-4 w-4" />
-                         Eliminar
+                       <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                         <Trash2 className="h-4 w-4" />
                        </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -170,7 +195,7 @@ export function ElectricidadTable({ onEdit, data, isLoading }: ElectricidadTable
                   </TableCell>
                   {user?.role === 'Edición' && (
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => onEdit(record)}>
+                       <Button variant="ghost" size="icon" onClick={() => onEdit(record)}>
                         <FilePenLine className="h-4 w-4" />
                       </Button>
                       <AlertDialog>
@@ -200,6 +225,12 @@ export function ElectricidadTable({ onEdit, data, isLoading }: ElectricidadTable
           </Table>
         </div>
       </CardContent>
+       <CardFooter className="flex justify-end">
+        <Button variant="outline" onClick={handleExportCSV} disabled={data.length === 0}>
+          <Download className="mr-2 h-4 w-4" />
+          Exportar a CSV
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

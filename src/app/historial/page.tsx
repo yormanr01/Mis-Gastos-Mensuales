@@ -4,10 +4,10 @@
 import { PageHeader } from "@/components/page-header";
 import { useApp } from "@/lib/hooks/use-app";
 import { months, WaterRecord, ElectricityRecord, InternetRecord } from "@/lib/types";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Printer } from "lucide-react";
+import { Printer, Download } from "lucide-react";
 
 type CombinedData = {
   water: WaterRecord | null;
@@ -143,6 +143,35 @@ export default function HistorialPage() {
     if (amount === undefined || amount === null) return '$0.00';
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
   };
+  
+  const handleExportCSV = () => {
+    const headers = ['Año', 'Mes', 'Agua', 'Electricidad', 'Internet', 'Total del Mes'];
+    const csvContent = [
+      headers.join(','),
+      ...sortedMonths.map(monthKey => {
+        const [month, year] = monthKey.split('-');
+        const data = combinedData[monthKey];
+        const row = [
+          year,
+          month,
+          data.water?.totalToPay ?? 0,
+          data.electricity?.totalToPay ?? 0,
+          data.internet?.monthlyCost ?? 0,
+          data.total
+        ];
+        return row.join(',');
+      })
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', 'historial_consolidado.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -167,7 +196,7 @@ export default function HistorialPage() {
                                       <div className="font-bold text-lg">{month} {year}</div>
                                       <div className="text-sm font-bold text-primary">{formatCurrency(data.total)}</div>
                                   </div>
-                                  <Button variant="outline" size="sm" onClick={() => handlePrint(monthKey)}>
+                                  <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey)}>
                                     <Printer className="h-4 w-4" />
                                   </Button>
                               </div>
@@ -218,9 +247,8 @@ export default function HistorialPage() {
                             <TableCell className="text-right">{formatCurrency(data.internet?.monthlyCost)}</TableCell>
                             <TableCell className="text-right font-bold text-primary">{formatCurrency(data.total)}</TableCell>
                             <TableCell className="text-center">
-                              <Button variant="outline" size="sm" onClick={() => handlePrint(monthKey)}>
-                                <Printer className="mr-2 h-4 w-4" />
-                                Imprimir
+                              <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey)}>
+                                <Printer className="h-4 w-4" />
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -239,6 +267,12 @@ export default function HistorialPage() {
               </div>
             )}
           </CardContent>
+          <CardFooter className="flex justify-end">
+            <Button variant="outline" onClick={handleExportCSV} disabled={sortedMonths.length === 0}>
+              <Download className="mr-2 h-4 w-4" />
+              Exportar a CSV
+            </Button>
+          </CardFooter>
         </Card>
       </main>
     </div>

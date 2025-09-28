@@ -49,7 +49,7 @@ const handlePrint = (monthKey: string, data: CombinedData) => {
               .total-row { background-color: #eef2ff; font-size: 1rem;}
               .formulas { margin-top: 1rem; padding: 0.75rem; border: 1px dashed #ddd; background-color: #fafafa; font-size: 0.8rem; }
               .formulas h3 { margin-top: 0; color: #374151; font-size: 0.9rem;}
-              .formulas p { margin: 0.25rem 0; font-family: monospace; color: #111827; }
+              .formulas p { margin: 0.25rem 0; font-family: monospace; color: #111827; font-size: 0.75rem; }
             </style>
           </head>
           <body>

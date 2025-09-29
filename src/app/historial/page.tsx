@@ -3,12 +3,11 @@
 
 import { PageHeader } from "@/components/page-header";
 import { useApp } from "@/lib/hooks/use-app";
-import { months, WaterRecord, ElectricityRecord, InternetRecord, User } from "@/lib/types";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { months, WaterRecord, ElectricityRecord, InternetRecord } from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Printer, Download } from "lucide-react";
-import { useAuth } from "@/lib/hooks/use-auth";
 
 type CombinedData = {
   water: WaterRecord | null;
@@ -48,9 +47,9 @@ const handlePrint = (monthKey: string, data: CombinedData) => {
               th { background-color: #f2f2f2; width: 50%; }
               tfoot { font-weight: bold; }
               .total-row { background-color: #eef2ff; font-size: 1rem;}
-              .formulas { margin-top: 1rem; padding: 0.75rem; border: 1px dashed #ddd; background-color: #fafafa; font-size: 0.8rem; }
-              .formulas h3 { margin-top: 0; color: #374151; font-size: 0.9rem;}
-              .formulas p { margin: 0.25rem 0; font-family: monospace; color: #111827; font-size: 0.7rem; }
+              .formulas { margin-top: 1rem; padding: 0.75rem; border: 1px dashed #ddd; background-color: #fafafa; font-size: 0.7rem; }
+              .formulas h3 { margin-top: 0; color: #374151; font-size: 0.8rem;}
+              .formulas p { margin: 0.25rem 0; color: #111827; }
             </style>
           </head>
           <body>
@@ -116,7 +115,6 @@ const handlePrint = (monthKey: string, data: CombinedData) => {
 
 export default function HistorialPage() {
   const { waterData, electricityData, internetData } = useApp();
-  const { user } = useAuth();
   
   const combinedData: CombinedDataMap = {};
 
@@ -133,7 +131,8 @@ export default function HistorialPage() {
         combinedData[key] = { water: null, electricity: null, internet: null, total: 0 };
       }
       
-      const value = 'monthlyCost' in record ? record.monthlyCost : record.totalToPay;
+      const value = 'monthlyCost' in record ? record.monthlyCost : ('totalToPay' in record ? record.totalToPay : 0);
+
 
       if (record.type === 'water') combinedData[key].water = record as WaterRecord;
       if (record.type === 'electricity') combinedData[key].electricity = record as ElectricityRecord;
@@ -145,7 +144,16 @@ export default function HistorialPage() {
 
   processData();
 
-  const sortedMonths = Object.keys(combinedData);
+  const sortedMonths = Object.keys(combinedData).sort((a, b) => {
+    const [monthA, yearA] = a.split('-');
+    const [monthB, yearB] = b.split('-');
+
+    if (parseInt(yearA) !== parseInt(yearB)) {
+        return parseInt(yearB) - parseInt(yearA);
+    }
+
+    return months.indexOf(monthB) - months.indexOf(monthA);
+  });
   
   const handleExportCSV = () => {
     const headers = ['Año', 'Mes', 'Agua', 'Electricidad', 'Internet', 'Total del Mes'];

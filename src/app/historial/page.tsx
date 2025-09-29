@@ -47,9 +47,9 @@ const handlePrint = (monthKey: string, data: CombinedData) => {
               th { background-color: #f2f2f2; width: 50%; }
               tfoot { font-weight: bold; }
               .total-row { background-color: #eef2ff; font-size: 1rem;}
-              .formulas { margin-top: 1rem; padding: 0.75rem; border: 1px dashed #ddd; background-color: #fafafa; font-size: 0.7rem; }
+              .formulas { margin-top: 1rem; padding: 0.75rem; border: 1px dashed #ddd; background-color: #fafafa; }
               .formulas h3 { margin-top: 0; color: #374151; font-size: 0.8rem;}
-              .formulas p { margin: 0.25rem 0; color: #111827; }
+              .formulas p { margin: 0.25rem 0; color: #111827; font-size: 11px; }
             </style>
           </head>
           <body>
@@ -81,9 +81,9 @@ const handlePrint = (monthKey: string, data: CombinedData) => {
               </table>
               <div class="formulas">
                 <h3>Fórmulas de Cálculo</h3>
-                <p>Consumo del Contador = Contador Actual - Contador Anterior</p>
-                <p>Costo por kWh = Total Facturado / Consumo (kWh)</p>
-                <p>Total a Pagar = Consumo del Contador * Costo por kWh</p>
+                <p><b>Consumo del Contador</b> = Contador Actual - Contador Anterior</p>
+                <p><b>Costo por kWh</b> = Total Facturado / Consumo (kWh)</p>
+                <p><b>Total a Pagar</b> = Consumo del Contador * Costo por kWh</p>
               </div>
               ` : ''}
               

@@ -3,11 +3,12 @@
 
 import { PageHeader } from "@/components/page-header";
 import { useApp } from "@/lib/hooks/use-app";
-import { months, WaterRecord, ElectricityRecord, InternetRecord } from "@/lib/types";
+import { months, WaterRecord, ElectricityRecord, InternetRecord, User } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Printer, Download } from "lucide-react";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 type CombinedData = {
   water: WaterRecord | null;
@@ -49,7 +50,7 @@ const handlePrint = (monthKey: string, data: CombinedData) => {
               .total-row { background-color: #eef2ff; font-size: 1rem;}
               .formulas { margin-top: 1rem; padding: 0.75rem; border: 1px dashed #ddd; background-color: #fafafa; font-size: 0.8rem; }
               .formulas h3 { margin-top: 0; color: #374151; font-size: 0.9rem;}
-              .formulas p { margin: 0.25rem 0; font-family: monospace; color: #111827; font-size: 0.75rem; }
+              .formulas p { margin: 0.25rem 0; font-family: monospace; color: #111827; font-size: 0.7rem; }
             </style>
           </head>
           <body>
@@ -81,9 +82,9 @@ const handlePrint = (monthKey: string, data: CombinedData) => {
               </table>
               <div class="formulas">
                 <h3>Fórmulas de Cálculo</h3>
-                <p><b>Consumo del Contador</b> = Contador Actual - Contador Anterior</p>
-                <p><b>Costo por kWh</b> = Total Facturado / Consumo (kWh)</p>
-                <p><b>Total a Pagar</b> = Consumo del Contador * Costo por kWh</p>
+                <p>Consumo del Contador = Contador Actual - Contador Anterior</p>
+                <p>Costo por kWh = Total Facturado / Consumo (kWh)</p>
+                <p>Total a Pagar = Consumo del Contador * Costo por kWh</p>
               </div>
               ` : ''}
               
@@ -115,7 +116,8 @@ const handlePrint = (monthKey: string, data: CombinedData) => {
 
 export default function HistorialPage() {
   const { waterData, electricityData, internetData } = useApp();
-
+  const { user } = useAuth();
+  
   const combinedData: CombinedDataMap = {};
 
   const processData = () => {
@@ -197,9 +199,11 @@ export default function HistorialPage() {
                                       <div className="font-bold text-lg">{month} {year}</div>
                                       <div className="text-sm font-bold text-primary">{formatCurrency(data.total)}</div>
                                   </div>
-                                  <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey, data)}>
-                                    <Printer className="h-4 w-4" />
-                                  </Button>
+                                  <div className="flex items-center">
+                                      <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey, data)}>
+                                        <Printer className="h-4 w-4" />
+                                      </Button>
+                                  </div>
                               </div>
                               <div className="space-y-2 text-sm">
                                   <div className="flex justify-between items-center">
@@ -248,9 +252,9 @@ export default function HistorialPage() {
                             <TableCell className="text-right">{formatCurrency(data.internet?.monthlyCost)}</TableCell>
                             <TableCell className="text-right font-bold text-primary">{formatCurrency(data.total)}</TableCell>
                             <TableCell className="text-center">
-                              <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey, data)}>
-                                <Printer className="h-4 w-4" />
-                              </Button>
+                                <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey, data)}>
+                                  <Printer className="h-4 w-4" />
+                                </Button>
                             </TableCell>
                           </TableRow>
                         );

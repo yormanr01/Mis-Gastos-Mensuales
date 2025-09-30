@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -17,7 +18,7 @@ export function AnnualChart() {
 
   if (!isClient) {
     return (
-        <Card>
+        <Card className="bg-secondary">
             <CardHeader>
                 <Skeleton className="h-6 w-1/2" />
                 <Skeleton className="h-4 w-3/4 mt-2" />
@@ -52,7 +53,7 @@ export function AnnualChart() {
   });
 
   return (
-    <Card>
+    <Card className="bg-secondary">
       <CardHeader>
         <CardTitle>Gastos Mensuales - {currentYear}</CardTitle>
         <CardDescription>Un desglose de tus gastos mensuales en servicios.</CardDescription>

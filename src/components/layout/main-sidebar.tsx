@@ -68,7 +68,7 @@ export function MainSidebar() {
     <>
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-2">
-            <CircleDollarSign className="w-8 h-8 text-accent" />
+            <CircleDollarSign className="w-8 h-8 text-primary" />
             <h1 className="text-xl font-semibold group-data-[state=collapsed]:hidden">Mis Gastos</h1>
         </Link>
       </SidebarHeader>

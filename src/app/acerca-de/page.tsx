@@ -9,7 +9,7 @@ export default function AboutPage() {
       <main className="flex-1 overflow-auto p-4 md:p-6 flex items-center justify-center">
         <Card className="max-w-2xl w-full">
           <CardHeader className="items-center text-center">
-            <CircleDollarSign className="w-12 h-12 text-accent mb-4" />
+            <CircleDollarSign className="w-12 h-12 text-primary mb-4" />
             <CardTitle className="text-2xl">Mis Gastos Mensuales</CardTitle>
             <CardDescription>Versión 1.0.0</CardDescription>
           </CardHeader>

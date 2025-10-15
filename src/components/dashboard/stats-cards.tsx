@@ -18,7 +18,7 @@ export function StatsCards() {
 
   const renderSkeletons = (count: number) => (
     [...Array(count)].map((_, index) => (
-      <Card key={index} className="bg-secondary">
+      <Card key={index}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <Skeleton className="h-4 w-2/3" />
           <Skeleton className="h-5 w-5 rounded-full" />
@@ -64,7 +64,7 @@ export function StatsCards() {
   ];
 
   const StatCard = ({ stat }: { stat: typeof stats[0] }) => (
-    <Card className="bg-secondary">
+    <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
         <stat.icon className={`h-5 w-5 ${stat.color}`} />

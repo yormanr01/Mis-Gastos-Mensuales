@@ -18,18 +18,18 @@ export function AnnualChart() {
 
   if (!isClient) {
     return (
-        <Card>
-            <CardHeader>
-                <Skeleton className="h-6 w-1/2" />
-                <Skeleton className="h-4 w-3/4 mt-2" />
-            </CardHeader>
-            <CardContent>
-                <Skeleton className="h-[350px] w-full" />
-            </CardContent>
-        </Card>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-4 w-3/4 mt-2" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[350px] w-full" />
+        </CardContent>
+      </Card>
     );
   }
-  
+
   const currentYear = new Date().getFullYear();
 
   const chartData = months.map((month) => {
@@ -70,14 +70,16 @@ export function AnnualChart() {
               tickFormatter={(value) => `$${value}`}
             />
             <Tooltip
-                contentStyle={{
-                    backgroundColor: 'hsl(var(--background))',
-                    borderColor: 'hsl(var(--border))',
-                }}
+              cursor={{ fill: 'hsl(var(--muted)/0.2)' }}
+              contentStyle={{
+                backgroundColor: 'hsl(var(--card))',
+                borderColor: 'hsl(var(--border))',
+                borderRadius: 'var(--radius)',
+              }}
             />
-            <Bar dataKey="agua" fill="hsl(var(--chart-1))" stackId="a" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="electricidad" fill="hsl(var(--chart-4))" stackId="a" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="internet" fill="hsl(var(--chart-2))" stackId="a" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="agua" name="Agua" fill="hsl(var(--chart-1))" stackId="a" radius={[0, 0, 4, 4]} />
+            <Bar dataKey="electricidad" name="Luz" fill="hsl(var(--chart-4))" stackId="a" radius={[0, 0, 0, 0]} />
+            <Bar dataKey="internet" name="Internet" fill="hsl(var(--chart-2))" stackId="a" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

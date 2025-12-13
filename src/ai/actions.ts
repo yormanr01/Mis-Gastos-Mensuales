@@ -26,10 +26,6 @@ export async function generateExpenseInsights(
         return text;
     } catch (error) {
         console.error("Error generating insights:", error);
-        if (error instanceof Error) {
-            console.error("Error message:", error.message);
-            console.error("Error stack:", error.stack);
-        }
         return "Unable to generate insights at this time.";
     }
 }

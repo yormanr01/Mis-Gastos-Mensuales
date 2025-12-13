@@ -16,24 +16,22 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Firebase services
-const auth = getAuth(app);
+// Initialize Firestore with persistent cache
 const db = getFirestore(app);
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
 
-// Enable offline persistence
 try {
-  enableIndexedDbPersistence(db);
-  console.log("Firebase offline persistence enabled.");
-} catch (err: unknown) {
-  if (err instanceof FirestoreError) {
-    if (err.code === 'failed-precondition') {
-      console.warn("Firebase offline persistence could not be enabled: Multiple tabs open.");
-    } else if (err.code === 'unimplemented') {
-      console.warn("Firebase offline persistence is not available in this browser.");
-    }
-  } else {
-    console.error("Error enabling Firebase offline persistence:", err);
-  }
+  initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager()
+    })
+  });
+  console.log("Firebase offline persistence enabled (modern).");
+} catch (err) {
+  // Ignore error if already initialized
+  console.log("Firestore already initialized or persistence error:", err);
 }
+
+const auth = getAuth(app);
 
 export { auth, db };

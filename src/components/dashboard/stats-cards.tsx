@@ -6,7 +6,7 @@ import { useApp } from '@/lib/hooks/use-app';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Droplet, Lightbulb, Wifi, CircleDollarSign } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+
 
 export function StatsCards() {
   const { waterData, electricityData, internetData } = useApp();
@@ -79,26 +79,10 @@ export function StatsCards() {
   );
 
   return (
-    <>
-      {/* Mobile Carousel */}
-      <div className="md:hidden">
-        <Carousel opts={{ align: "start", loop: false }}>
-          <CarouselContent className="-ml-4">
-            {stats.map((stat, index) => (
-              <CarouselItem key={index} className="pl-4 basis-4/5">
-                <StatCard stat={stat} />
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-        </Carousel>
-      </div>
-
-      {/* Desktop Grid */}
-      <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, index) => (
-          <StatCard key={index} stat={stat} />
-        ))}
-      </div>
-    </>
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      {stats.map((stat, index) => (
+        <StatCard key={index} stat={stat} />
+      ))}
+    </div>
   );
 }

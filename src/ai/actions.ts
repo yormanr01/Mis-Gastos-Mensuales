@@ -10,15 +10,16 @@ export async function generateExpenseInsights(
 ) {
     try {
         const prompt = `
-      Analyze the following expense data and provide 3 short, actionable insights or observations.
-      Focus on trends, anomalies, or potential savings.
-      Keep the tone helpful and encouraging.
+      Analiza los siguientes datos de gastos y proporciona 3 ideas o consejos breves y prácticos.
+      Enfócate en tendencias, anomalías o posibles ahorros.
+      Mantén un tono útil y alentador.
+      Responde SIEMPRE en Español.
       
-      Water Data: ${JSON.stringify(water.slice(-6))}
-      Electricity Data: ${JSON.stringify(electricity.slice(-6))}
-      Internet Data: ${JSON.stringify(internet.slice(-6))}
+      Datos de Agua: ${JSON.stringify(water.slice(-6))}
+      Datos de Electricidad: ${JSON.stringify(electricity.slice(-6))}
+      Datos de Internet: ${JSON.stringify(internet.slice(-6))}
       
-      Format the output as a simple list of 3 bullet points.
+      Formatea la salida como una lista simple de 3 puntos.
     `;
 
         const { text } = await ai.generate(prompt);

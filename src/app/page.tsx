@@ -1,5 +1,6 @@
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { AnnualChart } from "@/components/dashboard/annual-chart";
+import { InsightsCard } from "@/components/dashboard/insights-card";
 import { PageHeader } from "@/components/page-header";
 
 export const dynamic = 'force-dynamic';

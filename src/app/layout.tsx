@@ -11,7 +11,6 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'Mis Gastos Mensuales',
   description: 'Aplicación para llevar un registro del consumo de servicios.',
-  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -25,7 +24,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
-        <meta name="theme-color" content="#0ea5e9" />
+        <meta name="theme-color" content="#7c3aed" />
       </head>
       <body className="font-body antialiased">
         <ThemeProvider

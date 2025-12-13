@@ -9,14 +9,6 @@ export async function generateExpenseInsights(
     internet: InternetRecord[]
 ) {
     try {
-        console.log("DEBUG: Env Var GOOGLE_GENAI_API_KEY exists?", !!process.env.GOOGLE_GENAI_API_KEY);
-        if (process.env.GOOGLE_GENAI_API_KEY) {
-            console.log("DEBUG: Key length:", process.env.GOOGLE_GENAI_API_KEY.length);
-            console.log("DEBUG: Key starts with:", process.env.GOOGLE_GENAI_API_KEY.substring(0, 5));
-        } else {
-            console.error("DEBUG: GOOGLE_GENAI_API_KEY is undefined or empty");
-        }
-
         const prompt = `
       Analiza los siguientes datos de gastos y proporciona 3 ideas o consejos breves y prácticos.
       Enfócate en tendencias, anomalías o posibles ahorros.

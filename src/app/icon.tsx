@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 // Route segment config
-export const runtime = 'edge';
+
 
 // Image metadata
 export function generateImageMetadata() {
@@ -27,14 +27,15 @@ export default function Icon({ id }: { id: string }) {
             <div
                 style={{
                     fontSize: id === '512' ? 256 : 96,
-                    background: '#7c3aed',
+                    background: 'white',
                     width: '100%',
                     height: '100%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: 'white',
-                    borderRadius: id === '512' ? '64px' : '24px',
+                    color: '#7c3aed',
+                    borderRadius: '50%',
+                    border: '12px solid #7c3aed',
                     fontWeight: 'bold',
                 }}
             >

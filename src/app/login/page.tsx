@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { CircleDollarSign, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ResetPasswordForm } from '@/components/forms/reset-password-form';
 
@@ -42,7 +42,7 @@ export default function LoginPage() {
       setIsSubmitting(false);
     }
   };
-  
+
   if (isLoading || user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -56,7 +56,9 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="flex justify-center items-center gap-2 mb-2">
-            <CircleDollarSign className="w-10 h-10 text-accent" />
+            <div className="w-10 h-10 bg-white border-2 border-violet-600 rounded-full flex items-center justify-center text-violet-600 font-bold text-2xl">
+              $
+            </div>
             <h1 className="text-2xl font-semibold">Mis Gastos</h1>
           </div>
           <CardTitle className="text-xl">Iniciar Sesión</CardTitle>
@@ -98,7 +100,7 @@ export default function LoginPage() {
                 </Button>
               </div>
             </div>
-             <div className="text-right">
+            <div className="text-right">
               <Dialog open={isResetFormOpen} onOpenChange={setResetFormOpen}>
                 <DialogTrigger asChild>
                   <Button variant="link" type="button" className="p-0 h-auto text-sm">

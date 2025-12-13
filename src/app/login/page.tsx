@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Eye, EyeOff } from 'lucide-react';
+import { CircleDollarSign, Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ResetPasswordForm } from '@/components/forms/reset-password-form';
 
@@ -56,9 +56,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="flex justify-center items-center gap-2 mb-2">
-            <div className="w-10 h-10 bg-white border-2 border-violet-600 rounded-full flex items-center justify-center text-violet-600 font-bold text-2xl">
-              $
-            </div>
+            <CircleDollarSign className="w-12 h-12 text-violet-600" />
             <h1 className="text-2xl font-semibold">Mis Gastos</h1>
           </div>
           <CardTitle className="text-xl">Iniciar Sesión</CardTitle>

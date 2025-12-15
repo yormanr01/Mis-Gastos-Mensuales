@@ -8,7 +8,7 @@ import { Droplet, Lightbulb, Wifi, CircleDollarSign } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 
-export function StatsCards() {
+export function StatsCards({ year }: { year: number }) {
   const { waterData, electricityData, internetData } = useApp();
   const [isClient, setIsClient] = useState(false);
 
@@ -39,17 +39,15 @@ export function StatsCards() {
     );
   }
 
-  const currentYear = new Date().getFullYear();
-
-  const filterByCurrentYear = <T extends { year: number }>(data: T[]) =>
-    data.filter((d) => d.year === currentYear);
+  const filterByYear = <T extends { year: number }>(data: T[]) =>
+    data.filter((d) => d.year === year);
 
   const sumTotal = (data: { totalToPay?: number; monthlyCost?: number }[]) =>
     data.reduce((acc, curr) => acc + (curr.totalToPay ?? curr.monthlyCost ?? 0), 0);
 
-  const totalWater = sumTotal(filterByCurrentYear(waterData));
-  const totalElectricity = sumTotal(filterByCurrentYear(electricityData));
-  const totalInternet = sumTotal(filterByCurrentYear(internetData));
+  const totalWater = sumTotal(filterByYear(waterData));
+  const totalElectricity = sumTotal(filterByYear(electricityData));
+  const totalInternet = sumTotal(filterByYear(internetData));
   const totalServices = totalWater + totalElectricity + totalInternet;
 
   const formatCurrency = (amount: number) => {
@@ -73,7 +71,7 @@ export function StatsCards() {
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{stat.value}</div>
-        <p className="text-xs text-muted-foreground mt-1">En el año {currentYear}</p>
+        <p className="text-xs text-muted-foreground mt-1">En el año {year}</p>
       </CardContent>
     </Card>
   );

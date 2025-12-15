@@ -1,7 +1,7 @@
 
 'use client';
 
-import { PageHeader } from "@/components/page-header";
+
 import { useApp } from "@/lib/hooks/use-app";
 import { months, WaterRecord, ElectricityRecord, InternetRecord } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -19,16 +19,21 @@ type CombinedData = {
 type CombinedDataMap = { [key: string]: CombinedData };
 
 const formatCurrency = (amount: number | undefined) => {
-    if (amount === undefined || amount === null) return '$0.00';
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  if (amount === undefined || amount === null) return '$0.00';
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 };
 
 const handlePrint = (monthKey: string, data: CombinedData) => {
-    const [month, year] = monthKey.split('-');
-    
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
+  const [month, year] = monthKey.split('-');
+
+  // Create a hidden iframe
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+
+  const printDocument = iframe.contentWindow?.document;
+  if (printDocument) {
+    printDocument.write(`
         <html>
           <head>
             <title>Resumen de Gastos - ${month} ${year}</title>
@@ -108,21 +113,29 @@ const handlePrint = (monthKey: string, data: CombinedData) => {
           </body>
         </html>
       `);
-      printWindow.document.close();
-      printWindow.print();
-    }
+    printDocument.close();
+
+    // Wait for content to load before printing
+    iframe.onload = () => {
+      iframe.contentWindow?.print();
+      // Optional: remove iframe after a delay to ensure print dialog has opened
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
+    };
+  }
 };
 
 export default function HistorialPage() {
-  const { waterData, electricityData, internetData } = useApp();
-  
+  const { waterData, electricityData, internetData, selectedYear } = useApp();
+
   const combinedData: CombinedDataMap = {};
 
   const processData = () => {
     const allRecords = [
-      ...waterData.map(d => ({ ...d, type: 'water' })),
-      ...electricityData.map(d => ({ ...d, type: 'electricity' })),
-      ...internetData.map(d => ({ ...d, type: 'internet' }))
+      ...waterData.filter(d => d.year === selectedYear).map(d => ({ ...d, type: 'water' })),
+      ...electricityData.filter(d => d.year === selectedYear).map(d => ({ ...d, type: 'electricity' })),
+      ...internetData.filter(d => d.year === selectedYear).map(d => ({ ...d, type: 'internet' }))
     ];
 
     allRecords.forEach(record => {
@@ -130,14 +143,14 @@ export default function HistorialPage() {
       if (!combinedData[key]) {
         combinedData[key] = { water: null, electricity: null, internet: null, total: 0 };
       }
-      
+
       const value = 'monthlyCost' in record ? record.monthlyCost : ('totalToPay' in record ? record.totalToPay : 0);
 
 
       if (record.type === 'water') combinedData[key].water = record as WaterRecord;
       if (record.type === 'electricity') combinedData[key].electricity = record as ElectricityRecord;
       if (record.type === 'internet') combinedData[key].internet = record as InternetRecord;
-      
+
       combinedData[key].total += value;
     });
   };
@@ -149,12 +162,12 @@ export default function HistorialPage() {
     const [monthB, yearB] = b.split('-');
 
     if (parseInt(yearA) !== parseInt(yearB)) {
-        return parseInt(yearB) - parseInt(yearA);
+      return parseInt(yearB) - parseInt(yearA);
     }
 
     return months.indexOf(monthB) - months.indexOf(monthA);
   });
-  
+
   const handleExportCSV = () => {
     const headers = ['Año', 'Mes', 'Agua', 'Electricidad', 'Internet', 'Total del Mes'];
     const csvContent = [
@@ -186,49 +199,49 @@ export default function HistorialPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <PageHeader title="Historial Mensual" />
+
       <main className="flex-1 overflow-auto p-4 md:p-6">
         <Card>
-           <CardHeader>
-              <CardTitle>Resumen de Gastos por Mes</CardTitle>
-            </CardHeader>
+          <CardHeader>
+            <CardTitle>Resumen de Gastos por Mes</CardTitle>
+          </CardHeader>
           <CardContent>
             {sortedMonths.length > 0 ? (
               <>
                 {/* Mobile View - Cards */}
                 <div className="md:hidden space-y-4">
                   {sortedMonths.map(monthKey => {
-                      const [month, year] = monthKey.split('-');
-                      const data = combinedData[monthKey];
-                      return (
-                          <div key={monthKey} className="rounded-lg border p-4">
-                              <div className="flex justify-between items-start mb-4">
-                                  <div>
-                                      <div className="font-bold text-lg">{month} {year}</div>
-                                      <div className="text-sm font-bold text-primary">{formatCurrency(data.total)}</div>
-                                  </div>
-                                  <div className="flex items-center">
-                                      <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey, data)}>
-                                        <Printer className="h-4 w-4" />
-                                      </Button>
-                                  </div>
-                              </div>
-                              <div className="space-y-2 text-sm">
-                                  <div className="flex justify-between items-center">
-                                      <span className="text-muted-foreground">Agua:</span>
-                                      <span>{formatCurrency(data.water?.totalToPay)}</span>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                      <span className="text-muted-foreground">Electricidad:</span>
-                                      <span>{formatCurrency(data.electricity?.totalToPay)}</span>
-                                  </div>
-                                  <div className="flex justify-between items-center">
-                                      <span className="text-muted-foreground">Internet:</span>
-                                      <span>{formatCurrency(data.internet?.monthlyCost)}</span>
-                                  </div>
-                              </div>
+                    const [month, year] = monthKey.split('-');
+                    const data = combinedData[monthKey];
+                    return (
+                      <div key={monthKey} className="rounded-lg border p-4">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <div className="font-bold text-lg">{month} {year}</div>
+                            <div className="text-sm font-bold text-primary">{formatCurrency(data.total)}</div>
                           </div>
-                      );
+                          <div className="flex items-center">
+                            <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey, data)}>
+                              <Printer className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Agua:</span>
+                            <span>{formatCurrency(data.water?.totalToPay)}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Electricidad:</span>
+                            <span>{formatCurrency(data.electricity?.totalToPay)}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Internet:</span>
+                            <span>{formatCurrency(data.internet?.monthlyCost)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
                   })}
                 </div>
 
@@ -260,9 +273,9 @@ export default function HistorialPage() {
                             <TableCell className="text-right">{formatCurrency(data.internet?.monthlyCost)}</TableCell>
                             <TableCell className="text-right font-bold text-primary">{formatCurrency(data.total)}</TableCell>
                             <TableCell className="text-center">
-                                <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey, data)}>
-                                  <Printer className="h-4 w-4" />
-                                </Button>
+                              <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey, data)}>
+                                <Printer className="h-4 w-4" />
+                              </Button>
                             </TableCell>
                           </TableRow>
                         );
@@ -273,10 +286,10 @@ export default function HistorialPage() {
               </>
             ) : (
               <div className="text-center p-8">
-                  <h3 className="text-lg font-semibold">No hay datos disponibles</h3>
-                  <p className="text-muted-foreground">
-                    Añade registros en las secciones de Agua, Electricidad e Internet para ver el historial.
-                  </p>
+                <h3 className="text-lg font-semibold">No hay datos disponibles</h3>
+                <p className="text-muted-foreground">
+                  Añade registros en las secciones de Agua, Electricidad e Internet para ver el historial.
+                </p>
               </div>
             )}
           </CardContent>

@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PageHeader } from "@/components/page-header";
+
 import { UserManagement } from "@/components/admin/user-management";
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -26,10 +26,10 @@ export default function AdminUsersPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <PageHeader title="Administración de Usuarios" />
+
       <main className="flex-1 overflow-auto p-4 md:p-6">
         <div className="flex justify-end mb-4">
-           <Dialog open={isFormOpen} onOpenChange={setFormOpen}>
+          <Dialog open={isFormOpen} onOpenChange={setFormOpen}>
             <DialogTrigger asChild>
               <Button onClick={handleAddNew}>
                 <UserPlus className="mr-2 h-4 w-4" />

@@ -25,6 +25,8 @@ interface AppContextType {
   deleteInternetRecord: (id: string) => Promise<void>;
   isLoading: boolean;
   refreshData: () => Promise<void>;
+  selectedYear: number;
+  setSelectedYear: (year: number) => void;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -36,6 +38,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [internetData, setInternetData] = useState<InternetRecord[]>([]);
   const [fixedValues, setFixedValuesState] = useState<FixedValues>({ waterDiscount: 0, internetMonthlyCost: 40 });
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   const fetchData = async () => {
     if (!user) {
@@ -73,8 +76,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     fetchData();
   }, [user]);
-  
-    useEffect(() => {
+
+  useEffect(() => {
     const storedFixedValues = localStorage.getItem('fixedValues');
     setFixedValuesState(storedFixedValues ? JSON.parse(storedFixedValues) : { waterDiscount: 0, internetMonthlyCost: 40 });
   }, []);
@@ -103,7 +106,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     if (isDuplicate) {
       throw new Error(`Ya existe un registro de electricidad para ${record.month} ${record.year}.`);
     }
-    
+
     const docRef = await addDoc(collection(db, 'electricity'), record);
     setElectricityData(prev => [...prev, { ...record, id: docRef.id }].sort(sortRecords));
   };
@@ -134,7 +137,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateElectricityRecord = async (updatedRecord: ElectricityRecord) => {
-     const isDuplicate = electricityData.some(
+    const isDuplicate = electricityData.some(
       r => r.id !== updatedRecord.id && r.year === updatedRecord.year && r.month === updatedRecord.month
     );
     if (isDuplicate) {
@@ -178,9 +181,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AppContext.Provider value={{ 
-      waterData, 
-      electricityData, 
+    <AppContext.Provider value={{
+      waterData,
+      electricityData,
       internetData,
       fixedValues,
       setFixedValues,
@@ -194,7 +197,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       deleteElectricityRecord,
       deleteInternetRecord,
       isLoading,
-      refreshData: fetchData
+      refreshData: fetchData,
+      selectedYear,
+      setSelectedYear
     }}>
       {children}
     </AppContext.Provider>

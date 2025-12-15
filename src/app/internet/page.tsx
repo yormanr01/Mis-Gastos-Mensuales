@@ -1,7 +1,7 @@
 
 'use client';
 
-import { PageHeader } from "@/components/page-header";
+
 import { ServiceHistory } from "@/components/history/service-history";
 import { InternetTable } from "@/components/history/internet-table";
 import { InternetForm } from "@/components/forms/internet-form";
@@ -9,10 +9,10 @@ import { useApp } from "@/lib/hooks/use-app";
 
 export default function InternetPage() {
   const { internetData, isLoading } = useApp();
-  
+
   return (
     <div className="flex flex-col h-full">
-      <PageHeader title="Costo de Internet" />
+
       <main className="flex-1 overflow-auto p-4 md:p-6">
         <ServiceHistory
           data={internetData}

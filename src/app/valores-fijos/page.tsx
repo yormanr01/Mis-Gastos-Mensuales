@@ -4,7 +4,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/use-auth';
-import { PageHeader } from "@/components/page-header";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApp } from "@/lib/hooks/use-app";
 import { z } from "zod";
@@ -53,22 +53,22 @@ export default function FixedValuesPage() {
       description: "Los valores fijos se han guardado correctamente.",
     });
   };
-  
+
   // This component should only render content for 'Edición' users or during loading.
   if (isLoading || !user || user.role !== 'Edición') {
     return (
       <div className="flex flex-col h-full">
-         <PageHeader title="Valores Fijos" />
-         <main className="flex-1 overflow-auto p-4 md:p-6 flex items-center justify-center">
-            <p>Cargando o redirigiendo...</p>
-         </main>
+
+        <main className="flex-1 overflow-auto p-4 md:p-6 flex items-center justify-center">
+          <p>Cargando o redirigiendo...</p>
+        </main>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col h-full">
-      <PageHeader title="Valores Fijos" />
+
       <main className="flex-1 overflow-auto p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
           <Card>

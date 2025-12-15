@@ -29,12 +29,14 @@ export function ServiceHistory<T extends RecordType>({
   TableComponent,
 }: ServiceHistoryProps<T>) {
   const { user } = useAuth();
-  const { waterData, electricityData, internetData, isLoading } = useApp();
+  const { waterData, electricityData, internetData, isLoading, selectedYear } = useApp();
 
   let data: T[] = [];
   if (serviceName === 'Agua') data = waterData as T[];
   if (serviceName === 'Electricidad') data = electricityData as T[];
   if (serviceName === 'Internet') data = internetData as T[];
+
+  data = data.filter(record => record.year === selectedYear);
 
   const [isFormOpen, setFormOpen] = useState(false);
   const [recordToEdit, setRecordToEdit] = useState<T | null>(null);

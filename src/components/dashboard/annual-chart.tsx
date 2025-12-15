@@ -8,7 +8,7 @@ import { months } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function AnnualChart() {
+export function AnnualChart({ year }: { year: number }) {
   const { waterData, electricityData, internetData } = useApp();
   const [isClient, setIsClient] = useState(false);
 
@@ -30,17 +30,15 @@ export function AnnualChart() {
     );
   }
 
-  const currentYear = new Date().getFullYear();
-
   const chartData = months.map((month) => {
     const water = waterData
-      .filter((d) => d.year === currentYear && d.month === month)
+      .filter((d) => d.year === year && d.month === month)
       .reduce((sum, d) => sum + d.totalToPay, 0);
     const electricity = electricityData
-      .filter((d) => d.year === currentYear && d.month === month)
+      .filter((d) => d.year === year && d.month === month)
       .reduce((sum, d) => sum + d.totalToPay, 0);
     const internet = internetData
-      .filter((d) => d.year === currentYear && d.month === month)
+      .filter((d) => d.year === year && d.month === month)
       .reduce((sum, d) => sum + d.monthlyCost, 0);
 
     return {
@@ -55,7 +53,7 @@ export function AnnualChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Gastos Mensuales - {currentYear}</CardTitle>
+        <CardTitle>Gastos Mensuales - {year}</CardTitle>
         <CardDescription>Un desglose de tus gastos mensuales en servicios.</CardDescription>
       </CardHeader>
       <CardContent>

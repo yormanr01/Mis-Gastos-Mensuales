@@ -11,7 +11,7 @@ export default function AboutPage() {
           <CardHeader className="items-center text-center">
             <CircleDollarSign className="w-12 h-12 text-primary mb-4" />
             <CardTitle className="text-2xl">Mis Gastos Mensuales</CardTitle>
-            <CardDescription>Versión 1.0.0</CardDescription>
+            <CardDescription>Versión 1.1.0</CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <p>

@@ -2,11 +2,14 @@
 'use client';
 
 
+import { useState } from 'react';
 import { useApp } from "@/lib/hooks/use-app";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { months, WaterRecord, ElectricityRecord, InternetRecord } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Printer, Download } from "lucide-react";
 
 type CombinedData = {
@@ -23,111 +26,123 @@ const formatCurrency = (amount: number | undefined) => {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 };
 
-const handlePrint = (monthKey: string, data: CombinedData) => {
-  const [month, year] = monthKey.split('-');
-
-  // Create a hidden iframe
-  const iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
-  document.body.appendChild(iframe);
-
-  const printDocument = iframe.contentWindow?.document;
-  if (printDocument) {
-    printDocument.write(`
-        <html>
-          <head>
-            <title>Resumen de Gastos - ${month} ${year}</title>
-            <style>
-              body { 
-                font-family: sans-serif; 
-                margin: 1rem; 
-                -webkit-print-color-adjust: exact; 
-                print-color-adjust: exact;
-              }
-              .container { max-width: 800px; margin: auto; }
-              h1 { font-size: 1.5rem; color: #1e40af; }
-              h2 { font-size: 1.1rem; color: #1e40af; border-bottom: 1px solid #eef2ff; padding-bottom: 4px; margin-top: 1.25rem; margin-bottom: 0.75rem; }
-              table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.9rem; }
-              th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
-              th { background-color: #f2f2f2; width: 50%; }
-              tfoot { font-weight: bold; }
-              .total-row { background-color: #eef2ff; font-size: 1rem;}
-              .formulas { margin-top: 1rem; padding: 0.75rem; border: 1px dashed #ddd; background-color: #fafafa; }
-              .formulas h3 { margin-top: 0; color: #374151; font-size: 0.8rem;}
-              .formulas p { margin: 0.25rem 0; color: #111827; font-size: 11px; }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <h1>Resumen de Gastos - ${month} ${year}</h1>
-              
-              ${data.water ? `
-              <h2><span role="img" aria-label="water-drop">💧</span> Consumo de Agua</h2>
-              <table>
-                <tbody>
-                  <tr><th>Total Facturado</th><td>${formatCurrency(data.water.totalInvoiced)}</td></tr>
-                  <tr><th>Descuento</th><td>${formatCurrency(data.water.discount)}</td></tr>
-                  <tr class="total-row"><th>Total a Pagar</th><td>${formatCurrency(data.water.totalToPay)}</td></tr>
-                </tbody>
-              </table>` : ''}
-
-              ${data.electricity ? `
-              <h2><span role="img" aria-label="light-bulb">💡</span> Consumo de Electricidad</h2>
-              <table>
-                <tbody>
-                  <tr><th>Total Facturado</th><td>${formatCurrency(data.electricity.totalInvoiced)}</td></tr>
-                  <tr><th>Consumo (kWh)</th><td>${data.electricity.kwhConsumption.toFixed(2)}</td></tr>
-                  <tr><th>Costo por kWh</th><td>${formatCurrency(data.electricity.kwhCost)}</td></tr>
-                  <tr><th>Contador Anterior</th><td>${data.electricity.previousMeter}</td></tr>
-                  <tr><th>Contador Actual</th><td>${data.electricity.currentMeter}</td></tr>
-                  <tr><th>Consumo del Contador</th><td>${data.electricity.consumptionMeter.toFixed(0)}</td></tr>
-                  <tr class="total-row"><th>Total a Pagar</th><td>${formatCurrency(data.electricity.totalToPay)}</td></tr>
-                </tbody>
-              </table>
-              <div class="formulas">
-                <h3>Fórmulas de Cálculo</h3>
-                <p><b>Consumo del Contador</b> = Contador Actual - Contador Anterior</p>
-                <p><b>Costo por kWh</b> = Total Facturado / Consumo (kWh)</p>
-                <p><b>Total a Pagar</b> = Consumo del Contador * Costo por kWh</p>
-              </div>
-              ` : ''}
-              
-              ${data.internet ? `
-              <h2><span role="img" aria-label="wifi">🌐</span> Costo de Internet</h2>
-              <table>
-                <tbody>
-                  <tr class="total-row"><th>Costo Mensual</th><td>${formatCurrency(data.internet.monthlyCost)}</td></tr>
-                </tbody>
-              </table>` : ''}
-
-              <h2>Resumen General</h2>
-              <table>
-                <tfoot>
-                  <tr class="total-row">
-                    <td>Total General del Mes</td>
-                    <td>${formatCurrency(data.total)}</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </body>
-        </html>
-      `);
-    printDocument.close();
-
-    // Wait for content to load before printing
-    iframe.onload = () => {
-      iframe.contentWindow?.print();
-      // Optional: remove iframe after a delay to ensure print dialog has opened
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 1000);
-    };
-  }
-};
-
 export default function HistorialPage() {
   const { waterData, electricityData, internetData, selectedYear } = useApp();
+  const isMobile = useIsMobile();
+  const [isPreviewOpen, setPreviewOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<{ monthKey: string; data: CombinedData } | null>(null);
+
+  const handlePrintDesktop = (monthKey: string, data: CombinedData) => {
+    const [month, year] = monthKey.split('-');
+
+    // Create a hidden iframe
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    const printDocument = iframe.contentWindow?.document;
+    if (printDocument) {
+      printDocument.write(`
+          <html>
+            <head>
+              <title>Resumen de Gastos - ${month} ${year}</title>
+              <style>
+                body { 
+                  font-family: sans-serif; 
+                  margin: 1rem; 
+                  -webkit-print-color-adjust: exact; 
+                  print-color-adjust: exact;
+                }
+                .container { max-width: 800px; margin: auto; }
+                h1 { font-size: 1.5rem; color: #1e40af; }
+                h2 { font-size: 1.1rem; color: #1e40af; border-bottom: 1px solid #eef2ff; padding-bottom: 4px; margin-top: 1.25rem; margin-bottom: 0.75rem; }
+                table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.9rem; }
+                th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+                th { background-color: #f2f2f2; width: 50%; }
+                tfoot { font-weight: bold; }
+                .total-row { background-color: #eef2ff; font-size: 1rem;}
+                .formulas { margin-top: 1rem; padding: 0.75rem; border: 1px dashed #ddd; background-color: #fafafa; }
+                .formulas h3 { margin-top: 0; color: #374151; font-size: 0.8rem;}
+                .formulas p { margin: 0.25rem 0; color: #111827; font-size: 11px; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h1>Resumen de Gastos - ${month} ${year}</h1>
+                
+                ${data.water ? `
+                <h2><span role="img" aria-label="water-drop">💧</span> Consumo de Agua</h2>
+                <table>
+                  <tbody>
+                    <tr><th>Total Facturado</th><td>${formatCurrency(data.water.totalInvoiced)}</td></tr>
+                    <tr><th>Descuento</th><td>${formatCurrency(data.water.discount)}</td></tr>
+                    <tr class="total-row"><th>Total a Pagar</th><td>${formatCurrency(data.water.totalToPay)}</td></tr>
+                  </tbody>
+                </table>` : ''}
+  
+                ${data.electricity ? `
+                <h2><span role="img" aria-label="light-bulb">💡</span> Consumo de Electricidad</h2>
+                <table>
+                  <tbody>
+                    <tr><th>Total Facturado</th><td>${formatCurrency(data.electricity.totalInvoiced)}</td></tr>
+                    <tr><th>Consumo (kWh)</th><td>${data.electricity.kwhConsumption.toFixed(2)}</td></tr>
+                    <tr><th>Costo por kWh</th><td>${formatCurrency(data.electricity.kwhCost)}</td></tr>
+                    <tr><th>Contador Anterior</th><td>${data.electricity.previousMeter}</td></tr>
+                    <tr><th>Contador Actual</th><td>${data.electricity.currentMeter}</td></tr>
+                    <tr><th>Consumo del Contador</th><td>${data.electricity.consumptionMeter.toFixed(0)}</td></tr>
+                    <tr class="total-row"><th>Total a Pagar</th><td>${formatCurrency(data.electricity.totalToPay)}</td></tr>
+                  </tbody>
+                </table>
+                <div class="formulas">
+                  <h3>Fórmulas de Cálculo</h3>
+                  <p><b>Consumo del Contador</b> = Contador Actual - Contador Anterior</p>
+                  <p><b>Costo por kWh</b> = Total Facturado / Consumo (kWh)</p>
+                  <p><b>Total a Pagar</b> = Consumo del Contador * Costo por kWh</p>
+                </div>
+                ` : ''}
+                
+                ${data.internet ? `
+                <h2><span role="img" aria-label="wifi">🌐</span> Costo de Internet</h2>
+                <table>
+                  <tbody>
+                    <tr class="total-row"><th>Costo Mensual</th><td>${formatCurrency(data.internet.monthlyCost)}</td></tr>
+                  </tbody>
+                </table>` : ''}
+  
+                <h2>Resumen General</h2>
+                <table>
+                  <tfoot>
+                    <tr class="total-row">
+                      <td>Total General del Mes</td>
+                      <td>${formatCurrency(data.total)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </body>
+          </html>
+        `);
+      printDocument.close();
+
+      // Wait for content to load before printing
+      iframe.onload = () => {
+        iframe.contentWindow?.print();
+        // Optional: remove iframe after a delay to ensure print dialog has opened
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
+      };
+    }
+  };
+
+  const handlePrint = (monthKey: string, data: CombinedData) => {
+    if (isMobile) {
+      setPreviewData({ monthKey, data });
+      setPreviewOpen(true);
+    } else {
+      handlePrintDesktop(monthKey, data);
+    }
+  };
 
   const combinedData: CombinedDataMap = {};
 
@@ -301,6 +316,68 @@ export default function HistorialPage() {
           </CardFooter>
         </Card>
       </main>
+
+      <Dialog open={isPreviewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Resumen de Gastos</DialogTitle>
+            <DialogDescription>
+              {previewData?.monthKey}
+            </DialogDescription>
+          </DialogHeader>
+          {previewData && (
+            <div className="space-y-4">
+              {previewData.data.water && (
+                <div className="border rounded p-3">
+                  <h3 className="font-semibold flex items-center gap-2 mb-2">
+                    <span role="img" aria-label="water-drop">💧</span> Consumo de Agua
+                  </h3>
+                  <div className="text-sm space-y-1">
+                    <div className="flex justify-between"><span>Total Facturado:</span> <span>{formatCurrency(previewData.data.water.totalInvoiced)}</span></div>
+                    <div className="flex justify-between"><span>Descuento:</span> <span>{formatCurrency(previewData.data.water.discount)}</span></div>
+                    <div className="flex justify-between font-bold border-t pt-1 mt-1"><span>Total a Pagar:</span> <span>{formatCurrency(previewData.data.water.totalToPay)}</span></div>
+                  </div>
+                </div>
+              )}
+
+              {previewData.data.electricity && (
+                <div className="border rounded p-3">
+                  <h3 className="font-semibold flex items-center gap-2 mb-2">
+                    <span role="img" aria-label="light-bulb">💡</span> Consumo de Electricidad
+                  </h3>
+                  <div className="text-sm space-y-1">
+                    <div className="flex justify-between"><span>Total Facturado:</span> <span>{formatCurrency(previewData.data.electricity.totalInvoiced)}</span></div>
+                    <div className="flex justify-between"><span>Consumo (kWh):</span> <span>{previewData.data.electricity.kwhConsumption.toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span>Costo por kWh:</span> <span>{formatCurrency(previewData.data.electricity.kwhCost)}</span></div>
+                    <div className="flex justify-between"><span>Contador Anterior:</span> <span>{previewData.data.electricity.previousMeter}</span></div>
+                    <div className="flex justify-between"><span>Contador Actual:</span> <span>{previewData.data.electricity.currentMeter}</span></div>
+                    <div className="flex justify-between"><span>Consumo del Contador:</span> <span>{previewData.data.electricity.consumptionMeter.toFixed(0)}</span></div>
+                    <div className="flex justify-between font-bold border-t pt-1 mt-1"><span>Total a Pagar:</span> <span>{formatCurrency(previewData.data.electricity.totalToPay)}</span></div>
+                  </div>
+                </div>
+              )}
+
+              {previewData.data.internet && (
+                <div className="border rounded p-3">
+                  <h3 className="font-semibold flex items-center gap-2 mb-2">
+                    <span role="img" aria-label="wifi">🌐</span> Costo de Internet
+                  </h3>
+                  <div className="text-sm space-y-1">
+                    <div className="flex justify-between font-bold"><span>Costo Mensual:</span> <span>{formatCurrency(previewData.data.internet.monthlyCost)}</span></div>
+                  </div>
+                </div>
+              )}
+
+              <div className="border-t pt-4 mt-4">
+                <div className="flex justify-between text-lg font-bold text-primary">
+                  <span>Total General del Mes:</span>
+                  <span>{formatCurrency(previewData.data.total)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

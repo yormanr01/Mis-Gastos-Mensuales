@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Printer, Download } from "lucide-react";
+import { Printer, Download, Droplet, Lightbulb, Wifi } from "lucide-react";
 
 type CombinedData = {
   water: WaterRecord | null;
@@ -46,78 +46,155 @@ export default function HistorialPage() {
           <html>
             <head>
               <title>Resumen de Gastos - ${month} ${year}</title>
+              <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
               <style>
                 body { 
-                  font-family: sans-serif; 
-                  margin: 1rem; 
+                  font-family: 'Inter', sans-serif; 
+                  margin: 2rem; 
+                  color: #1e293b;
+                  background-color: #f8fafc;
                   -webkit-print-color-adjust: exact; 
                   print-color-adjust: exact;
                 }
                 .container { max-width: 800px; margin: auto; }
-                h1 { font-size: 1.5rem; color: #1e40af; }
-                h2 { font-size: 1.1rem; color: #1e40af; border-bottom: 1px solid #eef2ff; padding-bottom: 4px; margin-top: 1.25rem; margin-bottom: 0.75rem; }
-                table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.9rem; }
-                th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
-                th { background-color: #f2f2f2; width: 50%; }
-                tfoot { font-weight: bold; }
-                .total-row { background-color: #eef2ff; font-size: 1rem;}
-                .formulas { margin-top: 1rem; padding: 0.75rem; border: 1px dashed #ddd; background-color: #fafafa; }
-                .formulas h3 { margin-top: 0; color: #374151; font-size: 0.8rem;}
-                .formulas p { margin: 0.25rem 0; color: #111827; font-size: 11px; }
+                header { 
+                  margin-bottom: 2rem; 
+                  padding-bottom: 1rem; 
+                  border-bottom: 2px solid #e2e8f0;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: flex-end;
+                }
+                h1 { margin: 0; font-size: 1.875rem; color: #4338ca; font-weight: 700; }
+                .date { font-size: 1.125rem; color: #64748b; font-weight: 500; }
+                
+                .card {
+                  background: white;
+                  border-radius: 0.75rem;
+                  border: 1px solid #e2e8f0;
+                  padding: 1.5rem;
+                  margin-bottom: 1.5rem;
+                  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+                }
+                .card-header {
+                  display: flex;
+                  align-items: center;
+                  gap: 0.75rem;
+                  margin-bottom: 1rem;
+                  padding-bottom: 0.75rem;
+                  border-bottom: 1px solid #f1f5f9;
+                }
+                .card-title {
+                  font-size: 1.125rem;
+                  font-weight: 600;
+                  color: #1e293b;
+                  margin: 0;
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                }
+                
+                table { width: 100%; border-collapse: collapse; }
+                td { padding: 0.5rem 0; font-size: 0.875rem; }
+                .label { color: #64748b; }
+                .value { text-align: right; font-weight: 500; }
+                
+                .total-row { 
+                  margin-top: 0.5rem;
+                  padding-top: 0.5rem;
+                  border-top: 1px solid #f1f5f9;
+                  font-weight: 700;
+                  font-size: 1rem;
+                  color: #4338ca;
+                }
+                
+                .summary-card {
+                  background: #4338ca;
+                  color: white;
+                  padding: 1.5rem;
+                  border-radius: 0.75rem;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                }
+                .summary-label { font-size: 1.125rem; font-weight: 600; opacity: 0.9; }
+                .summary-value { font-size: 1.5rem; font-weight: 700; }
+
+                .formulas { 
+                  margin-top: 1rem; 
+                  padding: 1rem; 
+                  border-radius: 0.5rem;
+                  background-color: #f1f5f9; 
+                  border-left: 4px solid #94a3b8;
+                }
+                .formulas h3 { margin: 0 0 0.5rem 0; font-size: 0.75rem; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; }
+                .formulas p { margin: 0.25rem 0; color: #1e293b; font-size: 0.75rem; line-height: 1.5; }
+
+                @media print {
+                  body { background-color: white; }
+                  .card { box-shadow: none; border: 1px solid #e2e8f0; page-break-inside: avoid; }
+                  .summary-card { background-color: #4338ca !important; -webkit-print-color-adjust: exact; }
+                }
               </style>
             </head>
             <body>
               <div class="container">
-                <h1>Resumen de Gastos - ${month} ${year}</h1>
+                <header>
+                  <h1>Reporte de Gastos</h1>
+                  <span class="date">${month} ${year}</span>
+                </header>
                 
                 ${data.water ? `
-                <h2><span role="img" aria-label="water-drop">💧</span> Consumo de Agua</h2>
-                <table>
-                  <tbody>
-                    <tr><th>Total Facturado</th><td>${formatCurrency(data.water.totalInvoiced)}</td></tr>
-                    <tr><th>Descuento</th><td>${formatCurrency(data.water.discount)}</td></tr>
-                    <tr class="total-row"><th>Total a Pagar</th><td>${formatCurrency(data.water.totalToPay)}</td></tr>
-                  </tbody>
-                </table>` : ''}
+                <div class="card">
+                  <div class="card-header">
+                    <h2 class="card-title">💧 Agua</h2>
+                  </div>
+                  <table>
+                    <tr><td class="label">Total Facturado</td><td class="value">${formatCurrency(data.water.totalInvoiced)}</td></tr>
+                    ${(data.water.discount ?? 0) > 0 ? `<tr><td class="label">Descuento</td><td class="value">-${formatCurrency(data.water.discount)}</td></tr>` : ''}
+                    <tr class="total-row"><td class="label" style="color:#4338ca">Total a Pagar</td><td class="value">${formatCurrency(data.water.totalToPay)}</td></tr>
+                  </table>
+                </div>` : ''}
   
                 ${data.electricity ? `
-                <h2><span role="img" aria-label="light-bulb">💡</span> Consumo de Electricidad</h2>
-                <table>
-                  <tbody>
-                    <tr><th>Total Facturado</th><td>${formatCurrency(data.electricity.totalInvoiced)}</td></tr>
-                    <tr><th>Consumo (kWh)</th><td>${data.electricity.kwhConsumption.toFixed(2)}</td></tr>
-                    <tr><th>Costo por kWh</th><td>${formatCurrency(data.electricity.kwhCost)}</td></tr>
-                    <tr><th>Contador Anterior</th><td>${data.electricity.previousMeter}</td></tr>
-                    <tr><th>Contador Actual</th><td>${data.electricity.currentMeter}</td></tr>
-                    <tr><th>Consumo del Contador</th><td>${data.electricity.consumptionMeter.toFixed(0)}</td></tr>
-                    <tr class="total-row"><th>Total a Pagar</th><td>${formatCurrency(data.electricity.totalToPay)}</td></tr>
-                  </tbody>
-                </table>
-                <div class="formulas">
-                  <h3>Fórmulas de Cálculo</h3>
-                  <p><b>Consumo del Contador</b> = Contador Actual - Contador Anterior</p>
-                  <p><b>Costo por kWh</b> = Total Facturado / Consumo (kWh)</p>
-                  <p><b>Total a Pagar</b> = Consumo del Contador * Costo por kWh</p>
+                <div class="card">
+                  <div class="card-header">
+                    <h2 class="card-title">💡 Electricidad</h2>
+                  </div>
+                  <table>
+                    <tr><td class="label">Total Facturado</td><td class="value">${formatCurrency(data.electricity.totalInvoiced)}</td></tr>
+                    <tr><td class="label">Consumo (kWh)</td><td class="value">${data.electricity.kwhConsumption.toFixed(2)} kWh</td></tr>
+                    <tr><td class="label">Costo por kWh</td><td class="value">${formatCurrency(data.electricity.kwhCost)}</td></tr>
+                    <tr><td class="label">Contador Anterior</td><td class="value">${data.electricity.previousMeter}</td></tr>
+                    <tr><td class="label">Contador Actual</td><td class="value">${data.electricity.currentMeter}</td></tr>
+                    <tr><td class="label">Consumo del Contador</td><td class="value">${data.electricity.consumptionMeter.toFixed(0)}</td></tr>
+                    <tr class="total-row"><td class="label" style="color:#4338ca">Total a Pagar</td><td class="value">${formatCurrency(data.electricity.totalToPay)}</td></tr>
+                  </table>
+                  <div class="formulas">
+                    <h3>Cálculos Realizados</h3>
+                    <p><b>Consumo del Contador</b> = Contador Actual - Contador Anterior</p>
+                    <p><b>Costo por kWh</b> = Total Facturado / Consumo (kWh)</p>
+                    <p><b>Total a Pagar</b> = Consumo del Contador * Costo por kWh</p>
+                  </div>
                 </div>
                 ` : ''}
                 
                 ${data.internet ? `
-                <h2><span role="img" aria-label="wifi">🌐</span> Costo de Internet</h2>
-                <table>
-                  <tbody>
-                    <tr class="total-row"><th>Costo Mensual</th><td>${formatCurrency(data.internet.monthlyCost)}</td></tr>
-                  </tbody>
-                </table>` : ''}
+                <div class="card">
+                  <div class="card-header">
+                    <h2 class="card-title">📶 Internet</h2>
+                  </div>
+                  <table>
+                    <tr><td class="label">Costo Mensual</td><td class="value">${formatCurrency(data.internet.monthlyCost)}</td></tr>
+                    ${(data.internet.discount ?? 0) > 0 ? `<tr><td class="label">Descuento</td><td class="value">-${formatCurrency(data.internet.discount)}</td></tr>` : ''}
+                    <tr class="total-row"><td class="label" style="color:#4338ca">Total a Pagar</td><td class="value">${formatCurrency(data.internet.totalToPay ?? data.internet.monthlyCost)}</td></tr>
+                  </table>
+                </div>` : ''}
   
-                <h2>Resumen General</h2>
-                <table>
-                  <tfoot>
-                    <tr class="total-row">
-                      <td>Total General del Mes</td>
-                      <td>${formatCurrency(data.total)}</td>
-                    </tr>
-                  </tfoot>
-                </table>
+                <div class="summary-card">
+                  <span class="summary-label">Total Consolidado</span>
+                  <span class="summary-value">${formatCurrency(data.total)}</span>
+                </div>
               </div>
             </body>
           </html>
@@ -162,9 +239,9 @@ export default function HistorialPage() {
       const value = 'monthlyCost' in record ? record.monthlyCost : ('totalToPay' in record ? record.totalToPay : 0);
 
 
-      if (record.type === 'water') combinedData[key].water = record as WaterRecord;
-      if (record.type === 'electricity') combinedData[key].electricity = record as ElectricityRecord;
-      if (record.type === 'internet') combinedData[key].internet = record as InternetRecord;
+      if (record.type === 'water') combinedData[key].water = record as unknown as WaterRecord;
+      if (record.type === 'electricity') combinedData[key].electricity = record as unknown as ElectricityRecord;
+      if (record.type === 'internet') combinedData[key].internet = record as unknown as InternetRecord;
 
       combinedData[key].total += value;
     });
@@ -216,43 +293,46 @@ export default function HistorialPage() {
     <div className="flex flex-col h-full">
 
       <main className="flex-1 overflow-auto p-4 md:p-6">
-        <Card>
+        <Card className="glass-card animate-fade-in">
           <CardHeader>
-            <CardTitle>Resumen de Gastos por Mes</CardTitle>
+            <CardTitle className="text-2xl font-bold">Resumen de Gastos por Mes</CardTitle>
           </CardHeader>
           <CardContent>
             {sortedMonths.length > 0 ? (
               <>
                 {/* Mobile View - Cards */}
                 <div className="md:hidden space-y-4">
-                  {sortedMonths.map(monthKey => {
+                  {sortedMonths.map((monthKey, index) => {
                     const [month, year] = monthKey.split('-');
                     const data = combinedData[monthKey];
                     return (
-                      <div key={monthKey} className="rounded-lg border p-4">
+                      <div
+                        key={monthKey}
+                        className="glass-card rounded-lg border p-5 hover:shadow-xl transition-all duration-300 animate-slide-up"
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
                         <div className="flex justify-between items-start mb-4">
                           <div>
                             <div className="font-bold text-lg">{month} {year}</div>
                             <div className="text-sm font-bold text-primary">{formatCurrency(data.total)}</div>
                           </div>
-                          <div className="flex items-center">
-                            <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey, data)}>
-                              <Printer className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey, data)} className="h-9 w-9">
+                            <Printer className="h-4 w-4" />
+                          </Button>
                         </div>
+                        <div className="h-px bg-border mb-3" />
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">Agua:</span>
-                            <span>{formatCurrency(data.water?.totalToPay)}</span>
+                            <span className="text-muted-foreground flex items-center gap-1"><Droplet className="h-3 w-3" /> Agua:</span>
+                            <span className="font-medium">{formatCurrency(data.water?.totalToPay)}</span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">Electricidad:</span>
-                            <span>{formatCurrency(data.electricity?.totalToPay)}</span>
+                            <span className="text-muted-foreground flex items-center gap-1"><Lightbulb className="h-3 w-3" /> Electricidad:</span>
+                            <span className="font-medium">{formatCurrency(data.electricity?.totalToPay)}</span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-muted-foreground">Internet:</span>
-                            <span>{formatCurrency(data.internet?.monthlyCost)}</span>
+                            <span className="text-muted-foreground flex items-center gap-1"><Wifi className="h-3 w-3" /> Internet:</span>
+                            <span className="font-medium">{formatCurrency(data.internet?.totalToPay ?? data.internet?.monthlyCost)}</span>
                           </div>
                         </div>
                       </div>
@@ -260,17 +340,23 @@ export default function HistorialPage() {
                   })}
                 </div>
 
-                {/* Desktop View - Table */}
+                {/* Desktop View - Modern Table */}
                 <div className="hidden md:block">
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>Mes</TableHead>
-                        <TableHead className="text-right">Agua</TableHead>
-                        <TableHead className="text-right">Electricidad</TableHead>
-                        <TableHead className="text-right">Internet</TableHead>
+                      <TableRow className="border-b-2">
+                        <TableHead className="font-bold">Mes</TableHead>
+                        <TableHead className="text-right font-bold">
+                          <span className="flex items-center justify-end gap-1"><Droplet className="h-4 w-4" /> Agua</span>
+                        </TableHead>
+                        <TableHead className="text-right font-bold">
+                          <span className="flex items-center justify-end gap-1"><Lightbulb className="h-4 w-4" /> Electricidad</span>
+                        </TableHead>
+                        <TableHead className="text-right font-bold">
+                          <span className="flex items-center justify-end gap-1"><Wifi className="h-4 w-4" /> Internet</span>
+                        </TableHead>
                         <TableHead className="text-right font-bold text-primary">Total del Mes</TableHead>
-                        <TableHead className="text-center">Acciones</TableHead>
+                        <TableHead className="text-center font-bold">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -278,17 +364,17 @@ export default function HistorialPage() {
                         const [month, year] = monthKey.split('-');
                         const data = combinedData[monthKey];
                         return (
-                          <TableRow key={monthKey}>
+                          <TableRow key={monthKey} className="hover:bg-muted/50 transition-colors duration-200">
                             <TableCell>
-                              <div className="font-medium">{month}</div>
+                              <div className="font-semibold">{month}</div>
                               <div className="text-sm text-muted-foreground">{year}</div>
                             </TableCell>
-                            <TableCell className="text-right">{formatCurrency(data.water?.totalToPay)}</TableCell>
-                            <TableCell className="text-right">{formatCurrency(data.electricity?.totalToPay)}</TableCell>
-                            <TableCell className="text-right">{formatCurrency(data.internet?.monthlyCost)}</TableCell>
-                            <TableCell className="text-right font-bold text-primary">{formatCurrency(data.total)}</TableCell>
+                            <TableCell className="text-right font-medium">{formatCurrency(data.water?.totalToPay)}</TableCell>
+                            <TableCell className="text-right font-medium">{formatCurrency(data.electricity?.totalToPay)}</TableCell>
+                            <TableCell className="text-right font-medium">{formatCurrency(data.internet?.totalToPay ?? data.internet?.monthlyCost)}</TableCell>
+                            <TableCell className="text-right font-bold text-primary text-lg">{formatCurrency(data.total)}</TableCell>
                             <TableCell className="text-center">
-                              <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey, data)}>
+                              <Button variant="outline" size="icon" onClick={() => handlePrint(monthKey, data)} className="h-9 w-9">
                                 <Printer className="h-4 w-4" />
                               </Button>
                             </TableCell>
@@ -300,16 +386,16 @@ export default function HistorialPage() {
                 </div>
               </>
             ) : (
-              <div className="text-center p-8">
-                <h3 className="text-lg font-semibold">No hay datos disponibles</h3>
+              <div className="text-center p-12 glass-card rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">No hay datos disponibles</h3>
                 <p className="text-muted-foreground">
                   Añade registros en las secciones de Agua, Electricidad e Internet para ver el historial.
                 </p>
               </div>
             )}
           </CardContent>
-          <CardFooter className="flex justify-end">
-            <Button variant="outline" onClick={handleExportCSV} disabled={sortedMonths.length === 0}>
+          <CardFooter className="flex justify-end border-t pt-6">
+            <Button variant="outline" onClick={handleExportCSV} disabled={sortedMonths.length === 0} className="h-11 px-6">
               <Download className="mr-2 h-4 w-4" />
               Exportar a CSV
             </Button>
@@ -317,61 +403,111 @@ export default function HistorialPage() {
         </Card>
       </main>
 
+
       <Dialog open={isPreviewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Resumen de Gastos</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="max-w-lg max-h-[92vh] overflow-y-auto p-4 md:p-6">
+          <DialogHeader className="mb-2">
+            <DialogTitle className="text-xl">Resumen de Gastos</DialogTitle>
+            <DialogDescription className="text-sm">
               {previewData?.monthKey}
             </DialogDescription>
           </DialogHeader>
           {previewData && (
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               {previewData.data.water && (
-                <div className="border rounded p-3">
-                  <h3 className="font-semibold flex items-center gap-2 mb-2">
-                    <span role="img" aria-label="water-drop">💧</span> Consumo de Agua
-                  </h3>
-                  <div className="text-sm space-y-1">
-                    <div className="flex justify-between"><span>Total Facturado:</span> <span>{formatCurrency(previewData.data.water.totalInvoiced)}</span></div>
-                    <div className="flex justify-between"><span>Descuento:</span> <span>{formatCurrency(previewData.data.water.discount)}</span></div>
-                    <div className="flex justify-between font-bold border-t pt-1 mt-1"><span>Total a Pagar:</span> <span>{formatCurrency(previewData.data.water.totalToPay)}</span></div>
-                  </div>
-                </div>
+                <Card className="border shadow-sm overflow-hidden animate-slide-up">
+                  <CardHeader className="py-2 px-4 bg-muted/30">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Droplet className="h-4 w-4 text-blue-500" /> Consumo de Agua
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3.5 space-y-1.5">
+                    <div className="text-sm flex justify-between">
+                      <span className="text-muted-foreground">Total Facturado:</span>
+                      <span className="font-medium">{formatCurrency(previewData.data.water.totalInvoiced)}</span>
+                    </div>
+                    {(previewData.data.water.discount ?? 0) > 0 && (
+                      <div className="text-sm flex justify-between text-green-600 dark:text-green-400">
+                        <span>Descuento:</span>
+                        <span>-{formatCurrency(previewData.data.water.discount)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-bold border-t pt-1.5 mt-1.5 text-indigo-600 dark:text-indigo-400">
+                      <span>Total a Pagar:</span>
+                      <span>{formatCurrency(previewData.data.water.totalToPay)}</span>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
               {previewData.data.electricity && (
-                <div className="border rounded p-3">
-                  <h3 className="font-semibold flex items-center gap-2 mb-2">
-                    <span role="img" aria-label="light-bulb">💡</span> Consumo de Electricidad
-                  </h3>
-                  <div className="text-sm space-y-1">
-                    <div className="flex justify-between"><span>Total Facturado:</span> <span>{formatCurrency(previewData.data.electricity.totalInvoiced)}</span></div>
-                    <div className="flex justify-between"><span>Consumo (kWh):</span> <span>{previewData.data.electricity.kwhConsumption.toFixed(2)}</span></div>
-                    <div className="flex justify-between"><span>Costo por kWh:</span> <span>{formatCurrency(previewData.data.electricity.kwhCost)}</span></div>
-                    <div className="flex justify-between"><span>Contador Anterior:</span> <span>{previewData.data.electricity.previousMeter}</span></div>
-                    <div className="flex justify-between"><span>Contador Actual:</span> <span>{previewData.data.electricity.currentMeter}</span></div>
-                    <div className="flex justify-between"><span>Consumo del Contador:</span> <span>{previewData.data.electricity.consumptionMeter.toFixed(0)}</span></div>
-                    <div className="flex justify-between font-bold border-t pt-1 mt-1"><span>Total a Pagar:</span> <span>{formatCurrency(previewData.data.electricity.totalToPay)}</span></div>
-                  </div>
-                </div>
+                <Card className="border shadow-sm overflow-hidden animate-slide-up" style={{ animationDelay: '100ms' }}>
+                  <CardHeader className="py-2 px-4 bg-muted/30">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Lightbulb className="h-4 w-4 text-amber-500" /> Consumo de Electricidad
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3.5 space-y-1.5">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                      <div className="flex justify-between col-span-2">
+                        <span className="text-muted-foreground">Total Facturado:</span>
+                        <span className="font-medium">{formatCurrency(previewData.data.electricity.totalInvoiced)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Consumo:</span>
+                        <span className="font-medium">{previewData.data.electricity.kwhConsumption.toFixed(1)} kWh</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Costo/kWh:</span>
+                        <span className="font-medium">{formatCurrency(previewData.data.electricity.kwhCost)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Lectura Ant:</span>
+                        <span className="font-medium">{previewData.data.electricity.previousMeter}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Lectura Act:</span>
+                        <span className="font-medium">{previewData.data.electricity.currentMeter}</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between font-bold border-t pt-1.5 mt-1.5 text-indigo-600 dark:text-indigo-400">
+                      <span>Total a Pagar:</span>
+                      <span>{formatCurrency(previewData.data.electricity.totalToPay)}</span>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
               {previewData.data.internet && (
-                <div className="border rounded p-3">
-                  <h3 className="font-semibold flex items-center gap-2 mb-2">
-                    <span role="img" aria-label="wifi">🌐</span> Costo de Internet
-                  </h3>
-                  <div className="text-sm space-y-1">
-                    <div className="flex justify-between font-bold"><span>Costo Mensual:</span> <span>{formatCurrency(previewData.data.internet.monthlyCost)}</span></div>
-                  </div>
-                </div>
+                <Card className="border shadow-sm overflow-hidden animate-slide-up" style={{ animationDelay: '200ms' }}>
+                  <CardHeader className="py-2 px-4 bg-muted/30">
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                      <Wifi className="h-4 w-4 text-purple-500" /> Costo de Internet
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-3.5 space-y-1.5">
+                    <div className="text-sm flex justify-between">
+                      <span className="text-muted-foreground">Costo Mensual:</span>
+                      <span className="font-medium">{formatCurrency(previewData.data.internet.monthlyCost)}</span>
+                    </div>
+                    {(previewData.data.internet.discount ?? 0) > 0 && (
+                      <div className="text-sm flex justify-between text-green-600 dark:text-green-400">
+                        <span>Descuento:</span>
+                        <span>-{formatCurrency(previewData.data.internet.discount)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-bold border-t pt-1.5 mt-1.5 text-indigo-600 dark:text-indigo-400">
+                      <span>Total a Pagar:</span>
+                      <span>{formatCurrency(previewData.data.internet.totalToPay ?? previewData.data.internet.monthlyCost)}</span>
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
-              <div className="border-t pt-4 mt-4">
-                <div className="flex justify-between text-lg font-bold text-primary">
-                  <span>Total General del Mes:</span>
-                  <span>{formatCurrency(previewData.data.total)}</span>
+              <div className="pt-1">
+                <div className="bg-indigo-600 text-white rounded-lg p-3.5 flex justify-between items-center shadow-lg">
+                  <span className="text-base font-semibold">Total Consolidado</span>
+                  <span className="text-xl font-bold">{formatCurrency(previewData.data.total)}</span>
                 </div>
               </div>
             </div>

@@ -29,8 +29,6 @@ const menuItems = [
   { href: '/electricidad', label: 'Electricidad', icon: Lightbulb },
   { href: '/internet', label: 'Internet', icon: Wifi },
   { href: '/historial', label: 'Historial', icon: History },
-  { href: '/valores-fijos', label: 'Valores Fijos', icon: Settings, role: 'Edición' },
-  { href: '/admin/users', label: 'Admin Usuarios', icon: Users, role: 'Edición' },
 ];
 
 const secondaryMenuItems = [

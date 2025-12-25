@@ -25,6 +25,7 @@ import { months, ElectricityRecord } from '@/lib/types';
 import { useApp } from '@/lib/hooks/use-app';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { Switch } from '@/components/ui/switch';
 
 type ElectricidadFormProps = {
   setOpen: (open: boolean) => void;
@@ -32,7 +33,7 @@ type ElectricidadFormProps = {
 };
 
 export function ElectricidadForm({ setOpen, recordToEdit }: ElectricidadFormProps) {
-  const { addElectricityRecord, updateElectricityRecord, electricityData } = useApp();
+  const { addElectricityRecord, updateElectricityRecord, electricityData, fixedValues } = useApp();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const currentYear = new Date().getFullYear();
@@ -40,7 +41,7 @@ export function ElectricidadForm({ setOpen, recordToEdit }: ElectricidadFormProp
 
   const getLastMeterReading = () => {
     if (electricityData.length > 0) {
-      const sortedData = [...electricityData].sort((a,b) => {
+      const sortedData = [...electricityData].sort((a, b) => {
         if (a.year !== b.year) return b.year - a.year;
         return months.indexOf(b.month) - months.indexOf(a.month);
       });
@@ -52,7 +53,8 @@ export function ElectricidadForm({ setOpen, recordToEdit }: ElectricidadFormProp
   const form = useForm<ElectricityFormValues>({
     resolver: zodResolver(electricityFormSchema),
     defaultValues: recordToEdit ? {
-        ...recordToEdit,
+      ...recordToEdit,
+      discount: recordToEdit.discount ?? fixedValues.electricityDiscount,
     } : {
       year: currentYear,
       month: currentMonth,
@@ -61,6 +63,7 @@ export function ElectricidadForm({ setOpen, recordToEdit }: ElectricidadFormProp
       totalInvoiced: '' as any,
       kwhConsumption: '' as any,
       currentMeter: '' as any,
+      discount: fixedValues.electricityDiscount,
     },
   });
 
@@ -76,135 +79,190 @@ export function ElectricidadForm({ setOpen, recordToEdit }: ElectricidadFormProp
         totalInvoiced: '' as any,
         kwhConsumption: '' as any,
         currentMeter: '' as any,
+        discount: fixedValues.electricityDiscount,
       });
     }
-  }, [recordToEdit, form, currentYear, currentMonth, electricityData]);
+  }, [recordToEdit, form, currentYear, currentMonth, electricityData, fixedValues]);
 
-  const { watch } = form;
+  const { watch, setValue } = form;
   const totalInvoiced = watch('totalInvoiced');
   const kwhConsumption = watch('kwhConsumption');
   const previousMeter = watch('previousMeter');
   const currentMeter = watch('currentMeter');
+  const discount = watch('discount');
 
   const kwhCost = (Number(totalInvoiced) > 0 && Number(kwhConsumption) > 0) ? Number(totalInvoiced) / Number(kwhConsumption) : 0;
   const consumptionMeter = Number(currentMeter) > Number(previousMeter) ? Math.round(Number(currentMeter) - Number(previousMeter)) : 0;
-  const totalToPay = consumptionMeter * kwhCost;
+  const subtotal = consumptionMeter * kwhCost;
+
+  useEffect(() => {
+    const total = subtotal - (Number(discount) || 0);
+    setValue('totalToPay', total >= 0 ? total : 0, { shouldValidate: true });
+  }, [subtotal, discount, setValue]);
 
   async function onSubmit(values: ElectricityFormValues) {
     setIsSubmitting(true);
-    
+
     const calculatedKwhCost = (Number(values.totalInvoiced) > 0 && Number(values.kwhConsumption) > 0) ? Number(values.totalInvoiced) / Number(values.kwhConsumption) : 0;
     const calculatedConsumptionMeter = Number(values.currentMeter) > Number(values.previousMeter) ? Math.round(Number(values.currentMeter) - Number(values.previousMeter)) : 0;
-    const calculatedTotalToPay = calculatedConsumptionMeter * calculatedKwhCost;
-    
+    const calculatedSubtotal = calculatedConsumptionMeter * calculatedKwhCost;
+    const calculatedTotalToPay = calculatedSubtotal - Number(values.discount);
+
     const finalValues = {
-        ...values,
-        kwhCost: parseFloat(calculatedKwhCost.toFixed(2)),
-        consumptionMeter: calculatedConsumptionMeter,
-        totalToPay: parseFloat(calculatedTotalToPay.toFixed(2))
+      ...values,
+      kwhCost: parseFloat(calculatedKwhCost.toFixed(2)),
+      consumptionMeter: calculatedConsumptionMeter,
+      totalToPay: parseFloat(calculatedTotalToPay.toFixed(2))
     };
 
     try {
-        if(recordToEdit) {
-            await updateElectricityRecord({...finalValues, id: recordToEdit.id });
-            toast({
-                title: "Registro actualizado",
-                description: "El registro de consumo de electricidad ha sido actualizado.",
-            });
-        } else {
-            await addElectricityRecord(finalValues);
-            toast({
-                title: "Registro exitoso",
-                description: "El registro de consumo de electricidad ha sido añadido.",
-            });
-        }
-        setOpen(false);
-    } catch (error: any) {
+      if (recordToEdit) {
+        await updateElectricityRecord({ ...finalValues, id: recordToEdit.id });
         toast({
-            variant: "destructive",
-            title: "Error al guardar",
-            description: error.message || "No se pudo guardar el registro. Inténtalo de nuevo.",
+          title: "Registro actualizado",
+          description: "El registro de consumo de electricidad ha sido actualizado.",
         });
+      } else {
+        await addElectricityRecord(finalValues);
+        toast({
+          title: "Registro exitoso",
+          description: "El registro de consumo de electricidad ha sido añadido.",
+        });
+      }
+      setOpen(false);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error al guardar",
+        description: error.message || "No se pudo guardar el registro. Inténtalo de nuevo.",
+      });
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   }
-  
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField name="year" control={form.control} render={({ field }) => (
-          <FormItem>
-            <FormLabel>Año</FormLabel>
-            <FormControl><Input type="number" {...field} /></FormControl>
-            <FormMessage />
-          </FormItem>
-        )} />
-        <FormField name="month" control={form.control} render={({ field }) => (
-          <FormItem>
-            <FormLabel>Mes</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} >
-              <FormControl><SelectTrigger><SelectValue placeholder="Selecciona un mes" /></SelectTrigger></FormControl>
-              <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )} />
-        <FormField name="totalInvoiced" control={form.control} render={({ field }) => (
-          <FormItem>
-            <FormLabel>Total Facturado ($)</FormLabel>
-            <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
-            <FormMessage />
-          </FormItem>
-        )} />
-        <FormField name="kwhConsumption" control={form.control} render={({ field }) => (
-          <FormItem>
-            <FormLabel>Consumo kWh</FormLabel>
-            <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
-            <FormMessage />
-          </FormItem>
-        )} />
-        <FormField name="previousMeter" control={form.control} render={({ field }) => (
-          <FormItem>
-            <FormLabel>Contador Anterior</FormLabel>
-            <FormControl><Input type="number" step="1" {...field} readOnly={!recordToEdit && electricityData.length > 0} /></FormControl>
-            <FormMessage />
-          </FormItem>
-        )} />
-        <FormField name="currentMeter" control={form.control} render={({ field }) => (
-          <FormItem>
-            <FormLabel>Contador Actual</FormLabel>
-            <FormControl><Input type="number" step="1" {...field} /></FormControl>
-            <FormMessage />
-          </FormItem>
-        )} />
-        
-        <div className="p-3 bg-muted/50 rounded-md space-y-1 text-sm">
-            <p>Costo kWh: <strong>${kwhCost.toFixed(2)}</strong></p>
-            <p>Consumo Contador: <strong>{consumptionMeter.toFixed(0)} kWh</strong></p>
-            <p className="font-bold text-base">Total a Pagar: <strong>{formatCurrency(totalToPay)}</strong></p>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Date Fields */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField name="year" control={form.control} render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-semibold">Año</FormLabel>
+              <FormControl><Input type="number" className="h-11" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          <FormField name="month" control={form.control} render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-semibold">Mes</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                <FormControl><SelectTrigger className="h-11"><SelectValue placeholder="Selecciona un mes" /></SelectTrigger></FormControl>
+                <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )} />
         </div>
 
-        <FormField name="status" control={form.control} render={({ field }) => (
+        {/* Invoice Fields */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField name="totalInvoiced" control={form.control} render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-semibold">Total Facturado ($)</FormLabel>
+              <FormControl><Input type="number" step="0.01" className="h-11 text-lg" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          <FormField name="kwhConsumption" control={form.control} render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-semibold">Consumo kWh</FormLabel>
+              <FormControl><Input type="number" step="0.01" className="h-11 text-lg" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+        </div>
+
+        {/* Meter Fields */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField name="previousMeter" control={form.control} render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-semibold">Contador Anterior</FormLabel>
+              <FormControl><Input type="number" step="1" className="h-11 text-lg" {...field} readOnly={!recordToEdit && electricityData.length > 0} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          <FormField name="currentMeter" control={form.control} render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-semibold">Contador Actual</FormLabel>
+              <FormControl><Input type="number" step="1" className="h-11 text-lg" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+        </div>
+
+        {/* Discount Field */}
+        <FormField name="discount" control={form.control} render={({ field }) => (
           <FormItem>
-            <FormLabel>Estado</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} >
-              <FormControl><SelectTrigger><SelectValue placeholder="Selecciona un estado" /></SelectTrigger></FormControl>
-              <SelectContent>
-                <SelectItem value="Pendiente">Pendiente</SelectItem>
-                <SelectItem value="Pagado">Pagado</SelectItem>
-              </SelectContent>
-            </Select>
+            <FormLabel className="text-sm font-semibold">Descuento ($)</FormLabel>
+            <FormControl><Input type="number" step="0.01" className="h-11 text-lg" {...field} /></FormControl>
             <FormMessage />
           </FormItem>
         )} />
-        <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>Cancelar</Button>
-            <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Guardando...' : 'Guardar'}</Button>
+
+        {/* Calculated Summary */}
+        <div className="glass-card p-5 rounded-lg border-primary/30 space-y-3">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Costo por kWh</span>
+            <span className="font-medium">${kwhCost.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Consumo Medidor</span>
+            <span className="font-medium">{consumptionMeter.toFixed(0)} kWh</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="font-medium">${subtotal.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Descuento</span>
+            <span className="font-medium text-green-600 dark:text-green-400">-${(Number(discount) || 0).toFixed(2)}</span>
+          </div>
+          <div className="h-px bg-border" />
+          <div className="flex justify-between items-center">
+            <span className="font-semibold">Total a Pagar</span>
+            <span className="text-3xl font-bold text-primary">${form.watch('totalToPay')?.toFixed(2) || '0.00'}</span>
+          </div>
+        </div>
+
+        {/* Status Field */}
+        <FormField name="status" control={form.control} render={({ field }) => (
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <FormLabel className="text-base font-semibold">
+                Estado del Pago
+              </FormLabel>
+              <p className="text-sm text-muted-foreground">
+                {field.value === 'Pagado' ? 'Marcado como pagado' : 'Pendiente de pago'}
+              </p>
+            </div>
+            <FormControl>
+              <Switch
+                checked={field.value === 'Pagado'}
+                onCheckedChange={(checked) => field.onChange(checked ? 'Pagado' : 'Pendiente')}
+              />
+            </FormControl>
+          </FormItem>
+        )} />
+
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3 pt-4">
+          <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting} className="h-11 px-6">
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting} className="h-11 px-6">
+            {isSubmitting ? 'Guardando...' : 'Guardar'}
+          </Button>
         </div>
       </form>
     </Form>

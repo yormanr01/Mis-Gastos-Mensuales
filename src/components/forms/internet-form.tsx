@@ -25,6 +25,7 @@ import { months, InternetRecord } from '@/lib/types';
 import { useApp } from '@/lib/hooks/use-app';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
+import { Switch } from '@/components/ui/switch';
 
 type InternetFormProps = {
   setOpen: (open: boolean) => void;
@@ -41,111 +42,183 @@ export function InternetForm({ setOpen, recordToEdit }: InternetFormProps) {
   const form = useForm<InternetFormValues>({
     resolver: zodResolver(internetFormSchema),
     defaultValues: recordToEdit ? {
-        ...recordToEdit
+      ...recordToEdit,
+      discount: recordToEdit.discount ?? fixedValues.internetDiscount,
+      status: recordToEdit.status ?? 'Pendiente',
     } : {
       year: currentYear,
       month: currentMonth,
-      monthlyCost: fixedValues.internetMonthlyCost,
+      monthlyCost: '' as any,
+      discount: fixedValues.internetDiscount,
+      status: 'Pendiente',
     },
   });
 
   useEffect(() => {
     if (recordToEdit) {
-        form.reset(recordToEdit);
+      form.reset(recordToEdit);
     } else {
-        form.reset({
-            year: currentYear,
-            month: currentMonth,
-            monthlyCost: fixedValues.internetMonthlyCost || '' as any,
-        });
+      form.reset({
+        year: currentYear,
+        month: currentMonth,
+        monthlyCost: '' as any,
+        discount: fixedValues.internetDiscount,
+        status: 'Pendiente',
+      });
     }
   }, [recordToEdit, form, currentYear, currentMonth, fixedValues]);
 
+  const { watch, setValue } = form;
+  const monthlyCost = watch('monthlyCost');
+  const discount = watch('discount');
+
+  useEffect(() => {
+    const total = (Number(monthlyCost) || 0) - (Number(discount) || 0);
+    setValue('totalToPay', total >= 0 ? total : 0, { shouldValidate: true });
+  }, [monthlyCost, discount, setValue]);
+
   async function onSubmit(values: InternetFormValues) {
     setIsSubmitting(true);
+    const totalToPay = parseFloat(((Number(values.monthlyCost) || 0) - (Number(values.discount) || 0)).toFixed(2));
+
     try {
-        if (recordToEdit) {
-            await updateInternetRecord({ ...values, id: recordToEdit.id });
-            toast({
-                title: "Registro actualizado",
-                description: "El registro de costo de internet ha sido actualizado.",
-            });
-        } else {
-            await addInternetRecord(values);
-            toast({
-                title: "Registro exitoso",
-                description: "El registro de costo de internet ha sido añadido.",
-            });
-        }
-        setOpen(false);
-    } catch (error: any) {
+      if (recordToEdit) {
+        await updateInternetRecord({ ...values, id: recordToEdit.id, totalToPay });
         toast({
-            variant: "destructive",
-            title: "Error al guardar",
-            description: error.message || "No se pudo guardar el registro. Inténtalo de nuevo.",
+          title: "Registro actualizado",
+          description: "El registro de costo de internet ha sido actualizado.",
         });
+      } else {
+        await addInternetRecord({ ...values, totalToPay });
+        toast({
+          title: "Registro exitoso",
+          description: "El registro de costo de internet ha sido añadido.",
+        });
+      }
+      setOpen(false);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error al guardar",
+        description: error.message || "No se pudo guardar el registro. Inténtalo de nuevo.",
+      });
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="year"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Año</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="Ej: 2024" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="month"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Mes</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Date Fields - 2 columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="year"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold">Año</FormLabel>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona un mes" />
-                  </SelectTrigger>
+                  <Input type="number" placeholder="Ej: 2024" className="h-11" {...field} />
                 </FormControl>
-                <SelectContent>
-                  {months.map((month) => (
-                    <SelectItem key={month} value={month}>
-                      {month}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="month"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold">Mes</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Selecciona un mes" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {months.map((month) => (
+                      <SelectItem key={month} value={month}>
+                        {month}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Amount Fields - 2 columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="monthlyCost"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold">Costo Mensual ($)</FormLabel>
+                <FormControl>
+                  <Input type="number" step="0.01" placeholder="Ej: 45.00" className="h-11 text-lg" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="discount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold">Descuento ($)</FormLabel>
+                <FormControl>
+                  <Input type="number" step="0.01" placeholder="Ej: 2.00" className="h-11 text-lg" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Calculated Total - Highlighted */}
+        <div className="glass-card p-4 rounded-lg border-primary/30">
+          <p className="text-sm text-muted-foreground mb-1">Total a Pagar</p>
+          <p className="text-3xl font-bold text-primary">${form.watch('totalToPay')?.toFixed(2) || '0.00'}</p>
+        </div>
+
+        {/* Status Field */}
         <FormField
           control={form.control}
-          name="monthlyCost"
+          name="status"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Costo Mensual ($)</FormLabel>
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base font-semibold">
+                  Estado del Pago
+                </FormLabel>
+                <p className="text-sm text-muted-foreground">
+                  {field.value === 'Pagado' ? 'Marcado como pagado' : 'Pendiente de pago'}
+                </p>
+              </div>
               <FormControl>
-                <Input type="number" step="0.01" placeholder="Ej: 45.00" {...field} />
+                <Switch
+                  checked={field.value === 'Pagado'}
+                  onCheckedChange={(checked) => field.onChange(checked ? 'Pagado' : 'Pendiente')}
+                />
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
-        
-        <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>Cancelar</Button>
-            <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Guardando...' : 'Guardar'}</Button>
+
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3 pt-4">
+          <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting} className="h-11 px-6">
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting} className="h-11 px-6">
+            {isSubmitting ? 'Guardando...' : 'Guardar'}
+          </Button>
         </div>
       </form>
     </Form>

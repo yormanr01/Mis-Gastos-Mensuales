@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
@@ -7,6 +6,7 @@ import { useAuth } from '@/lib/hooks/use-auth';
 import { Sidebar, SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { MainSidebar } from '@/components/layout/main-sidebar';
 import { Header } from '@/components/layout/header';
+import { BottomNav } from '@/components/layout/bottom-nav';
 import { useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -14,18 +14,27 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   const { state } = useSidebar();
   return (
     <div className="relative min-h-screen">
-      <Sidebar>
-        <MainSidebar />
-      </Sidebar>
+      {/* Desktop Sidebar - hidden on mobile */}
+      <div className="hidden md:block">
+        <Sidebar>
+          <MainSidebar />
+        </Sidebar>
+      </div>
+
+      {/* Main content area */}
       <main
         className={cn(
-          "transition-all duration-200 ease-in-out",
-          state === 'expanded' ? 'ml-[16rem]' : 'ml-[3.5rem]'
+          "transition-all duration-200 ease-in-out animate-fade-in pb-16 md:pb-0",
+          // Desktop margin based on sidebar state
+          state === 'expanded' ? 'md:ml-64' : 'md:ml-14'
         )}
       >
         <Header />
         {children}
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <BottomNav />
     </div>
   )
 }

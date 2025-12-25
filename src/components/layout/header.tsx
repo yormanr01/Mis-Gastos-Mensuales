@@ -12,7 +12,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut } from 'lucide-react';
+import { LogOut, Settings, Users, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const pageTitles: Record<string, string> = {
@@ -68,6 +68,25 @@ export function Header() {
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
+                        {user?.role === 'Edición' && (
+                            <>
+                                <DropdownMenuItem onClick={() => router.push('/valores-fijos')}>
+                                    <Settings className="mr-2 h-4 w-4" />
+                                    <span>Valores Fijos</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => router.push('/admin/users')}>
+                                    <Users className="mr-2 h-4 w-4" />
+                                    <span>Admin Usuarios</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                            </>
+                        )}
+                        {/* Acerca de - only on mobile */}
+                        <DropdownMenuItem onClick={() => router.push('/acerca-de')} className="md:hidden">
+                            <Info className="mr-2 h-4 w-4" />
+                            <span>Acerca de</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="md:hidden" />
                         <DropdownMenuItem onClick={handleLogout}>
                             <LogOut className="mr-2 h-4 w-4" />
                             <span>Cerrar Sesión</span>

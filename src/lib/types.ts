@@ -26,17 +26,22 @@ export interface ElectricityRecord extends BaseRecord {
   previousMeter: number;
   currentMeter: number;
   consumptionMeter: number;
+  discount: number;
   totalToPay: number;
   status: Status;
 }
 
 export interface InternetRecord extends BaseRecord {
   monthlyCost: number;
+  discount: number;
+  totalToPay: number;
+  status: Status;
 }
 
 export interface FixedValues {
-    waterDiscount: number;
-    internetMonthlyCost: number;
+  waterDiscount: number;
+  electricityDiscount: number;
+  internetDiscount: number;
 }
 
 export type Role = 'Edición' | 'Visualización';

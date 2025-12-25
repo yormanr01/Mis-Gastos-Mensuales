@@ -25,6 +25,7 @@ import { months, WaterRecord } from '@/lib/types';
 import { useApp } from '@/lib/hooks/use-app';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { Switch } from '@/components/ui/switch';
 
 type AguaFormProps = {
   setOpen: (open: boolean) => void;
@@ -41,7 +42,7 @@ export function AguaForm({ setOpen, recordToEdit }: AguaFormProps) {
   const form = useForm<WaterFormValues>({
     resolver: zodResolver(waterFormSchema),
     defaultValues: recordToEdit ? {
-        ...recordToEdit
+      ...recordToEdit
     } : {
       year: currentYear,
       month: currentMonth,
@@ -50,7 +51,7 @@ export function AguaForm({ setOpen, recordToEdit }: AguaFormProps) {
       status: 'Pendiente',
     },
   });
-  
+
   useEffect(() => {
     if (recordToEdit) {
       form.reset(recordToEdit);
@@ -77,126 +78,145 @@ export function AguaForm({ setOpen, recordToEdit }: AguaFormProps) {
   async function onSubmit(values: WaterFormValues) {
     setIsSubmitting(true);
     const totalToPay = parseFloat((values.totalInvoiced - values.discount).toFixed(2));
-    
+
     try {
-        if (recordToEdit) {
-            await updateWaterRecord({ ...values, id: recordToEdit.id, totalToPay });
-            toast({
-                title: "Registro actualizado",
-                description: "El registro de consumo de agua ha sido actualizado.",
-            });
-        } else {
-            await addWaterRecord({ ...values, totalToPay });
-            toast({
-                title: "Registro exitoso",
-                description: "El registro de consumo de agua ha sido añadido.",
-            });
-        }
-        setOpen(false);
-    } catch (error: any) {
+      if (recordToEdit) {
+        await updateWaterRecord({ ...values, id: recordToEdit.id, totalToPay });
         toast({
-            variant: "destructive",
-            title: "Error al guardar",
-            description: error.message || "No se pudo guardar el registro. Inténtalo de nuevo.",
+          title: "Registro actualizado",
+          description: "El registro de consumo de agua ha sido actualizado.",
         });
+      } else {
+        await addWaterRecord({ ...values, totalToPay });
+        toast({
+          title: "Registro exitoso",
+          description: "El registro de consumo de agua ha sido añadido.",
+        });
+      }
+      setOpen(false);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error al guardar",
+        description: error.message || "No se pudo guardar el registro. Inténtalo de nuevo.",
+      });
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="year"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Año</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="Ej: 2024" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="month"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Mes</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Date Fields - 2 columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="year"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold">Año</FormLabel>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona un mes" />
-                  </SelectTrigger>
+                  <Input type="number" placeholder="Ej: 2024" className="h-11" {...field} />
                 </FormControl>
-                <SelectContent>
-                  {months.map((month) => (
-                    <SelectItem key={month} value={month}>
-                      {month}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="totalInvoiced"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Total Facturado ($)</FormLabel>
-              <FormControl>
-                <Input type="number" step="0.01" placeholder="Ej: 25.50" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="discount"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Descuento ($)</FormLabel>
-              <FormControl>
-                <Input type="number" step="0.01" placeholder="Ej: 2.00" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div>
-            <p className="text-sm font-medium">Total a Pagar: ${form.watch('totalToPay')?.toFixed(2) || '0.00'}</p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="month"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold">Mes</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Selecciona un mes" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {months.map((month) => (
+                      <SelectItem key={month} value={month}>
+                        {month}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
+
+        {/* Amount Fields - 2 columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="totalInvoiced"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold">Total Facturado ($)</FormLabel>
+                <FormControl>
+                  <Input type="number" step="0.01" placeholder="Ej: 25.50" className="h-11 text-lg" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="discount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-semibold">Descuento ($)</FormLabel>
+                <FormControl>
+                  <Input type="number" step="0.01" placeholder="Ej: 2.00" className="h-11 text-lg" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Calculated Total - Highlighted */}
+        <div className="glass-card p-4 rounded-lg border-primary/30">
+          <p className="text-sm text-muted-foreground mb-1">Total a Pagar</p>
+          <p className="text-3xl font-bold text-primary">${form.watch('totalToPay')?.toFixed(2) || '0.00'}</p>
+        </div>
+
+        {/* Status Field */}
         <FormField
           control={form.control}
           name="status"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Estado</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona un estado" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="Pendiente">Pendiente</SelectItem>
-                  <SelectItem value="Pagado">Pagado</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base font-semibold">
+                  Estado del Pago
+                </FormLabel>
+                <p className="text-sm text-muted-foreground">
+                  {field.value === 'Pagado' ? 'Marcado como pagado' : 'Pendiente de pago'}
+                </p>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value === 'Pagado'}
+                  onCheckedChange={(checked) => field.onChange(checked ? 'Pagado' : 'Pendiente')}
+                />
+              </FormControl>
             </FormItem>
           )}
         />
-        <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting}>Cancelar</Button>
-            <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Guardando...' : 'Guardar'}</Button>
+
+        {/* Action Buttons */}
+        <div className="flex justify-end gap-3 pt-4">
+          <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isSubmitting} className="h-11 px-6">
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting} className="h-11 px-6">
+            {isSubmitting ? 'Guardando...' : 'Guardar'}
+          </Button>
         </div>
       </form>
     </Form>

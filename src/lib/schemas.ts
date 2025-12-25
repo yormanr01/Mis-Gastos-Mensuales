@@ -22,6 +22,8 @@ export const electricityFormSchema = z.object({
   kwhConsumption: numericField,
   previousMeter: integerField,
   currentMeter: integerField,
+  discount: numericField,
+  totalToPay: numericField.optional(), // Calculated field
   status: z.enum(['Pendiente', 'Pagado'], { required_error: "Estado es requerido." }),
 }).refine((data) => data.currentMeter >= data.previousMeter, {
   message: "El contador actual debe ser mayor o igual que el contador anterior.",
@@ -32,6 +34,9 @@ export const internetFormSchema = z.object({
   year: numericField.refine(val => val >= 2000 && val <= new Date().getFullYear() + 1, { message: "Año inválido." }),
   month: z.enum(months as [string, ...string[]], { required_error: "Mes es requerido." }),
   monthlyCost: numericField,
+  discount: numericField,
+  totalToPay: numericField.optional(), // Calculated field
+  status: z.enum(['Pendiente', 'Pagado'], { required_error: "Estado es requerido." }),
 });
 
 export type WaterFormValues = z.infer<typeof waterFormSchema>;

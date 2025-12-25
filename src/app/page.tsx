@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { AnnualChart } from "@/components/dashboard/annual-chart";
 import { InsightsCard } from "@/components/dashboard/insights-card";
-import { YearSelector } from "@/components/dashboard/year-selector";
 import { useApp } from "@/lib/hooks/use-app";
 
 export const dynamic = 'force-dynamic';
@@ -28,16 +27,14 @@ export default function DashboardPage() {
     <div className="flex flex-col h-full">
       <main className="flex-1 overflow-auto p-4 md:p-6">
         <div className="space-y-6">
-          <div className="flex justify-end">
-            <YearSelector
-              selectedYear={selectedYear}
-              onYearChange={setSelectedYear}
-              availableYears={availableYears}
-            />
-          </div>
+          <AnnualChart
+            year={selectedYear}
+            selectedYear={selectedYear}
+            onYearChange={setSelectedYear}
+            availableYears={availableYears}
+          />
           <StatsCards year={selectedYear} />
           <InsightsCard />
-          <AnnualChart year={selectedYear} />
         </div>
       </main>
     </div>

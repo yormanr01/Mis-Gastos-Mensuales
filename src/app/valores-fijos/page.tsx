@@ -14,10 +14,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Droplet, Lightbulb, Wifi } from 'lucide-react';
 
 const fixedValuesSchema = z.object({
   waterDiscount: z.coerce.number().min(0, "El descuento debe ser un número positivo."),
-  internetMonthlyCost: z.coerce.number().min(0, "El costo mensual debe ser un número positivo."),
+  electricityDiscount: z.coerce.number().min(0, "El descuento debe ser un número positivo."),
+  internetDiscount: z.coerce.number().min(0, "El descuento debe ser un número positivo."),
 });
 
 type FixedValuesForm = z.infer<typeof fixedValuesSchema>;
@@ -71,40 +73,69 @@ export default function FixedValuesPage() {
 
       <main className="flex-1 overflow-auto p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
-          <Card>
+          <Card className="glass-card animate-fade-in">
             <CardHeader>
-              <CardTitle>Configuración de Valores</CardTitle>
+              <CardTitle className="text-2xl font-bold">Configuración de Valores</CardTitle>
+              <CardDescription>
+                Establece los descuentos predeterminados para cada servicio
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="waterDiscount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Descuento de Agua ($)</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.01" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="internetMonthlyCost"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Costo Mensual de Internet ($)</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.01" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit">Guardar Cambios</Button>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="waterDiscount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-semibold flex items-center gap-2">
+                            <Droplet className="h-4 w-4" />
+                            Descuento de Agua ($)
+                          </FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.01" className="h-11 text-lg" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="electricityDiscount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-semibold flex items-center gap-2">
+                            <Lightbulb className="h-4 w-4" />
+                            Descuento de Electricidad ($)
+                          </FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.01" className="h-11 text-lg" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="internetDiscount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-semibold flex items-center gap-2">
+                            <Wifi className="h-4 w-4" />
+                            Descuento de Internet ($)
+                          </FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.01" className="h-11 text-lg" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="flex justify-end pt-4">
+                    <Button type="submit" className="h-11 px-6">Guardar Cambios</Button>
+                  </div>
                 </form>
               </Form>
             </CardContent>

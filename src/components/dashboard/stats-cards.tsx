@@ -96,10 +96,9 @@ export function StatsCards() {
 
   const StatCard = memo(({ stat, index, year }: { stat: any, index: number, year: number }) => (
     <Card
-      className={`transition-all duration-300 hover:scale-[1.02] hover:shadow-xl animate-slide-up ${stat.border} ${stat.isHighlighted
+      className={`transition-all duration-300 hover:scale-[1.02] hover:shadow-xl ${stat.border} ${stat.isHighlighted
         ? 'bg-indigo-600 dark:bg-indigo-700 text-white ring-4 ring-indigo-500/30 shadow-2xl shadow-indigo-500/40 scale-[1.02] md:scale-105 border-transparent'
         : 'glass-card'}`}
-      style={{ animationDelay: `${index * 100}ms` }}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className={`text-sm font-medium ${stat.isHighlighted ? 'text-indigo-100' : 'text-muted-foreground'}`}>{stat.title}</CardTitle>

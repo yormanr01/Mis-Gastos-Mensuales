@@ -50,7 +50,7 @@ export default function HistorialPage() {
               <style>
                 body { 
                   font-family: 'Inter', sans-serif; 
-                  margin: 2rem; 
+                  margin: 1rem; 
                   color: #1e293b;
                   background-color: #f8fafc;
                   -webkit-print-color-adjust: exact; 
@@ -58,34 +58,34 @@ export default function HistorialPage() {
                 }
                 .container { max-width: 800px; margin: auto; }
                 header { 
-                  margin-bottom: 2rem; 
+                  margin-bottom: 1rem; 
                   padding-bottom: 1rem; 
                   border-bottom: 2px solid #e2e8f0;
                   display: flex;
                   justify-content: space-between;
                   align-items: flex-end;
                 }
-                h1 { margin: 0; font-size: 1.875rem; color: #4338ca; font-weight: 700; }
-                .date { font-size: 1.125rem; color: #64748b; font-weight: 500; }
+                h1 { margin: 0; font-size: 1.5rem; color: #4338ca; font-weight: 700; }
+                .date { font-size: 1rem; color: #64748b; font-weight: 500; }
                 
                 .card {
                   background: white;
                   border-radius: 0.75rem;
                   border: 1px solid #e2e8f0;
-                  padding: 1.5rem;
-                  margin-bottom: 1.5rem;
+                  padding: 1rem;
+                  margin-bottom: 0.75rem;
                   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
                 }
                 .card-header {
                   display: flex;
                   align-items: center;
                   gap: 0.75rem;
-                  margin-bottom: 1rem;
-                  padding-bottom: 0.75rem;
+                  margin-bottom: 0.5rem;
+                  padding-bottom: 0.5rem;
                   border-bottom: 1px solid #f1f5f9;
                 }
                 .card-title {
-                  font-size: 1.125rem;
+                  font-size: 1rem;
                   font-weight: 600;
                   color: #1e293b;
                   margin: 0;
@@ -95,40 +95,40 @@ export default function HistorialPage() {
                 }
                 
                 table { width: 100%; border-collapse: collapse; }
-                td { padding: 0.5rem 0; font-size: 0.875rem; }
+                td { padding: 0.25rem 0; font-size: 0.875rem; }
                 .label { color: #64748b; }
                 .value { text-align: right; font-weight: 500; }
                 
                 .total-row { 
-                  margin-top: 0.5rem;
-                  padding-top: 0.5rem;
+                  margin-top: 0.25rem;
+                  padding-top: 0.25rem;
                   border-top: 1px solid #f1f5f9;
                   font-weight: 700;
-                  font-size: 1rem;
+                  font-size: 0.9375rem;
                   color: #4338ca;
                 }
                 
                 .summary-card {
                   background: #4338ca;
                   color: white;
-                  padding: 1.5rem;
+                  padding: 1rem;
                   border-radius: 0.75rem;
                   display: flex;
                   justify-content: space-between;
                   align-items: center;
                 }
-                .summary-label { font-size: 1.125rem; font-weight: 600; opacity: 0.9; }
-                .summary-value { font-size: 1.5rem; font-weight: 700; }
+                .summary-label { font-size: 1rem; font-weight: 600; opacity: 0.9; }
+                .summary-value { font-size: 1.25rem; font-weight: 700; }
 
                 .formulas { 
-                  margin-top: 1rem; 
-                  padding: 1rem; 
+                  margin-top: 0.5rem; 
+                  padding: 0.75rem; 
                   border-radius: 0.5rem;
                   background-color: #f1f5f9; 
                   border-left: 4px solid #94a3b8;
                 }
-                .formulas h3 { margin: 0 0 0.5rem 0; font-size: 0.75rem; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; }
-                .formulas p { margin: 0.25rem 0; color: #1e293b; font-size: 0.75rem; line-height: 1.5; }
+                .formulas h3 { margin: 0 0 0.25rem 0; font-size: 0.7rem; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; }
+                .formulas p { margin: 0.125rem 0; color: #1e293b; font-size: 0.7rem; line-height: 1.4; }
                 
                 .icon {
                   width: 1.25rem;
@@ -312,7 +312,7 @@ export default function HistorialPage() {
     <div className="flex flex-col h-full">
 
       <main className="flex-1 overflow-auto p-4 md:p-6">
-        <Card className="glass-card animate-fade-in">
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle className="text-2xl font-bold">Resumen de Gastos por Mes</CardTitle>
           </CardHeader>
@@ -327,8 +327,7 @@ export default function HistorialPage() {
                     return (
                       <div
                         key={monthKey}
-                        className="glass-card rounded-lg border p-5 hover:shadow-xl transition-all duration-300 animate-slide-up"
-                        style={{ animationDelay: `${index * 50}ms` }}
+                        className="glass-card rounded-lg border p-5 hover:shadow-xl transition-all duration-300"
                       >
                         <div className="flex justify-between items-start mb-4">
                           <div>
@@ -434,7 +433,7 @@ export default function HistorialPage() {
           {previewData && (
             <div className="space-y-2.5">
               {previewData.data.water && (
-                <Card className="border shadow-sm overflow-hidden animate-slide-up">
+                <Card className="border shadow-sm overflow-hidden">
                   <CardHeader className="py-2 px-4 bg-muted/30">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
                       <Droplet className="h-4 w-4 text-blue-500" /> Consumo de Agua
@@ -460,7 +459,7 @@ export default function HistorialPage() {
               )}
 
               {previewData.data.electricity && (
-                <Card className="border shadow-sm overflow-hidden animate-slide-up" style={{ animationDelay: '100ms' }}>
+                <Card className="border shadow-sm overflow-hidden">
                   <CardHeader className="py-2 px-4 bg-muted/30">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
                       <Lightbulb className="h-4 w-4 text-amber-500" /> Consumo de Electricidad
@@ -498,7 +497,7 @@ export default function HistorialPage() {
               )}
 
               {previewData.data.internet && (
-                <Card className="border shadow-sm overflow-hidden animate-slide-up" style={{ animationDelay: '200ms' }}>
+                <Card className="border shadow-sm overflow-hidden">
                   <CardHeader className="py-2 px-4 bg-muted/30">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
                       <Wifi className="h-4 w-4 text-purple-500" /> Costo de Internet

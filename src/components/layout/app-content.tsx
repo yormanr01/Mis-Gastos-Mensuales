@@ -24,7 +24,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Main content area */}
       <main
         className={cn(
-          "transition-all duration-200 ease-in-out animate-fade-in pb-16 md:pb-0",
+          "pb-16 md:pb-0",
           // Desktop margin based on sidebar state
           state === 'expanded' ? 'md:ml-64' : 'md:ml-14'
         )}

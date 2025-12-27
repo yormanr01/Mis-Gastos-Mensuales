@@ -32,7 +32,7 @@ export function InsightsCard() {
     };
 
     return (
-        <Card className="glass-card border-indigo-500/30 bg-gradient-to-br from-indigo-500/10 to-purple-500/5 animate-fade-in">
+        <Card className="glass-card border-indigo-500/30 bg-gradient-to-br from-indigo-500/10 to-purple-500/5">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
                     <Sparkles className="h-5 w-5" />
@@ -59,7 +59,7 @@ export function InsightsCard() {
                 {insights ? (
                     <div className="space-y-3 mt-2">
                         {insights.map((insight, i) => (
-                            <div key={i} className="text-sm text-muted-foreground flex gap-2 items-start animate-slide-up" style={{ animationDelay: `${i * 100}ms` }}>
+                            <div key={i} className="text-sm text-muted-foreground flex gap-2 items-start">
                                 <span className="text-indigo-500 dark:text-indigo-400 mt-1 font-bold">•</span>
                                 <span>{insight}</span>
                             </div>

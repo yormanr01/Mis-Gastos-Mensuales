@@ -73,7 +73,7 @@ export default function FixedValuesPage() {
 
       <main className="flex-1 overflow-auto p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
-          <Card className="glass-card animate-fade-in">
+          <Card className="glass-card">
             <CardHeader>
               <CardTitle className="text-2xl font-bold">Configuración de Valores</CardTitle>
               <CardDescription>

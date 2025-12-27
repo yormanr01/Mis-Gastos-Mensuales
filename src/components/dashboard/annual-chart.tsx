@@ -99,7 +99,7 @@ export function AnnualChart({
   });
 
   return (
-    <Card className="glass-card animate-fade-in">
+    <Card className="glass-card">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>

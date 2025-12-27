@@ -64,14 +64,14 @@ export function InternetTable({ onEdit, data, isLoading }: InternetTableProps) {
   };
 
   return (
-    <Card className="glass-card animate-fade-in">
+    <Card className="glass-card">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Historial de Internet</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {isLoading && [...Array(6)].map((_, i) => (
-            <div key={i} className="glass-card rounded-lg border p-5 space-y-3 animate-fade-in" style={{ animationDelay: `${i * 50}ms` }}>
+            <div key={i} className="glass-card rounded-lg border p-5 space-y-3">
               <div className="flex justify-between items-start">
                 <div className='space-y-2 flex-1'>
                   <Skeleton className='h-6 w-32' />
@@ -88,8 +88,7 @@ export function InternetTable({ onEdit, data, isLoading }: InternetTableProps) {
           {!isLoading && data.map((record: InternetRecord, index) => (
             <div
               key={record.id}
-              className="glass-card rounded-lg border p-5 hover:shadow-xl transition-all duration-300 animate-slide-up group"
-              style={{ animationDelay: `${index * 50}ms` }}
+              className="glass-card rounded-lg border p-5 hover:shadow-xl transition-all duration-300 group"
             >
               {/* Header */}
               <div className="flex justify-between items-start mb-4">

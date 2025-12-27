@@ -54,22 +54,24 @@ export function ServiceHistory<T extends RecordType>({
   return (
     <div className="space-y-4">
       {user?.role === 'Edición' && (
-        <div className="flex justify-end">
-          <Dialog open={isFormOpen} onOpenChange={setFormOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={handleAddNew}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Añadir Registro
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-[90vh]">
-              <DialogHeader>
-                <DialogTitle>{recordToEdit ? 'Editar' : 'Nuevo'} Registro de {serviceName}</DialogTitle>
-              </DialogHeader>
-              <FormComponent setOpen={setFormOpen} recordToEdit={recordToEdit} />
-            </DialogContent>
-          </Dialog>
-        </div>
+        <Dialog open={isFormOpen} onOpenChange={setFormOpen}>
+          <DialogTrigger asChild>
+            <Button
+              size="lg"
+              className="fixed bottom-24 md:bottom-8 right-6 z-50 rounded-full shadow-2xl hover:scale-110 transition-transform duration-300 h-16 w-16 md:h-12 md:w-auto md:rounded-2xl md:px-8 md:text-lg"
+              onClick={handleAddNew}
+            >
+              <PlusCircle className="h-10 w-10 md:mr-3 md:h-6 md:w-6" />
+              <span className="hidden md:inline">Añadir Registro</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px] overflow-y-auto max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle>{recordToEdit ? 'Editar' : 'Nuevo'} Registro de {serviceName}</DialogTitle>
+            </DialogHeader>
+            <FormComponent setOpen={setFormOpen} recordToEdit={recordToEdit} />
+          </DialogContent>
+        </Dialog>
       )}
       <TableComponent
         onEdit={handleEdit}

@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { createContext, useState, ReactNode, useEffect, useContext } from 'react';
+import React, { createContext, useState, ReactNode, useEffect, useContext, useCallback, useMemo } from 'react';
 import type { WaterRecord, ElectricityRecord, InternetRecord, FixedValues } from '@/lib/types';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query } from 'firebase/firestore';
@@ -32,15 +32,32 @@ interface AppContextType {
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useContext(AuthContext);
+  const authContext = useContext(AuthContext);
+  const user = authContext?.user;
   const [waterData, setWaterData] = useState<WaterRecord[]>([]);
   const [electricityData, setElectricityData] = useState<ElectricityRecord[]>([]);
   const [internetData, setInternetData] = useState<InternetRecord[]>([]);
-  const [fixedValues, setFixedValuesState] = useState<FixedValues>({ waterDiscount: 0, internetMonthlyCost: 40 });
+  const [fixedValues, setFixedValuesState] = useState<FixedValues>({ waterDiscount: 0, electricityDiscount: 0, internetDiscount: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  const fetchData = async () => {
+  useEffect(() => {
+    // Cargar caché local al montar
+    const waterCache = localStorage.getItem('water_cache');
+    const electricityCache = localStorage.getItem('electricity_cache');
+    const internetCache = localStorage.getItem('internet_cache');
+
+    if (waterCache) setWaterData(JSON.parse(waterCache));
+    if (electricityCache) setElectricityData(JSON.parse(electricityCache));
+    if (internetCache) setInternetData(JSON.parse(internetCache));
+
+    // Si hay caché, dejamos de mostrar el estado de carga inicial inmediatamente
+    if (waterCache || electricityCache || internetCache) {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const fetchData = useCallback(async () => {
     if (!user) {
       setWaterData([]);
       setElectricityData([]);
@@ -51,43 +68,48 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     setIsLoading(true);
     try {
-      const waterQuery = query(collection(db, 'water'));
+      const waterQuery = collection(db, 'water');
       const waterSnapshot = await getDocs(waterQuery);
       const waterList = waterSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as WaterRecord)).sort(sortRecords);
       setWaterData(waterList);
+      localStorage.setItem('water_cache', JSON.stringify(waterList));
 
-      const electricityQuery = query(collection(db, 'electricity'));
+      const electricityQuery = collection(db, 'electricity');
       const electricitySnapshot = await getDocs(electricityQuery);
       const electricityList = electricitySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ElectricityRecord)).sort(sortRecords);
       setElectricityData(electricityList);
+      localStorage.setItem('electricity_cache', JSON.stringify(electricityList));
 
-      const internetQuery = query(collection(db, 'internet'));
+      const internetQuery = collection(db, 'internet');
       const internetSnapshot = await getDocs(internetQuery);
       const internetList = internetSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as InternetRecord)).sort(sortRecords);
       setInternetData(internetList);
+      localStorage.setItem('internet_cache', JSON.stringify(internetList));
 
     } catch (error) {
       console.error("Error fetching data from Firestore:", error);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchData();
   }, [user]);
 
   useEffect(() => {
+    fetchData();
+  }, [user, fetchData]);
+
+  useEffect(() => {
     const storedFixedValues = localStorage.getItem('fixedValues');
-    setFixedValuesState(storedFixedValues ? JSON.parse(storedFixedValues) : { waterDiscount: 0, internetMonthlyCost: 40 });
+    if (storedFixedValues) {
+      setFixedValuesState(JSON.parse(storedFixedValues));
+    }
   }, []);
 
-  const setFixedValues = (values: FixedValues) => {
+  const setFixedValues = useCallback((values: FixedValues) => {
     setFixedValuesState(values);
     localStorage.setItem('fixedValues', JSON.stringify(values));
-  };
+  }, []);
 
-  const addWaterRecord = async (record: Omit<WaterRecord, 'id'>) => {
+  const addWaterRecord = useCallback(async (record: Omit<WaterRecord, 'id'>) => {
     const isDuplicate = waterData.some(
       r => r.year === record.year && r.month === record.month
     );
@@ -96,10 +118,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const docRef = await addDoc(collection(db, 'water'), record);
-    setWaterData(prev => [...prev, { ...record, id: docRef.id }].sort(sortRecords));
-  };
+    setWaterData(prev => {
+      const newData = [...prev, { ...record, id: docRef.id }].sort(sortRecords);
+      localStorage.setItem('water_cache', JSON.stringify(newData));
+      return newData;
+    });
+  }, [waterData]);
 
-  const addElectricityRecord = async (record: Omit<ElectricityRecord, 'id'>) => {
+  const addElectricityRecord = useCallback(async (record: Omit<ElectricityRecord, 'id'>) => {
     const isDuplicate = electricityData.some(
       r => r.year === record.year && r.month === record.month
     );
@@ -108,10 +134,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const docRef = await addDoc(collection(db, 'electricity'), record);
-    setElectricityData(prev => [...prev, { ...record, id: docRef.id }].sort(sortRecords));
-  };
+    setElectricityData(prev => {
+      const newData = [...prev, { ...record, id: docRef.id }].sort(sortRecords);
+      localStorage.setItem('electricity_cache', JSON.stringify(newData));
+      return newData;
+    });
+  }, [electricityData]);
 
-  const addInternetRecord = async (record: Omit<InternetRecord, 'id'>) => {
+  const addInternetRecord = useCallback(async (record: Omit<InternetRecord, 'id'>) => {
     const isDuplicate = internetData.some(
       r => r.year === record.year && r.month === record.month
     );
@@ -120,10 +150,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const docRef = await addDoc(collection(db, 'internet'), record);
-    setInternetData(prev => [...prev, { ...record, id: docRef.id }].sort(sortRecords));
-  };
+    setInternetData(prev => {
+      const newData = [...prev, { ...record, id: docRef.id }].sort(sortRecords);
+      localStorage.setItem('internet_cache', JSON.stringify(newData));
+      return newData;
+    });
+  }, [internetData]);
 
-  const updateWaterRecord = async (updatedRecord: WaterRecord) => {
+  const updateWaterRecord = useCallback(async (updatedRecord: WaterRecord) => {
     const isDuplicate = waterData.some(
       r => r.id !== updatedRecord.id && r.year === updatedRecord.year && r.month === updatedRecord.month
     );
@@ -133,10 +167,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const { id, ...dataToUpdate } = updatedRecord;
     const docRef = doc(db, 'water', id);
     await updateDoc(docRef, dataToUpdate as any);
-    setWaterData(prev => prev.map(r => r.id === id ? updatedRecord : r).sort(sortRecords));
-  };
+    setWaterData(prev => {
+      const newData = prev.map(r => r.id === id ? updatedRecord : r).sort(sortRecords);
+      localStorage.setItem('water_cache', JSON.stringify(newData));
+      return newData;
+    });
+  }, [waterData]);
 
-  const updateElectricityRecord = async (updatedRecord: ElectricityRecord) => {
+  const updateElectricityRecord = useCallback(async (updatedRecord: ElectricityRecord) => {
     const isDuplicate = electricityData.some(
       r => r.id !== updatedRecord.id && r.year === updatedRecord.year && r.month === updatedRecord.month
     );
@@ -146,10 +184,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const { id, ...dataToUpdate } = updatedRecord;
     const docRef = doc(db, 'electricity', id);
     await updateDoc(docRef, dataToUpdate as any);
-    setElectricityData(prev => prev.map(r => r.id === id ? updatedRecord : r).sort(sortRecords));
-  };
+    setElectricityData(prev => {
+      const newData = prev.map(r => r.id === id ? updatedRecord : r).sort(sortRecords);
+      localStorage.setItem('electricity_cache', JSON.stringify(newData));
+      return newData;
+    });
+  }, [electricityData]);
 
-  const updateInternetRecord = async (updatedRecord: InternetRecord) => {
+  const updateInternetRecord = useCallback(async (updatedRecord: InternetRecord) => {
     const isDuplicate = internetData.some(
       r => r.id !== updatedRecord.id && r.year === updatedRecord.year && r.month === updatedRecord.month
     );
@@ -159,48 +201,84 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const { id, ...dataToUpdate } = updatedRecord;
     const docRef = doc(db, 'internet', id);
     await updateDoc(docRef, dataToUpdate as any);
-    setInternetData(prev => prev.map(r => r.id === id ? updatedRecord : r).sort(sortRecords));
-  };
+    setInternetData(prev => {
+      const newData = prev.map(r => r.id === id ? updatedRecord : r).sort(sortRecords);
+      localStorage.setItem('internet_cache', JSON.stringify(newData));
+      return newData;
+    });
+  }, [internetData]);
 
-  const deleteWaterRecord = async (id: string) => {
+  const deleteWaterRecord = useCallback(async (id: string) => {
     const docRef = doc(db, 'water', id);
     await deleteDoc(docRef);
-    setWaterData(prev => prev.filter(r => r.id !== id));
-  };
+    setWaterData(prev => {
+      const newData = prev.filter(r => r.id !== id);
+      localStorage.setItem('water_cache', JSON.stringify(newData));
+      return newData;
+    });
+  }, []);
 
-  const deleteElectricityRecord = async (id: string) => {
+  const deleteElectricityRecord = useCallback(async (id: string) => {
     const docRef = doc(db, 'electricity', id);
     await deleteDoc(docRef);
-    setElectricityData(prev => prev.filter(r => r.id !== id));
-  };
+    setElectricityData(prev => {
+      const newData = prev.filter(r => r.id !== id);
+      localStorage.setItem('electricity_cache', JSON.stringify(newData));
+      return newData;
+    });
+  }, []);
 
-  const deleteInternetRecord = async (id: string) => {
+  const deleteInternetRecord = useCallback(async (id: string) => {
     const docRef = doc(db, 'internet', id);
     await deleteDoc(docRef);
-    setInternetData(prev => prev.filter(r => r.id !== id));
-  };
+    setInternetData(prev => {
+      const newData = prev.filter(r => r.id !== id);
+      localStorage.setItem('internet_cache', JSON.stringify(newData));
+      return newData;
+    });
+  }, []);
+
+  const contextValue = useMemo(() => ({
+    waterData,
+    electricityData,
+    internetData,
+    fixedValues,
+    setFixedValues,
+    addWaterRecord,
+    addElectricityRecord,
+    addInternetRecord,
+    updateWaterRecord,
+    updateElectricityRecord,
+    updateInternetRecord,
+    deleteWaterRecord,
+    deleteElectricityRecord,
+    deleteInternetRecord,
+    isLoading,
+    refreshData: fetchData,
+    selectedYear,
+    setSelectedYear
+  }), [
+    waterData,
+    electricityData,
+    internetData,
+    fixedValues,
+    setFixedValues,
+    addWaterRecord,
+    addElectricityRecord,
+    addInternetRecord,
+    updateWaterRecord,
+    updateElectricityRecord,
+    updateInternetRecord,
+    deleteWaterRecord,
+    deleteElectricityRecord,
+    deleteInternetRecord,
+    isLoading,
+    fetchData,
+    selectedYear
+  ]);
 
   return (
-    <AppContext.Provider value={{
-      waterData,
-      electricityData,
-      internetData,
-      fixedValues,
-      setFixedValues,
-      addWaterRecord,
-      addElectricityRecord,
-      addInternetRecord,
-      updateWaterRecord,
-      updateElectricityRecord,
-      updateInternetRecord,
-      deleteWaterRecord,
-      deleteElectricityRecord,
-      deleteInternetRecord,
-      isLoading,
-      refreshData: fetchData,
-      selectedYear,
-      setSelectedYear
-    }}>
+    <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   );

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { useApp } from '@/lib/hooks/use-app';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Droplet, Lightbulb, Wifi, CircleDollarSign } from 'lucide-react';
@@ -9,12 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 
 export function StatsCards() {
-  const { waterData, electricityData, internetData } = useApp();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const { waterData, electricityData, internetData, isLoading, selectedYear } = useApp();
 
   const renderSkeletons = (count: number) => (
     [...Array(count)].map((_, index) => (
@@ -31,7 +26,7 @@ export function StatsCards() {
     ))
   );
 
-  if (!isClient) {
+  if (isLoading && waterData.length === 0) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {renderSkeletons(4)}
@@ -39,32 +34,30 @@ export function StatsCards() {
     );
   }
 
-  const currentYear = new Date().getFullYear();
+  const { totalWater, totalElectricity, totalInternet, totalServices } = useMemo(() => {
+    const filterBySelectedYear = <T extends { year: number }>(data: T[]) =>
+      data.filter((d) => d.year === selectedYear);
 
-  const filterByCurrentYear = <T extends { year: number }>(data: T[]) =>
-    data.filter((d) => d.year === currentYear);
+    const sumTotal = (data: { totalToPay?: number; monthlyCost?: number }[]) =>
+      data.reduce((acc, curr) => acc + (curr.totalToPay ?? curr.monthlyCost ?? 0), 0);
 
-  const sumTotal = (data: { totalToPay?: number; monthlyCost?: number }[]) =>
-    data.reduce((acc, curr) => acc + (curr.totalToPay ?? curr.monthlyCost ?? 0), 0);
+    const water = sumTotal(filterBySelectedYear(waterData));
+    const electricity = sumTotal(filterBySelectedYear(electricityData));
+    const internet = sumTotal(filterBySelectedYear(internetData));
 
-  const totalWater = sumTotal(filterByCurrentYear(waterData));
-  const totalElectricity = sumTotal(filterByCurrentYear(electricityData));
-  const totalInternet = sumTotal(filterByCurrentYear(internetData));
-  const totalServices = totalWater + totalElectricity + totalInternet;
+    return {
+      totalWater: water,
+      totalElectricity: electricity,
+      totalInternet: internet,
+      totalServices: water + electricity + internet
+    };
+  }, [waterData, electricityData, internetData, selectedYear]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
   };
 
-  const stats = [
-    {
-      title: 'Total',
-      value: formatCurrency(totalServices),
-      icon: CircleDollarSign,
-      color: 'text-purple-600 dark:text-purple-400',
-      bg: 'bg-gradient-to-br from-purple-500/20 to-purple-600/10',
-      border: 'border-purple-500/30'
-    },
+  const stats = useMemo(() => [
     {
       title: 'Agua',
       value: formatCurrency(totalWater),
@@ -89,30 +82,44 @@ export function StatsCards() {
       bg: 'bg-gradient-to-br from-teal-500/20 to-teal-600/10',
       border: 'border-teal-500/30'
     },
-  ];
+    {
+      title: 'Total',
+      value: formatCurrency(totalServices),
+      icon: CircleDollarSign,
+      color: 'text-white',
+      bg: 'bg-white/20',
+      border: 'border-indigo-400/50',
+      isHighlighted: true
+    },
+  ], [totalWater, totalElectricity, totalInternet, totalServices]);
 
-  const StatCard = ({ stat, index }: { stat: typeof stats[0], index: number }) => (
+
+  const StatCard = memo(({ stat, index, year }: { stat: any, index: number, year: number }) => (
     <Card
-      className={`glass-card transition-all duration-300 hover:scale-[1.02] hover:shadow-xl animate-slide-up ${stat.border}`}
+      className={`transition-all duration-300 hover:scale-[1.02] hover:shadow-xl animate-slide-up ${stat.border} ${stat.isHighlighted
+        ? 'bg-indigo-600 dark:bg-indigo-700 text-white ring-4 ring-indigo-500/30 shadow-2xl shadow-indigo-500/40 scale-[1.02] md:scale-105 border-transparent'
+        : 'glass-card'}`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
-        <div className={`p-3 rounded-xl ${stat.bg} transition-transform duration-300 hover:scale-110`}>
+        <CardTitle className={`text-sm font-medium ${stat.isHighlighted ? 'text-indigo-100' : 'text-muted-foreground'}`}>{stat.title}</CardTitle>
+        <div className={`p-3 rounded-xl ${stat.bg} transition-transform duration-300 hover:scale-110 ${stat.isHighlighted ? 'scale-110' : ''}`}>
           <stat.icon className={`h-5 w-5 ${stat.color}`} />
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-3xl font-bold tracking-tight">{stat.value}</div>
-        <p className="text-xs text-muted-foreground mt-2">Año {currentYear}</p>
+        <div className={`font-bold tracking-tight ${stat.isHighlighted ? 'text-4xl text-white' : 'text-3xl'}`}>{stat.value}</div>
+        <p className={`text-xs mt-2 ${stat.isHighlighted ? 'text-indigo-100' : 'text-muted-foreground'}`}>Año {year}</p>
       </CardContent>
     </Card>
-  );
+  ));
+
+  StatCard.displayName = 'StatCard';
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat, index) => (
-        <StatCard key={index} stat={stat} index={index} />
+        <StatCard key={index} stat={stat} index={index} year={selectedYear} />
       ))}
     </div>
   );

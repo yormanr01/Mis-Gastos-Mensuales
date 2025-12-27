@@ -27,13 +27,13 @@ export default function DashboardPage() {
     <div className="flex flex-col h-full">
       <main className="flex-1 overflow-auto p-4 md:p-6">
         <div className="space-y-6">
+          <StatsCards />
           <AnnualChart
             year={selectedYear}
             selectedYear={selectedYear}
             onYearChange={setSelectedYear}
             availableYears={availableYears}
           />
-          <StatsCards year={selectedYear} />
           <InsightsCard />
         </div>
       </main>

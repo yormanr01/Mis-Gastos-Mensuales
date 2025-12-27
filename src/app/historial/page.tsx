@@ -2,7 +2,7 @@
 'use client';
 
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useApp } from "@/lib/hooks/use-app";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { months, WaterRecord, ElectricityRecord, InternetRecord } from "@/lib/types";
@@ -129,6 +129,18 @@ export default function HistorialPage() {
                 }
                 .formulas h3 { margin: 0 0 0.5rem 0; font-size: 0.75rem; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; }
                 .formulas p { margin: 0.25rem 0; color: #1e293b; font-size: 0.75rem; line-height: 1.5; }
+                
+                .icon {
+                  width: 1.25rem;
+                  height: 1.25rem;
+                  stroke-width: 2.5;
+                  stroke-linecap: round;
+                  stroke-linejoin: round;
+                  fill: none;
+                }
+                .icon-water { stroke: #3b82f6; }
+                .icon-electricity { stroke: #f59e0b; }
+                .icon-internet { stroke: #a855f7; }
 
                 @media print {
                   body { background-color: white; }
@@ -147,7 +159,10 @@ export default function HistorialPage() {
                 ${data.water ? `
                 <div class="card">
                   <div class="card-header">
-                    <h2 class="card-title">💧 Agua</h2>
+                    <h2 class="card-title">
+                      <svg class="icon icon-water" viewBox="0 0 24 24"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
+                      Agua
+                    </h2>
                   </div>
                   <table>
                     <tr><td class="label">Total Facturado</td><td class="value">${formatCurrency(data.water.totalInvoiced)}</td></tr>
@@ -159,7 +174,10 @@ export default function HistorialPage() {
                 ${data.electricity ? `
                 <div class="card">
                   <div class="card-header">
-                    <h2 class="card-title">💡 Electricidad</h2>
+                    <h2 class="card-title">
+                      <svg class="icon icon-electricity" viewBox="0 0 24 24"><path d="M15 14c.2-1.1.7-2.1 1.5-2.8.8-.7 1.3-1.7 1.5-2.8.4-2.6-1.5-5.1-4.1-5.4-2.6-.4-5.1 1.5-5.4 4.1-.2 1.1 0 2.2.6 3.1.6.9 1 1.9 1.1 3"/><path d="M9 21h6"/><path d="M10 17h4"/></svg>
+                      Electricidad
+                    </h2>
                   </div>
                   <table>
                     <tr><td class="label">Total Facturado</td><td class="value">${formatCurrency(data.electricity.totalInvoiced)}</td></tr>
@@ -182,7 +200,10 @@ export default function HistorialPage() {
                 ${data.internet ? `
                 <div class="card">
                   <div class="card-header">
-                    <h2 class="card-title">📶 Internet</h2>
+                    <h2 class="card-title">
+                      <svg class="icon icon-internet" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+                      Internet
+                    </h2>
                   </div>
                   <table>
                     <tr><td class="label">Costo Mensual</td><td class="value">${formatCurrency(data.internet.monthlyCost)}</td></tr>
@@ -212,18 +233,17 @@ export default function HistorialPage() {
     }
   };
 
-  const handlePrint = (monthKey: string, data: CombinedData) => {
+  const handlePrint = useCallback((monthKey: string, data: CombinedData) => {
     if (isMobile) {
       setPreviewData({ monthKey, data });
       setPreviewOpen(true);
     } else {
       handlePrintDesktop(monthKey, data);
     }
-  };
+  }, [isMobile]);
 
-  const combinedData: CombinedDataMap = {};
-
-  const processData = () => {
+  const { combinedData, sortedMonths } = useMemo(() => {
+    const data: CombinedDataMap = {};
     const allRecords = [
       ...waterData.filter(d => d.year === selectedYear).map(d => ({ ...d, type: 'water' })),
       ...electricityData.filter(d => d.year === selectedYear).map(d => ({ ...d, type: 'electricity' })),
@@ -232,35 +252,34 @@ export default function HistorialPage() {
 
     allRecords.forEach(record => {
       const key = `${record.month}-${record.year}`;
-      if (!combinedData[key]) {
-        combinedData[key] = { water: null, electricity: null, internet: null, total: 0 };
+      if (!data[key]) {
+        data[key] = { water: null, electricity: null, internet: null, total: 0 };
       }
 
       const value = 'monthlyCost' in record ? record.monthlyCost : ('totalToPay' in record ? record.totalToPay : 0);
 
+      if (record.type === 'water') data[key].water = record as unknown as WaterRecord;
+      if (record.type === 'electricity') data[key].electricity = record as unknown as ElectricityRecord;
+      if (record.type === 'internet') data[key].internet = record as unknown as InternetRecord;
 
-      if (record.type === 'water') combinedData[key].water = record as unknown as WaterRecord;
-      if (record.type === 'electricity') combinedData[key].electricity = record as unknown as ElectricityRecord;
-      if (record.type === 'internet') combinedData[key].internet = record as unknown as InternetRecord;
-
-      combinedData[key].total += value;
+      data[key].total += value;
     });
-  };
 
-  processData();
+    const monthsSorted = Object.keys(data).sort((a, b) => {
+      const [monthA, yearA] = a.split('-');
+      const [monthB, yearB] = b.split('-');
 
-  const sortedMonths = Object.keys(combinedData).sort((a, b) => {
-    const [monthA, yearA] = a.split('-');
-    const [monthB, yearB] = b.split('-');
+      if (parseInt(yearA) !== parseInt(yearB)) {
+        return parseInt(yearB) - parseInt(yearA);
+      }
 
-    if (parseInt(yearA) !== parseInt(yearB)) {
-      return parseInt(yearB) - parseInt(yearA);
-    }
+      return months.indexOf(monthB) - months.indexOf(monthA);
+    });
 
-    return months.indexOf(monthB) - months.indexOf(monthA);
-  });
+    return { combinedData: data, sortedMonths: monthsSorted };
+  }, [waterData, electricityData, internetData, selectedYear]);
 
-  const handleExportCSV = () => {
+  const handleExportCSV = useCallback(() => {
     const headers = ['Año', 'Mes', 'Agua', 'Electricidad', 'Internet', 'Total del Mes'];
     const csvContent = [
       headers.join(','),
@@ -287,7 +306,7 @@ export default function HistorialPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
+  }, [combinedData, sortedMonths]);
 
   return (
     <div className="flex flex-col h-full">

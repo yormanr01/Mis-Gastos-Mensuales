@@ -12,8 +12,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Settings, Users, Info } from 'lucide-react';
+import { LogOut, Settings, Users, Info, CircleDollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const pageTitles: Record<string, string> = {
     '/': 'Dashboard',
@@ -43,10 +44,16 @@ export function Header() {
     const currentTitle = pageTitles[pathname] || 'Mis Gastos';
 
     return (
-        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between gap-2 border-b bg-background px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+        <header className="sticky top-0 z-10 flex h-20 shrink-0 items-center justify-between gap-2 border-b bg-background px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">
                 <SidebarTrigger className="-ml-1" />
-                <h1 className="text-lg font-semibold">{currentTitle}</h1>
+                <div className="flex items-center gap-2 md:hidden">
+                    <Link href="/" className="flex items-center gap-2">
+                        <CircleDollarSign className="w-6 h-6 text-primary" />
+                        <h1 className="text-lg font-semibold whitespace-nowrap">Mis Gastos</h1>
+                    </Link>
+                </div>
+                <h1 className="text-lg font-semibold hidden md:block">{currentTitle}</h1>
             </div>
             <div className="flex items-center gap-2">
                 <DropdownMenu>

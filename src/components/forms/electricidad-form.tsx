@@ -149,7 +149,7 @@ export function ElectricidadForm({ setOpen, recordToEdit }: ElectricidadFormProp
           <FormField name="year" control={form.control} render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-semibold">Año</FormLabel>
-              <FormControl><Input type="number" className="h-11" {...field} /></FormControl>
+              <FormControl><Input type="number" placeholder="Ej: 2024" className="h-11" {...field} /></FormControl>
               <FormMessage />
             </FormItem>
           )} />
@@ -170,14 +170,14 @@ export function ElectricidadForm({ setOpen, recordToEdit }: ElectricidadFormProp
           <FormField name="totalInvoiced" control={form.control} render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-semibold">Total Facturado ($)</FormLabel>
-              <FormControl><Input type="number" step="0.01" className="h-11 text-lg" {...field} /></FormControl>
+              <FormControl><Input type="number" step="0.01" placeholder="Ej: 25.50" className="h-11 text-lg" {...field} /></FormControl>
               <FormMessage />
             </FormItem>
           )} />
           <FormField name="kwhConsumption" control={form.control} render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-semibold">Consumo kWh</FormLabel>
-              <FormControl><Input type="number" step="0.01" className="h-11 text-lg" {...field} /></FormControl>
+              <FormControl><Input type="number" step="0.01" placeholder="Ej: 150.00" className="h-11 text-lg" {...field} /></FormControl>
               <FormMessage />
             </FormItem>
           )} />
@@ -195,7 +195,7 @@ export function ElectricidadForm({ setOpen, recordToEdit }: ElectricidadFormProp
           <FormField name="currentMeter" control={form.control} render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-semibold">Contador Actual</FormLabel>
-              <FormControl><Input type="number" step="1" className="h-11 text-lg" {...field} /></FormControl>
+              <FormControl><Input type="number" step="1" placeholder="Ej: 12500" className="h-11 text-lg" {...field} /></FormControl>
               <FormMessage />
             </FormItem>
           )} />

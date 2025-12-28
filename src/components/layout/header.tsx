@@ -44,32 +44,32 @@ export function Header() {
     const currentTitle = pageTitles[pathname] || 'Mis Gastos';
 
     return (
-        <header className="sticky top-0 z-10 flex h-20 shrink-0 items-center justify-between gap-2 border-b bg-background px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+        <header className="sticky top-0 z-10 flex h-24 shrink-0 items-center justify-between gap-2 border-b bg-background px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-16">
             <div className="flex items-center gap-2 px-4">
                 <SidebarTrigger className="-ml-1" />
                 <div className="flex items-center gap-2 md:hidden">
                     <Link href="/" className="flex items-center gap-2">
                         <CircleDollarSign className="w-6 h-6 text-primary" />
-                        <h1 className="text-lg font-semibold whitespace-nowrap">Mis Gastos</h1>
+                        <h1 className="text-xl font-bold whitespace-nowrap">Mis Gastos</h1>
                     </Link>
                 </div>
-                <h1 className="text-lg font-semibold hidden md:block">{currentTitle}</h1>
+                <h1 className="text-xl font-bold hidden md:block">{currentTitle}</h1>
             </div>
             <div className="flex items-center gap-2">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                            <Avatar className="h-8 w-8">
+                        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                            <Avatar className="h-10 w-10">
                                 <AvatarImage src="" alt={user?.email || ''} />
                                 <AvatarFallback>{userInitials}</AvatarFallback>
                             </Avatar>
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56" align="end" forceMount>
-                        <DropdownMenuLabel className="font-normal">
+                    <DropdownMenuContent className="w-64" align="end" forceMount>
+                        <DropdownMenuLabel className="font-normal py-3 border-b border-muted">
                             <div className="flex flex-col space-y-1">
-                                <p className="text-sm font-medium leading-none">{user?.email}</p>
-                                <p className="text-xs leading-none text-muted-foreground">
+                                <p className="text-base font-medium leading-none">{user?.email}</p>
+                                <p className="text-sm leading-none text-muted-foreground">
                                     {user?.role}
                                 </p>
                             </div>
@@ -77,25 +77,25 @@ export function Header() {
                         <DropdownMenuSeparator />
                         {user?.role === 'Edición' && (
                             <>
-                                <DropdownMenuItem onClick={() => router.push('/valores-fijos')}>
-                                    <Settings className="mr-2 h-4 w-4" />
+                                <DropdownMenuItem onClick={() => router.push('/valores-fijos')} className="py-3 text-base">
+                                    <Settings className="mr-3 h-5 w-5" />
                                     <span>Valores Fijos</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => router.push('/admin/users')}>
-                                    <Users className="mr-2 h-4 w-4" />
+                                <DropdownMenuItem onClick={() => router.push('/admin/users')} className="py-3 text-base">
+                                    <Users className="mr-3 h-5 w-5" />
                                     <span>Admin Usuarios</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                             </>
                         )}
                         {/* Acerca de - only on mobile */}
-                        <DropdownMenuItem onClick={() => router.push('/acerca-de')} className="md:hidden">
-                            <Info className="mr-2 h-4 w-4" />
+                        <DropdownMenuItem onClick={() => router.push('/acerca-de')} className="md:hidden py-3 text-base">
+                            <Info className="mr-3 h-5 w-5" />
                             <span>Acerca de</span>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="md:hidden" />
-                        <DropdownMenuItem onClick={handleLogout}>
-                            <LogOut className="mr-2 h-4 w-4" />
+                        <DropdownMenuItem onClick={handleLogout} className="py-3 text-base text-destructive focus:text-destructive">
+                            <LogOut className="mr-3 h-5 w-5" />
                             <span>Cerrar Sesión</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>

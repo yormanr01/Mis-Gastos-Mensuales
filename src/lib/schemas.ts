@@ -3,8 +3,21 @@ import { z } from 'zod';
 import { months } from './types';
 
 const requiredError = "Este campo es requerido.";
-const numericField = z.coerce.number({ required_error: requiredError }).min(0, { message: "Debe ser un número positivo." });
-const integerField = numericField.int({ message: "Debe ser un número entero." });
+
+const baseNumeric = z.coerce.number({
+  required_error: requiredError,
+  invalid_type_error: requiredError
+}).min(0, { message: "Debe ser un número positivo." });
+
+const numericField = z.preprocess(
+  (val) => (val === "" || val === null || val === undefined ? undefined : val),
+  baseNumeric
+) as unknown as z.ZodNumber;
+
+const integerField = z.preprocess(
+  (val) => (val === "" || val === null || val === undefined ? undefined : val),
+  baseNumeric.int({ message: "Debe ser un número entero." })
+) as unknown as z.ZodNumber;
 
 export const waterFormSchema = z.object({
   year: numericField.refine(val => val >= 2000 && val <= new Date().getFullYear() + 1, { message: "Año inválido." }),

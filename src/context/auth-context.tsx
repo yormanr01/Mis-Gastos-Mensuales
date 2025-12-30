@@ -37,30 +37,56 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
+    // 1. Intentar cargar desde cache inmediatamente para velocidad
+    const cachedUser = localStorage.getItem('auth_user');
+    if (cachedUser) {
+      try {
+        const parsedUser = JSON.parse(cachedUser);
+        setUser(parsedUser);
+        // Si el usuario es de tipo Edición, la carga inicial de usuarios se gestionará 
+        // después de la verificación real para asegurar permisos.
+        setIsLoading(false);
+      } catch (e) {
+        console.error("Error parsing cached user", e);
+      }
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const userDocRef = doc(db, 'users', firebaseUser.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          const userData = userDoc.data() as Omit<User, 'id'>;
-          if (userData.status === 'Activo') {
-            const currentUser = { id: firebaseUser.uid, ...userData };
-            setUser(currentUser);
-            // Si el usuario es editor, carga la lista de usuarios.
-            if (currentUser.role === 'Edición') {
-              fetchUsers();
+        try {
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            const userData = userDoc.data() as Omit<User, 'id'>;
+            if (userData.status === 'Activo') {
+              const currentUser = { id: firebaseUser.uid, ...userData };
+              
+              // Actualizar estado y cache
+              setUser(currentUser);
+              localStorage.setItem('auth_user', JSON.stringify(currentUser));
+
+              // Si el usuario es editor, carga la lista de usuarios.
+              if (currentUser.role === 'Edición') {
+                fetchUsers();
+              }
+            } else {
+              await signOut(auth);
+              setUser(null);
+              localStorage.removeItem('auth_user');
             }
           } else {
-            await signOut(auth);
-            setUser(null);
-          }
-        } else {
             // User exists in Auth but not in Firestore, log them out.
             await signOut(auth);
             setUser(null);
+            localStorage.removeItem('auth_user');
+          }
+        } catch (error) {
+          console.error("Error verifying user session:", error);
+          // Si hay error de red, mantenemos el estado actual del cache si existe
         }
       } else {
         setUser(null);
+        localStorage.removeItem('auth_user');
       }
       setIsLoading(false);
     });
@@ -104,7 +130,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error('Esta cuenta de usuario está inactiva.');
       }
 
-      setUser({ id: firebaseUser.uid, ...userData });
+      const currentUser = { id: firebaseUser.uid, ...userData };
+      setUser(currentUser);
+      localStorage.setItem('auth_user', JSON.stringify(currentUser));
       
     } catch (error: any) {
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
@@ -118,6 +146,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await signOut(auth);
     setUser(null);
     setUsers([]);
+    localStorage.removeItem('auth_user');
     router.push('/login');
   };
 

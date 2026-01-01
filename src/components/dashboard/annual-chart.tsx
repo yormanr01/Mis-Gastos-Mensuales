@@ -87,7 +87,7 @@ export function AnnualChart({
       .reduce((sum, d) => sum + d.totalToPay, 0);
     const internet = internetData
       .filter((d) => d.year === year && d.month === month)
-      .reduce((sum, d) => sum + d.monthlyCost, 0);
+      .reduce((sum, d) => sum + d.totalToPay, 0);
 
     return {
       name: month.substring(0, 3),

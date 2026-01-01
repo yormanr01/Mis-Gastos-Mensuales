@@ -66,7 +66,8 @@ export function InternetForm({ setOpen, recordToEdit }: InternetFormProps) {
         status: 'Pendiente',
       });
     }
-  }, [recordToEdit, form, currentYear, currentMonth, fixedValues]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recordToEdit, currentYear, currentMonth, fixedValues.internetDiscount]);
 
   const { watch, setValue } = form;
   const monthlyCost = watch('monthlyCost');
@@ -131,7 +132,7 @@ export function InternetForm({ setOpen, recordToEdit }: InternetFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm font-semibold">Mes</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="h-11">
                       <SelectValue placeholder="Selecciona un mes" />

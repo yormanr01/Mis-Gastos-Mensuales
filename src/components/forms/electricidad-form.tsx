@@ -82,7 +82,8 @@ export function ElectricidadForm({ setOpen, recordToEdit }: ElectricidadFormProp
         discount: fixedValues.electricityDiscount,
       });
     }
-  }, [recordToEdit, form, currentYear, currentMonth, electricityData, fixedValues]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recordToEdit, currentYear, currentMonth, fixedValues.electricityDiscount]);
 
   const { watch, setValue } = form;
   const totalInvoiced = watch('totalInvoiced');
@@ -156,7 +157,7 @@ export function ElectricidadForm({ setOpen, recordToEdit }: ElectricidadFormProp
           <FormField name="month" control={form.control} render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-semibold">Mes</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl><SelectTrigger className="h-11"><SelectValue placeholder="Selecciona un mes" /></SelectTrigger></FormControl>
                 <SelectContent>{months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
               </Select>

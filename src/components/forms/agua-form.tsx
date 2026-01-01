@@ -56,15 +56,17 @@ export function AguaForm({ setOpen, recordToEdit }: AguaFormProps) {
     if (recordToEdit) {
       form.reset(recordToEdit);
     } else {
+      // Solo resetear si los valores por defecto cambian o si no hay un registro en edición
       form.reset({
         year: currentYear,
         month: currentMonth,
-        totalInvoiced: '' as any, // Set to empty string to avoid uncontrolled input error
+        totalInvoiced: '' as any,
         discount: fixedValues.waterDiscount,
         status: 'Pendiente',
       });
     }
-  }, [recordToEdit, form, currentYear, currentMonth, fixedValues]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recordToEdit, currentYear, currentMonth, fixedValues.waterDiscount]);
 
   const { watch, setValue } = form;
   const totalInvoiced = watch('totalInvoiced');
@@ -129,7 +131,7 @@ export function AguaForm({ setOpen, recordToEdit }: AguaFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-sm font-semibold">Mes</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="h-11">
                       <SelectValue placeholder="Selecciona un mes" />

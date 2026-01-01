@@ -5,7 +5,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft } from "lucide-react"
+import { Menu } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -68,10 +68,10 @@ const SidebarProvider = React.forwardRef<
     ref
   ) => {
     const isMobile = useIsMobile()
-    
+
     const [_open, _setOpen] = React.useState(defaultOpen)
     const open = openProp ?? _open
-    
+
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
         const openState = typeof value === "function" ? value(open) : value
@@ -88,24 +88,24 @@ const SidebarProvider = React.forwardRef<
     )
 
     React.useEffect(() => {
-        if (isMobile) {
-            _setOpen(false); // Always collapse on mobile
+      if (isMobile) {
+        _setOpen(false); // Always collapse on mobile
+      } else {
+        // Restore desktop state from cookie if available
+        const cookieValue = document.cookie
+          .split('; ')
+          .find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
+          ?.split('=')[1];
+        if (cookieValue) {
+          _setOpen(cookieValue === 'true');
         } else {
-            // Restore desktop state from cookie if available
-            const cookieValue = document.cookie
-                .split('; ')
-                .find(row => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
-                ?.split('=')[1];
-            if (cookieValue) {
-                _setOpen(cookieValue === 'true');
-            } else {
-                _setOpen(defaultOpen); // Use the default for desktop if no cookie
-            }
+          _setOpen(defaultOpen); // Use the default for desktop if no cookie
         }
+      }
     }, [isMobile, defaultOpen]);
 
     const toggleSidebar = React.useCallback(() => {
-        setOpen((open) => !open)
+      setOpen((open) => !open)
     }, [setOpen])
 
     React.useEffect(() => {
@@ -115,7 +115,7 @@ const SidebarProvider = React.forwardRef<
           (event.metaKey || event.ctrlKey)
         ) {
           event.preventDefault()
-          if(!isMobile) toggleSidebar();
+          if (!isMobile) toggleSidebar();
         }
       }
 
@@ -184,31 +184,31 @@ const Sidebar = React.forwardRef<
     ref
   ) => {
     const { state, isMobile } = useSidebar();
-    
+
     const effectiveState = isMobile ? "collapsed" : state;
 
     return (
+      <div
+        ref={ref}
+        className={cn(
+          "group peer text-sidebar-foreground transition-all duration-200 ease-in-out",
+          effectiveState === 'collapsed' ? 'w-[--sidebar-width-icon]' : 'w-[--sidebar-width]',
+          "fixed left-0 h-[calc(100%-6rem)] top-24 group-has-[[data-collapsible=icon]]/sidebar-wrapper:top-16 group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-[calc(100%-4rem)] flex flex-col border-r bg-sidebar z-30",
+          className
+        )}
+        data-state={effectiveState}
+        data-collapsible={collapsible}
+        data-variant={variant}
+        data-side={side}
+        {...props}
+      >
         <div
-            ref={ref}
-            className={cn(
-                "group peer text-sidebar-foreground transition-all duration-200 ease-in-out",
-                effectiveState === 'collapsed' ? 'w-[--sidebar-width-icon]' : 'w-[--sidebar-width]',
-                "fixed top-0 left-0 h-full flex flex-col border-r bg-sidebar z-30",
-                className
-            )}
-            data-state={effectiveState}
-            data-collapsible={collapsible}
-            data-variant={variant}
-            data-side={side}
-            {...props}
+          data-sidebar="sidebar"
+          className="flex h-full w-full flex-col"
         >
-            <div
-                data-sidebar="sidebar"
-                className="flex h-full w-full flex-col"
-            >
-                {children}
-            </div>
+          {children}
         </div>
+      </div>
     )
   }
 )
@@ -220,7 +220,7 @@ const SidebarTrigger = React.forwardRef<
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
   const { toggleSidebar, isMobile } = useSidebar()
-  
+
   if (isMobile) return null;
 
   return (
@@ -229,14 +229,14 @@ const SidebarTrigger = React.forwardRef<
       data-sidebar="trigger"
       variant="ghost"
       size="icon"
-      className={cn("h-8 w-8", className)}
+      className={cn("h-10 w-10", className)}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
       }}
       {...props}
     >
-      <PanelLeft />
+      <Menu className="!h-6 !w-6" />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )
@@ -572,7 +572,7 @@ const SidebarMenuAction = React.forwardRef<
         "peer-data-[size=lg]/menu-button:top-2.5",
         "group-data-[state=collapsed]:hidden",
         showOnHover &&
-          "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
+        "group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0",
         className
       )}
       {...props}

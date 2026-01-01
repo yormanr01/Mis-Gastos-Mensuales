@@ -24,6 +24,9 @@ const fixedValuesSchema = z.object({
 
 type FixedValuesForm = z.infer<typeof fixedValuesSchema>;
 
+import { PageHeader } from "@/components/page-header";
+import { Settings } from "lucide-react";
+
 export default function FixedValuesPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
@@ -70,8 +73,8 @@ export default function FixedValuesPage() {
 
   return (
     <div className="flex flex-col h-full">
-
-      <main className="flex-1 overflow-auto p-4 md:p-6">
+      <PageHeader title="Configuración de Valores" icon={Settings} />
+      <main className="flex-1 overflow-auto p-4 md:p-6 pt-0 md:pt-0">
         <div className="max-w-4xl mx-auto">
           <Card className="glass-card">
             <CardHeader>

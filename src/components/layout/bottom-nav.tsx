@@ -32,9 +32,9 @@ export function BottomNav() {
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors ${isActive
-                                    ? 'text-primary'
-                                    : 'text-muted-foreground hover:text-foreground'
+                            className={`flex flex-col items-center justify-center flex-1 h-full gap-1 ${isActive
+                                ? 'text-primary'
+                                : 'text-muted-foreground hover:text-foreground'
                                 }`}
                         >
                             <Icon className="h-5 w-5" />

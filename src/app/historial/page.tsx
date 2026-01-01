@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Printer, Download, Droplet, Lightbulb, Wifi } from "lucide-react";
+import { Printer, Download, Droplet, Lightbulb, Wifi, History } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 
 type CombinedData = {
   water: WaterRecord | null;
@@ -310,8 +311,8 @@ export default function HistorialPage() {
 
   return (
     <div className="flex flex-col h-full">
-
-      <main className="flex-1 overflow-auto p-4 md:p-6">
+      <PageHeader title="Historial Consolidado" icon={History} />
+      <main className="flex-1 overflow-auto p-4 md:p-6 pt-0 md:pt-0">
         <Card className="glass-card">
           <CardHeader>
             <CardTitle className="text-2xl font-bold">Resumen de Gastos por Mes</CardTitle>

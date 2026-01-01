@@ -23,7 +23,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/use-auth';
 
-const menuItems = [
+const menuItems: { href: string; label: string; icon: any; role?: string }[] = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/agua', label: 'Agua', icon: Droplet },
   { href: '/electricidad', label: 'Electricidad', icon: Lightbulb },
@@ -31,7 +31,7 @@ const menuItems = [
   { href: '/historial', label: 'Historial', icon: History },
 ];
 
-const secondaryMenuItems = [
+const secondaryMenuItems: { href: string; label: string; icon: any; role?: string }[] = [
   { href: '/acerca-de', label: 'Acerca de', icon: Info },
 ];
 
@@ -46,12 +46,6 @@ export function MainSidebar() {
 
   return (
     <>
-      <SidebarHeader className="p-4">
-        <Link href="/" className="flex items-center gap-2">
-          <CircleDollarSign className="w-8 h-8 text-primary" />
-          <h1 className="text-xl font-semibold group-data-[state=collapsed]:hidden">Mis Gastos</h1>
-        </Link>
-      </SidebarHeader>
       <SidebarContent className="flex flex-col justify-between">
         <SidebarMenu>
           {filteredMenuItems.map((item) => {

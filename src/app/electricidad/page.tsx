@@ -7,16 +7,17 @@ import { ElectricidadTable } from "@/components/history/electricidad-table";
 import { ElectricidadForm } from "@/components/forms/electricidad-form";
 import { useApp } from "@/lib/hooks/use-app";
 
+import { PageHeader } from "@/components/page-header";
+import { Lightbulb } from "lucide-react";
+
 export default function ElectricidadPage() {
   const { electricityData, isLoading } = useApp();
 
   return (
     <div className="flex flex-col h-full">
-
-      <main className="flex-1 overflow-auto p-4 md:p-6">
+      <PageHeader title="Servicio Eléctrico" icon={Lightbulb} />
+      <main className="flex-1 overflow-auto p-4 md:p-6 pt-0 md:pt-0">
         <ServiceHistory
-          data={electricityData}
-          isLoading={isLoading}
           serviceName="Electricidad"
           FormComponent={ElectricidadForm}
           TableComponent={ElectricidadTable}

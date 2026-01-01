@@ -12,20 +12,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, Settings, Users, Info, CircleDollarSign } from 'lucide-react';
+import { LogOut, Settings, Users, Info, CircleDollarSign, LayoutDashboard, Droplet, Lightbulb, Wifi, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-
-const pageTitles: Record<string, string> = {
-    '/': 'Dashboard',
-    '/agua': 'Agua',
-    '/electricidad': 'Electricidad',
-    '/internet': 'Internet',
-    '/historial': 'Historial',
-    '/valores-fijos': 'Valores Fijos',
-    '/admin/users': 'Admin Usuarios',
-    '/acerca-de': 'Acerca de',
-};
 
 export function Header() {
     const { user, logout } = useAuth();
@@ -41,19 +30,16 @@ export function Header() {
         ? user.email.substring(0, 2).toUpperCase()
         : 'U';
 
-    const currentTitle = pageTitles[pathname] || 'Mis Gastos';
-
     return (
-        <header className="sticky top-0 z-10 flex h-24 shrink-0 items-center justify-between gap-2 border-b bg-background px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-16">
-            <div className="flex items-center gap-2 px-4">
-                <SidebarTrigger className="-ml-1" />
-                <div className="flex items-center gap-2 md:hidden">
+        <header className="fixed top-0 left-0 right-0 z-[60] flex h-24 shrink-0 items-center justify-between gap-2 border-b bg-background/80 backdrop-blur-md px-2 transition-all duration-300 ease-in-out group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-16">
+            <div className="flex items-center gap-2 px-0">
+                <SidebarTrigger className="hidden md:flex" />
+                <div className="flex items-center gap-2">
                     <Link href="/" className="flex items-center gap-2">
-                        <CircleDollarSign className="w-6 h-6 text-primary" />
+                        <CircleDollarSign className="w-8 h-8 text-primary" />
                         <h1 className="text-xl font-bold whitespace-nowrap">Mis Gastos</h1>
                     </Link>
                 </div>
-                <h1 className="text-xl font-bold hidden md:block">{currentTitle}</h1>
             </div>
             <div className="flex items-center gap-2">
                 <DropdownMenu>

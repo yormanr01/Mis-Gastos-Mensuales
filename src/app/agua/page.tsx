@@ -7,16 +7,17 @@ import { AguaTable } from "@/components/history/agua-table";
 import { AguaForm } from "@/components/forms/agua-form";
 import { useApp } from "@/lib/hooks/use-app";
 
+import { PageHeader } from "@/components/page-header";
+import { Droplet } from "lucide-react";
+
 export default function AguaPage() {
   const { waterData, isLoading } = useApp();
 
   return (
     <div className="flex flex-col h-full">
-
-      <main className="flex-1 overflow-auto p-4 md:p-6">
+      <PageHeader title="Servicio de Agua" icon={Droplet} />
+      <main className="flex-1 overflow-auto p-4 md:p-6 pt-0 md:pt-0">
         <ServiceHistory
-          data={waterData}
-          isLoading={isLoading}
           serviceName="Agua"
           FormComponent={AguaForm}
           TableComponent={AguaTable}

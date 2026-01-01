@@ -13,25 +13,27 @@ import { cn } from '@/lib/utils';
 function AppLayout({ children }: { children: React.ReactNode }) {
   const { state } = useSidebar();
   return (
-    <div className="relative min-h-screen">
-      {/* Desktop Sidebar - hidden on mobile */}
-      <div className="hidden md:block">
-        <Sidebar>
-          <MainSidebar />
-        </Sidebar>
-      </div>
+    <div className="relative flex flex-col min-h-screen">
+      <Header />
+      <div className="flex flex-1 pt-24 group-has-[[data-collapsible=icon]]/sidebar-wrapper:pt-16 md:pt-24 transition-[padding] ease-linear">
+        {/* Desktop Sidebar - hidden on mobile */}
+        <div className="hidden md:block">
+          <Sidebar>
+            <MainSidebar />
+          </Sidebar>
+        </div>
 
-      {/* Main content area */}
-      <main
-        className={cn(
-          "pb-16 md:pb-0",
-          // Desktop margin based on sidebar state
-          state === 'expanded' ? 'md:ml-64' : 'md:ml-14'
-        )}
-      >
-        <Header />
-        {children}
-      </main>
+        {/* Main content area */}
+        <main
+          className={cn(
+            "flex-1 pb-16 md:pb-0 transition-[margin] duration-300 ease-in-out",
+            // Desktop margin based on sidebar state
+            state === 'expanded' ? 'md:ml-64' : 'md:ml-16'
+          )}
+        >
+          {children}
+        </main>
+      </div>
 
       {/* Mobile Bottom Navigation */}
       <BottomNav />
@@ -39,7 +41,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function AppContent({ children }: { children: React.ReactNode }) {
+function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, isLoading } = useAuth();
   const router = useRouter();
@@ -64,13 +66,21 @@ export function AppContent({ children }: { children: React.ReactNode }) {
 
   if (user) {
     return (
-      <SidebarProvider>
-        <AppLayout>
-          {children}
-        </AppLayout>
-      </SidebarProvider>
+      <AppLayout>
+        {children}
+      </AppLayout>
     );
   }
 
   return null;
+}
+
+export function AppContent({ children }: { children: React.ReactNode }) {
+  return (
+    <SidebarProvider>
+      <AuthGuard>
+        {children}
+      </AuthGuard>
+    </SidebarProvider>
+  );
 }

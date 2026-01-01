@@ -1,11 +1,11 @@
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CircleDollarSign } from "lucide-react";
+import { CircleDollarSign, Info } from "lucide-react";
 
 export default function AboutPage() {
   return (
     <div className="flex flex-col h-full">
-      <PageHeader title="Acerca de Mis Gastos Mensuales" />
+      <PageHeader title="Acerca de Mis Gastos" icon={Info} />
       <main className="flex-1 overflow-auto p-4 md:p-6 flex items-center justify-center">
         <Card className="max-w-2xl w-full">
           <CardHeader className="items-center text-center">

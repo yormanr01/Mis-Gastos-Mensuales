@@ -99,7 +99,7 @@ export function AnnualChart({
   });
 
   return (
-    <Card className="glass-card">
+    <Card className="glass-card h-full">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
@@ -120,7 +120,7 @@ export function AnnualChart({
         </div>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={350}>
+        <ResponsiveContainer width="100%" height={250}>
           <LineChart data={chartData}>
             <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
             <YAxis

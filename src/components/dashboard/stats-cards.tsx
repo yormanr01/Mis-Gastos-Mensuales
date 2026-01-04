@@ -8,7 +8,7 @@ import { Droplet, Lightbulb, Wifi, CircleDollarSign } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 
-export function StatsCards() {
+export function StatsCards({ filter }: { filter?: 'main' | 'services' }) {
   const { waterData, electricityData, internetData, isLoading, selectedYear } = useApp();
 
   const renderSkeletons = (count: number) => (
@@ -96,7 +96,7 @@ export function StatsCards() {
 
   const StatCard = memo(({ stat, index, year }: { stat: any, index: number, year: number }) => (
     <Card
-      className={`transition-all duration-300 hover:scale-[1.02] hover:shadow-xl ${stat.border} ${stat.isHighlighted
+      className={`transition-all duration-300 hover:scale-[1.02] hover:shadow-xl h-full flex flex-col ${stat.border} ${stat.isHighlighted
         ? 'bg-indigo-600 dark:bg-indigo-700 text-white ring-4 ring-indigo-500/30 shadow-2xl shadow-indigo-500/40 border-transparent'
         : 'glass-card'}`}
     >
@@ -106,9 +106,9 @@ export function StatsCards() {
           <stat.icon className={`h-5 w-5 ${stat.color}`} />
         </div>
       </CardHeader>
-      <CardContent>
-        <div className={`font-bold tracking-tight ${stat.isHighlighted ? 'text-4xl text-white' : 'text-3xl'}`}>{stat.value}</div>
-        <p className={`text-xs mt-2 ${stat.isHighlighted ? 'text-indigo-100' : 'text-muted-foreground'}`}>Año {year}</p>
+      <CardContent className={stat.isHighlighted ? 'flex-1 flex flex-col justify-center pb-6' : ''}>
+        <div className={`font-bold tracking-tight ${stat.isHighlighted ? 'text-5xl md:text-6xl text-white' : 'text-3xl'}`}>{stat.value}</div>
+        <p className={`text-xs mt-2 ${stat.isHighlighted ? 'text-indigo-100/90 text-sm' : 'text-muted-foreground'}`}>Año {year}</p>
       </CardContent>
     </Card>
   ));
@@ -116,10 +116,16 @@ export function StatsCards() {
   StatCard.displayName = 'StatCard';
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {stats.map((stat, index) => (
-        <StatCard key={index} stat={stat} index={index} year={selectedYear} />
-      ))}
+    <div className={`grid gap-4 h-full ${filter === 'main' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-3'}`}>
+      {stats
+        .filter(stat => {
+          if (filter === 'main') return stat.isHighlighted;
+          if (filter === 'services') return !stat.isHighlighted;
+          return true;
+        })
+        .map((stat, index) => (
+          <StatCard key={index} stat={stat} index={index} year={selectedYear} />
+        ))}
     </div>
   );
 }

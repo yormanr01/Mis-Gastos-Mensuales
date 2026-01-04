@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { AnnualChart } from "@/components/dashboard/annual-chart";
-import { InsightsCard } from "@/components/dashboard/insights-card";
+import { InsightsModal } from "@/components/dashboard/insights-modal";
 import { useApp } from "@/lib/hooks/use-app";
 
 import { PageHeader } from "@/components/page-header";
@@ -28,17 +28,29 @@ export default function DashboardPage() {
     <div className="flex flex-col h-full">
       <PageHeader title="Panel Principal" icon={LayoutDashboard} />
       <main className="flex-1 overflow-auto p-4 md:p-6 pt-0 md:pt-0">
-        <div className="space-y-6">
-          <StatsCards />
-          <AnnualChart
-            year={selectedYear}
-            selectedYear={selectedYear}
-            onYearChange={setSelectedYear}
-            availableYears={availableYears}
-          />
-          <InsightsCard />
+        <div className="flex flex-col gap-6">
+          {/* Fila 1: Total y Gráfico */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+            <div className="lg:col-span-1">
+              <StatsCards filter="main" />
+            </div>
+            <div className="lg:col-span-2">
+              <AnnualChart
+                year={selectedYear}
+                selectedYear={selectedYear}
+                onYearChange={setSelectedYear}
+                availableYears={availableYears}
+              />
+            </div>
+          </div>
+
+          {/* Fila 2: Servicios */}
+          <div>
+            <StatsCards filter="services" />
+          </div>
         </div>
       </main>
+      <InsightsModal />
     </div>
   );
 }

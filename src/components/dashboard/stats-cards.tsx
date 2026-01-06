@@ -38,8 +38,8 @@ export function StatsCards({ filter }: { filter?: 'main' | 'services' }) {
     const filterBySelectedYear = <T extends { year: number }>(data: T[]) =>
       data.filter((d) => d.year === selectedYear);
 
-    const sumTotal = (data: { totalToPay?: number; monthlyCost?: number }[]) =>
-      data.reduce((acc, curr) => acc + (curr.totalToPay ?? curr.monthlyCost ?? 0), 0);
+    const sumTotal = (data: any[]) =>
+      data.reduce((acc, curr) => acc + (curr.totalToPay ?? curr.monthlyCost ?? curr.totalInvoiced ?? 0), 0);
 
     const water = sumTotal(filterBySelectedYear(waterData));
     const electricity = sumTotal(filterBySelectedYear(electricityData));

@@ -257,7 +257,7 @@ export default function HistorialPage() {
         data[key] = { water: null, electricity: null, internet: null, total: 0 };
       }
 
-      const value = 'monthlyCost' in record ? record.monthlyCost : ('totalToPay' in record ? record.totalToPay : 0);
+      const value = record.totalToPay ?? ('monthlyCost' in record ? record.monthlyCost : (record as any).totalInvoiced ?? 0);
 
       if (record.type === 'water') data[key].water = record as unknown as WaterRecord;
       if (record.type === 'electricity') data[key].electricity = record as unknown as ElectricityRecord;
@@ -292,7 +292,7 @@ export default function HistorialPage() {
           month,
           data.water?.totalToPay ?? 0,
           data.electricity?.totalToPay ?? 0,
-          data.internet?.monthlyCost ?? 0,
+          data.internet?.totalToPay ?? data.internet?.monthlyCost ?? 0,
           data.total
         ];
         return row.join(',');

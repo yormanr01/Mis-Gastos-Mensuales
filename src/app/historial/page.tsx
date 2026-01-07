@@ -9,8 +9,9 @@ import { months, WaterRecord, ElectricityRecord, InternetRecord } from "@/lib/ty
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Printer, Download, Droplet, Lightbulb, Wifi, History } from "lucide-react";
+import { Printer, Download, Droplet, Lightbulb, Wifi, History, Search } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 
 type CombinedData = {
@@ -28,10 +29,11 @@ const formatCurrency = (amount: number | undefined) => {
 };
 
 export default function HistorialPage() {
-  const { waterData, electricityData, internetData, selectedYear } = useApp();
+  const { waterData, electricityData, internetData } = useApp();
   const isMobile = useIsMobile();
   const [isPreviewOpen, setPreviewOpen] = useState(false);
   const [previewData, setPreviewData] = useState<{ monthKey: string; data: CombinedData } | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handlePrintDesktop = (monthKey: string, data: CombinedData) => {
     const [month, year] = monthKey.split('-');
@@ -246,9 +248,9 @@ export default function HistorialPage() {
   const { combinedData, sortedMonths } = useMemo(() => {
     const data: CombinedDataMap = {};
     const allRecords = [
-      ...waterData.filter(d => d.year === selectedYear).map(d => ({ ...d, type: 'water' })),
-      ...electricityData.filter(d => d.year === selectedYear).map(d => ({ ...d, type: 'electricity' })),
-      ...internetData.filter(d => d.year === selectedYear).map(d => ({ ...d, type: 'internet' }))
+      ...waterData.map(d => ({ ...d, type: 'water' })),
+      ...electricityData.map(d => ({ ...d, type: 'electricity' })),
+      ...internetData.map(d => ({ ...d, type: 'internet' }))
     ];
 
     allRecords.forEach(record => {
@@ -278,13 +280,22 @@ export default function HistorialPage() {
     });
 
     return { combinedData: data, sortedMonths: monthsSorted };
-  }, [waterData, electricityData, internetData, selectedYear]);
+  }, [waterData, electricityData, internetData]);
+
+  const filteredMonths = useMemo(() => {
+    if (!searchTerm) return sortedMonths;
+    const lowerSearch = searchTerm.toLowerCase();
+    return sortedMonths.filter(monthKey => {
+      const [month, year] = monthKey.split('-');
+      return month.toLowerCase().includes(lowerSearch) || year.toLowerCase().includes(lowerSearch);
+    });
+  }, [sortedMonths, searchTerm]);
 
   const handleExportCSV = useCallback(() => {
     const headers = ['Año', 'Mes', 'Agua', 'Electricidad', 'Internet', 'Total del Mes'];
     const csvContent = [
       headers.join(','),
-      ...sortedMonths.map(monthKey => {
+      ...filteredMonths.map(monthKey => {
         const [month, year] = monthKey.split('-');
         const data = combinedData[monthKey];
         const row = [
@@ -307,22 +318,38 @@ export default function HistorialPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }, [combinedData, sortedMonths]);
+  }, [combinedData, filteredMonths]);
 
   return (
     <div className="flex flex-col h-full">
-      <PageHeader title="Historial Consolidado" icon={History} />
+      <PageHeader title="Historial Consolidado" icon={History}>
+        <Button variant="outline" onClick={handleExportCSV} disabled={filteredMonths.length === 0} className="h-11 px-6 shadow-sm hover:shadow-md transition-all">
+          <Download className="mr-2 h-4 w-4" />
+          Exportar a CSV
+        </Button>
+      </PageHeader>
       <main className="flex-1 overflow-auto p-4 md:p-6 pt-0 md:pt-0">
+        <div className="mb-4 sm:mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por mes o año..."
+              className="pl-10 h-11 glass-card border-primary/20 focus:border-primary transition-all"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
         <Card className="glass-card">
           <CardHeader>
             <CardTitle className="text-2xl font-bold">Resumen de Gastos por Mes</CardTitle>
           </CardHeader>
           <CardContent>
-            {sortedMonths.length > 0 ? (
+            {filteredMonths.length > 0 ? (
               <>
                 {/* Mobile View - Cards */}
                 <div className="md:hidden space-y-4">
-                  {sortedMonths.map((monthKey, index) => {
+                  {filteredMonths.map((monthKey, index) => {
                     const [month, year] = monthKey.split('-');
                     const data = combinedData[monthKey];
                     return (
@@ -379,7 +406,7 @@ export default function HistorialPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {sortedMonths.map(monthKey => {
+                      {filteredMonths.map(monthKey => {
                         const [month, year] = monthKey.split('-');
                         const data = combinedData[monthKey];
                         return (
@@ -406,19 +433,18 @@ export default function HistorialPage() {
               </>
             ) : (
               <div className="text-center p-12 glass-card rounded-lg">
-                <h3 className="text-lg font-semibold mb-2">No hay datos disponibles</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  {searchTerm ? 'No se encontraron resultados' : 'No hay datos disponibles'}
+                </h3>
                 <p className="text-muted-foreground">
-                  Añade registros en las secciones de Agua, Electricidad e Internet para ver el historial.
+                  {searchTerm
+                    ? `No hay registros que coincidan con "${searchTerm}"`
+                    : 'Añade registros en las secciones de Agua, Electricidad e Internet para ver el historial.'
+                  }
                 </p>
               </div>
             )}
           </CardContent>
-          <CardFooter className="flex justify-end border-t pt-6">
-            <Button variant="outline" onClick={handleExportCSV} disabled={sortedMonths.length === 0} className="h-11 px-6">
-              <Download className="mr-2 h-4 w-4" />
-              Exportar a CSV
-            </Button>
-          </CardFooter>
         </Card>
       </main>
 

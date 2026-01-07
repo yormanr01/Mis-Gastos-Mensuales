@@ -46,22 +46,6 @@ export function InternetTable({ onEdit, data, isLoading }: InternetTableProps) {
     })
   }
 
-  const handleExportCSV = () => {
-    const headers = ['Año', 'Mes', 'Costo Mensual', 'Descuento', 'Total a Pagar', 'Estado'];
-    const csvContent = [
-      headers.join(','),
-      ...data.map(r => [r.year, r.month, r.monthlyCost, r.discount, r.totalToPay, r.status].join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.href = url;
-    link.setAttribute('download', 'historial_internet.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   return (
     <Card className="glass-card">
@@ -157,12 +141,6 @@ export function InternetTable({ onEdit, data, isLoading }: InternetTableProps) {
           ))}
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end">
-        <Button variant="outline" onClick={handleExportCSV} disabled={data.length === 0}>
-          <Download className="mr-2 h-4 w-4" />
-          Exportar a CSV
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

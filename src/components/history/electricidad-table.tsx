@@ -44,32 +44,6 @@ export function ElectricidadTable({ onEdit, data, isLoading }: ElectricidadTable
     })
   }
 
-  const handleExportCSV = () => {
-    const headers = [
-      'Año', 'Mes', 'Total Facturado', 'Consumo kWh', 'Costo kWh',
-      'Contador Anterior', 'Contador Actual', 'Consumo Contador',
-      'Descuento', 'Total a Pagar', 'Estado'
-    ];
-    const csvContent = [
-      headers.join(','),
-      ...data.map(r =>
-        [
-          r.year, r.month, r.totalInvoiced, r.kwhConsumption, r.kwhCost,
-          r.previousMeter, r.currentMeter, r.consumptionMeter,
-          r.discount, r.totalToPay, r.status
-        ].join(',')
-      )
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.href = url;
-    link.setAttribute('download', 'historial_electricidad.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   return (
     <Card className="glass-card">
@@ -187,12 +161,6 @@ export function ElectricidadTable({ onEdit, data, isLoading }: ElectricidadTable
           ))}
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end">
-        <Button variant="outline" onClick={handleExportCSV} disabled={data.length === 0}>
-          <Download className="mr-2 h-4 w-4" />
-          Exportar a CSV
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

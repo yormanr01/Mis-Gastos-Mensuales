@@ -10,7 +10,7 @@ type PageHeaderProps = {
 
 export function PageHeader({ title, icon: Icon, children, className }: PageHeaderProps) {
   return (
-    <div className={cn("flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-6 px-4 md:px-6", className)}>
+    <div className={cn("flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 py-4 sm:py-6 px-4 md:px-6", className)}>
       <div className="flex items-center gap-3">
         <div className="p-2.5 rounded-2xl bg-primary/10 text-primary">
           <Icon className="h-6 w-6" />

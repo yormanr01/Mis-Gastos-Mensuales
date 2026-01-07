@@ -54,27 +54,6 @@ export function AguaTable({ onEdit, data, isLoading }: AguaTableProps) {
     })
   }
 
-  const handleExportCSV = () => {
-    const headers = ['Año', 'Mes', 'Total Facturado', 'Descuento', 'Total a Pagar', 'Estado'];
-    const csvContent = [
-      headers.join(','),
-      ...data.map(r =>
-        [r.year, r.month, r.totalInvoiced, r.discount, r.totalToPay, r.status].join(',')
-      )
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.href) {
-      URL.revokeObjectURL(link.href);
-    }
-    const url = URL.createObjectURL(blob);
-    link.href = url;
-    link.setAttribute('download', 'historial_agua.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
 
   const renderSkeleton = () => (
@@ -183,12 +162,6 @@ export function AguaTable({ onEdit, data, isLoading }: AguaTableProps) {
           ))}
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end">
-        <Button variant="outline" onClick={handleExportCSV} disabled={data.length === 0}>
-          <Download className="mr-2 h-4 w-4" />
-          Exportar a CSV
-        </Button>
-      </CardFooter>
     </Card>
   );
 }

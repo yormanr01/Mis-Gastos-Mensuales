@@ -133,14 +133,23 @@ export function AguaTable({ onEdit, data, isLoading }: AguaTableProps) {
 
               {/* Actions */}
               {user?.role === 'Edición' && (
-                <div className="flex justify-end gap-2 pt-3 border-t opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button variant="ghost" size="icon" onClick={() => onEdit(record)} className="h-9 w-9">
+                <div className="flex gap-2 pt-4 border-t mt-auto">
+                  <Button
+                    variant="outline"
+                    onClick={() => onEdit(record)}
+                    className="flex-1 h-10 gap-2 font-medium border-primary/20 hover:bg-primary/5 hover:text-primary transition-all"
+                  >
                     <FilePenLine className="h-4 w-4" />
+                    <span>Editar</span>
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:text-destructive">
+                      <Button
+                        variant="outline"
+                        className="flex-1 h-10 gap-2 font-medium text-destructive border-destructive/20 hover:bg-destructive/5 hover:text-destructive transition-all"
+                      >
                         <Trash2 className="h-4 w-4" />
+                        <span>Eliminar</span>
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>

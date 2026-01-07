@@ -31,7 +31,7 @@ export function Header() {
         : 'U';
 
     return (
-        <header className="fixed top-0 left-0 right-0 z-[60] flex h-24 shrink-0 items-center justify-between gap-2 border-b bg-background/80 backdrop-blur-md px-2 transition-all duration-300 ease-in-out group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-16">
+        <header className="fixed top-0 left-0 right-0 z-[60] flex h-24 shrink-0 items-center justify-between gap-2 border-b bg-background/80 backdrop-blur-md px-2 transition-[height,background-color] duration-300 ease-in-out group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-16">
             <div className="flex items-center gap-2 px-0">
                 <SidebarTrigger className="hidden md:flex" />
                 <div className="flex items-center gap-2">

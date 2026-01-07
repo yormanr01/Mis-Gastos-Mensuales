@@ -15,7 +15,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative flex flex-col min-h-screen">
       <Header />
-      <div className="flex flex-1 pt-24 group-has-[[data-collapsible=icon]]/sidebar-wrapper:pt-16 md:pt-24 transition-[padding] ease-linear">
+      <div className="flex flex-1 pt-24 group-has-[[data-collapsible=icon]]/sidebar-wrapper:pt-16 md:pt-24 md:transition-[padding] md:ease-linear">
         {/* Desktop Sidebar - hidden on mobile */}
         <div className="hidden md:block">
           <Sidebar>
@@ -26,7 +26,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Main content area */}
         <main
           className={cn(
-            "flex-1 pb-16 md:pb-0 transition-[margin] duration-300 ease-in-out",
+            "flex-1 pb-16 md:pb-0 md:transition-[margin] md:duration-300 md:ease-in-out",
             // Desktop margin based on sidebar state
             state === 'expanded' ? 'md:ml-64' : 'md:ml-16'
           )}

@@ -7,7 +7,7 @@ import { Sidebar, SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { MainSidebar } from '@/components/layout/main-sidebar';
 import { Header } from '@/components/layout/header';
 import { BottomNav } from '@/components/layout/bottom-nav';
-import { useEffect } from 'react';
+import { useEffect, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 function AppLayout({ children }: { children: React.ReactNode }) {
@@ -41,7 +41,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   )
 }
 
-function AuthGuard({ children }: { children: React.ReactNode }) {
+function AuthGuard({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { user, isLoading } = useAuth();
   const router = useRouter();
@@ -56,19 +56,22 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p>Verificando sesión...</p>
-      </div>
-    );
-  }
-
+  // Si tenemos un usuario (incluso si está cargando la verificación real en segundo plano),
+  // mostramos el contenido para evitar parpadeos.
   if (user) {
     return (
       <AppLayout>
         {children}
       </AppLayout>
+    );
+  }
+
+  // Solo mostramos el cargando si realmente no hay usuario y está cargando.
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p>Verificando sesión...</p>
+      </div>
     );
   }
 

@@ -6,7 +6,7 @@ import { AppContent } from '@/components/layout/app-content';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
 
-export const dynamic = 'force-dynamic';
+
 
 export const metadata: Metadata = {
   title: 'Mis Gastos Mensuales',

@@ -32,7 +32,7 @@ export function BottomNav() {
                         <Link
                             key={item.href}
                             href={item.href}
-                            prefetch={false}
+
                             className={`flex flex-col items-center justify-center flex-1 h-full gap-1 active:scale-95 transition-transform duration-75 ${isActive
                                 ? 'text-primary'
                                 : 'text-muted-foreground hover:text-foreground'

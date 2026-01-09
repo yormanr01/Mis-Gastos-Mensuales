@@ -1,9 +1,10 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/hooks/use-auth';
+import { useTheme } from 'next-themes';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApp } from "@/lib/hooks/use-app";
@@ -14,7 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Droplet, Lightbulb, Wifi } from 'lucide-react';
+import { Droplet, Lightbulb, Wifi, Moon, Sun, Monitor, Palette } from 'lucide-react';
 
 const fixedValuesSchema = z.object({
   waterDiscount: z.coerce.number().min(0, "El descuento debe ser un número positivo."),
@@ -27,11 +28,18 @@ type FixedValuesForm = z.infer<typeof fixedValuesSchema>;
 import { PageHeader } from "@/components/page-header";
 import { Settings } from "lucide-react";
 
-export default function FixedValuesPage() {
+export default function SettingsPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const { fixedValues, setFixedValues } = useApp();
+  const { theme, setTheme } = useTheme();
   const { toast } = useToast();
+  const [mounted, setMounted] = useState(false);
+
+  // Avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     // Correct logic: if loading is finished AND the user's role is NOT 'Edición'
@@ -55,7 +63,7 @@ export default function FixedValuesPage() {
     setFixedValues(data);
     toast({
       title: "Valores actualizados",
-      description: "Los valores fijos se han guardado correctamente.",
+      description: "Los ajustes se han guardado correctamente.",
     });
   };
 
@@ -73,12 +81,57 @@ export default function FixedValuesPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <PageHeader title="Configuración de Valores" icon={Settings} />
+      <PageHeader title="Ajustes" icon={Settings} />
       <main className="flex-1 overflow-auto p-4 md:p-6 pt-0 md:pt-0">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Apariencia Section */}
           <Card className="glass-card">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold">Configuración de Valores</CardTitle>
+              <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                <Palette className="h-6 w-6 text-primary" />
+                Apariencia
+              </CardTitle>
+              <CardDescription>
+                Personaliza cómo se ve la aplicación en tu dispositivo
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Button
+                  variant={mounted && theme === 'light' ? 'default' : 'outline'}
+                  className={`h-16 flex flex-col gap-1 transition-all ${mounted && theme === 'light' ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+                  onClick={() => setTheme('light')}
+                >
+                  <Sun className="h-5 w-5" />
+                  <span className="text-xs">Claro</span>
+                </Button>
+                <Button
+                  variant={mounted && theme === 'dark' ? 'default' : 'outline'}
+                  className={`h-16 flex flex-col gap-1 transition-all ${mounted && theme === 'dark' ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+                  onClick={() => setTheme('dark')}
+                >
+                  <Moon className="h-5 w-5" />
+                  <span className="text-xs">Oscuro</span>
+                </Button>
+                <Button
+                  variant={mounted && theme === 'system' ? 'default' : 'outline'}
+                  className={`h-16 flex flex-col gap-1 transition-all ${mounted && theme === 'system' ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+                  onClick={() => setTheme('system')}
+                >
+                  <Monitor className="h-5 w-5" />
+                  <span className="text-xs">Sistema</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Configuración de Valores Section */}
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                <Settings className="h-6 w-6 text-primary" />
+                Configuración de Valores
+              </CardTitle>
               <CardDescription>
                 Establece los descuentos predeterminados para cada servicio
               </CardDescription>

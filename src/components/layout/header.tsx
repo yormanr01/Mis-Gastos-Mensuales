@@ -63,9 +63,9 @@ export function Header() {
                         <DropdownMenuSeparator />
                         {user?.role === 'Edición' && (
                             <>
-                                <DropdownMenuItem onClick={() => router.push('/valores-fijos')} className="py-3 text-base">
+                                <DropdownMenuItem onClick={() => router.push('/ajustes')} className="py-3 text-base">
                                     <Settings className="mr-3 h-5 w-5" />
-                                    <span>Valores Fijos</span>
+                                    <span>Ajustes</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => router.push('/admin/users')} className="py-3 text-base">
                                     <Users className="mr-3 h-5 w-5" />

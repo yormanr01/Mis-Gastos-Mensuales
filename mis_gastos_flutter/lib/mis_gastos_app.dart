@@ -1,0 +1,52 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mis_gastos_flutter/app_router.dart';
+import 'package:mis_gastos_flutter/core/go_router_refresh_stream.dart';
+import 'package:mis_gastos_flutter/features/auth/bloc/auth_bloc.dart';
+import 'package:mis_gastos_flutter/theme/app_theme.dart';
+
+class MisGastosApp extends StatefulWidget {
+  const MisGastosApp({
+    super.key,
+    required this.authBloc,
+  });
+
+  final AuthBloc authBloc;
+
+  @override
+  State<MisGastosApp> createState() => _MisGastosAppState();
+}
+
+class _MisGastosAppState extends State<MisGastosApp> {
+  late final GoRouterRefreshStream _routerRefresh;
+  late final GoRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _routerRefresh = GoRouterRefreshStream(widget.authBloc.stream);
+    _router = createAppRouter(widget.authBloc, _routerRefresh);
+  }
+
+  @override
+  void dispose() {
+    _routerRefresh.dispose();
+    widget.authBloc.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider.value(
+      value: widget.authBloc,
+      child: MaterialApp.router(
+        title: 'Mis Gastos Mensuales',
+        theme: buildAppTheme(brightness: Brightness.light),
+        darkTheme: buildAppTheme(brightness: Brightness.dark),
+        themeMode: ThemeMode.system,
+        routerConfig: _router,
+      ),
+    );
+  }
+}

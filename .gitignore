@@ -43,3 +43,9 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+# Flutter SDK descargado en CI (Netlify)
+/flutter_sdk
+
+# Flutter SDK en build Vercel (copia Supabase)
+mis_gastos_supabase/.flutter-sdk

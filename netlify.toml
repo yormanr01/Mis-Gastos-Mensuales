@@ -1,5 +1,6 @@
 [build]
-  command = "npm run build"
-  publish = ".next"
+  command = "bash scripts/netlify-build-flutter.sh"
+  publish = "mis_gastos_flutter/build/web"
+
 [build.environment]
   NODE_VERSION = "20"

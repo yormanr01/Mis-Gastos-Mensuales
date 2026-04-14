@@ -7,6 +7,9 @@ import 'package:mis_gastos_supabase/utils/formatters.dart';
 import 'package:mis_gastos_supabase/utils/pdf_generator.dart';
 import 'package:mis_gastos_supabase/core/ui_utils.dart';
 import 'package:mis_gastos_supabase/widgets/service_form_dialogs.dart';
+import 'package:mis_gastos_supabase/features/auth/bloc/auth_bloc.dart';
+import 'package:mis_gastos_supabase/features/auth/bloc/auth_state.dart';
+import 'package:mis_gastos_supabase/models/app_user.dart';
 
 class HistorialPage extends StatefulWidget {
   const HistorialPage({super.key});
@@ -160,13 +163,19 @@ class _HistorialPageState extends State<HistorialPage> {
                                 ),
                                 const SizedBox(height: 20),
                                 InkWell(
-                                  onTap: row.waterRec == null ? null : () => showWaterFormDialog(
-                                    context,
-                                    fixed: state.fixedValues,
-                                    existing: row.waterRec,
-                                    isReadOnly: true,
-                                    onSubmit: (_) {},
-                                  ),
+                                  onTap: row.waterRec == null ? null : () {
+                                    final auth = context.read<AuthBloc>().state;
+                                    final canEdit = auth is AuthAuthenticated && 
+                                        (auth.user.role == UserRole.administrador || auth.user.role == UserRole.edicion);
+                                    
+                                    showWaterFormDialog(
+                                      context,
+                                      fixed: state.fixedValues,
+                                      existing: row.waterRec,
+                                      isReadOnly: !canEdit,
+                                      onSubmit: (draft) => context.read<AppDataCubit>().updateWater(draft),
+                                    );
+                                  },
                                   borderRadius: BorderRadius.circular(8),
                                   child: _rowLine(
                                     context,
@@ -178,14 +187,20 @@ class _HistorialPageState extends State<HistorialPage> {
                                 ),
                                 const SizedBox(height: 8),
                                 InkWell(
-                                  onTap: row.electricityRec == null ? null : () => showElectricityFormDialog(
-                                    context,
-                                    fixed: state.fixedValues,
-                                    allElectric: state.electricity,
-                                    existing: row.electricityRec,
-                                    isReadOnly: true,
-                                    onSubmit: (_) {},
-                                  ),
+                                  onTap: row.electricityRec == null ? null : () {
+                                    final auth = context.read<AuthBloc>().state;
+                                    final canEdit = auth is AuthAuthenticated && 
+                                        (auth.user.role == UserRole.administrador || auth.user.role == UserRole.edicion);
+
+                                    showElectricityFormDialog(
+                                      context,
+                                      fixed: state.fixedValues,
+                                      allElectric: state.electricity,
+                                      existing: row.electricityRec,
+                                      isReadOnly: !canEdit,
+                                      onSubmit: (draft) => context.read<AppDataCubit>().updateElectricity(draft),
+                                    );
+                                  },
                                   borderRadius: BorderRadius.circular(8),
                                   child: _rowLine(
                                     context,
@@ -197,13 +212,19 @@ class _HistorialPageState extends State<HistorialPage> {
                                 ),
                                 const SizedBox(height: 8),
                                 InkWell(
-                                  onTap: row.internetRec == null ? null : () => showInternetFormDialog(
-                                    context,
-                                    fixed: state.fixedValues,
-                                    existing: row.internetRec,
-                                    isReadOnly: true,
-                                    onSubmit: (_) {},
-                                  ),
+                                  onTap: row.internetRec == null ? null : () {
+                                    final auth = context.read<AuthBloc>().state;
+                                    final canEdit = auth is AuthAuthenticated && 
+                                        (auth.user.role == UserRole.administrador || auth.user.role == UserRole.edicion);
+
+                                    showInternetFormDialog(
+                                      context,
+                                      fixed: state.fixedValues,
+                                      existing: row.internetRec,
+                                      isReadOnly: !canEdit,
+                                      onSubmit: (draft) => context.read<AppDataCubit>().updateInternet(draft),
+                                    );
+                                  },
                                   borderRadius: BorderRadius.circular(8),
                                   child: _rowLine(
                                     context,

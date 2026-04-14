@@ -81,9 +81,15 @@ class _DescuentosTabState extends State<_DescuentosTab> {
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        Text(
-          'Descuentos por defecto',
-          style: Theme.of(context).textTheme.titleLarge,
+        Row(
+          children: [
+            Icon(Icons.savings_outlined, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 12),
+            Text(
+              'Descuentos por defecto',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         Text(
@@ -160,9 +166,15 @@ class _ThemeTab extends StatelessWidget {
         return ListView(
           padding: const EdgeInsets.all(24),
           children: [
-             Text(
-              'Tema de la Aplicación',
-              style: Theme.of(context).textTheme.titleLarge,
+            Row(
+              children: [
+                Icon(Icons.palette_outlined, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(width: 12),
+                Text(
+                  'Tema de la Aplicación',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             Text(
@@ -172,24 +184,30 @@ class _ThemeTab extends StatelessWidget {
                   ),
             ),
             const SizedBox(height: 24),
-            RadioListTile<ThemeMode>(
-              title: const Text('Preferencia del Sistema'),
-              subtitle: const Text('Sigue automáticamente la configuración de tu sistema operativo.'),
-              value: ThemeMode.system,
-              groupValue: mode,
-              onChanged: (v) => context.read<ThemeCubit>().setTheme(v!),
-            ),
-            RadioListTile<ThemeMode>(
-              title: const Text('Modo Claro'),
-              value: ThemeMode.light,
-              groupValue: mode,
-              onChanged: (v) => context.read<ThemeCubit>().setTheme(v!),
-            ),
-            RadioListTile<ThemeMode>(
-              title: const Text('Modo Oscuro'),
-              value: ThemeMode.dark,
-              groupValue: mode,
-              onChanged: (v) => context.read<ThemeCubit>().setTheme(v!),
+            Center(
+              child: SegmentedButton<ThemeMode>(
+                segments: const [
+                  ButtonSegment(
+                    value: ThemeMode.system,
+                    icon: Icon(Icons.brightness_auto),
+                    label: Text('Auto'),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.light,
+                    icon: Icon(Icons.light_mode),
+                    label: Text('Claro'),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.dark,
+                    icon: Icon(Icons.dark_mode),
+                    label: Text('Oscuro'),
+                  ),
+                ],
+                selected: {mode},
+                onSelectionChanged: (Set<ThemeMode> newSelection) {
+                  context.read<ThemeCubit>().setTheme(newSelection.first);
+                },
+              ),
             ),
           ],
         );
@@ -296,49 +314,6 @@ class _AccountsTabState extends State<_AccountsTab> {
     }
   }
 
-  Future<void> _adminChangeOtherUserPassword(String userId, String email) async {
-    final controller = TextEditingController();
-    final confirm = await showDialog<String>(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: Text('Nueva contraseña para $email'),
-        content: TextField(
-          controller: controller,
-          obscureText: true,
-          decoration: const InputDecoration(
-            labelText: 'Nueva Contraseña',
-            hintText: 'Mínimo 6 caracteres',
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(c), child: const Text('Cancelar')),
-          FilledButton(
-            onPressed: () {
-              if (controller.text.length < 6) {
-                UiUtils.showTopSnackBar(context, 'Mínimo 6 caracteres', isError: true);
-                return;
-              }
-              Navigator.pop(c, controller.text);
-            },
-            child: const Text('Cambiar'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm != null) {
-      try {
-        setState(() => _loading = true);
-        await context.read<AuthRepositorySupabase>().adminUpdateUserPassword(userId, confirm);
-        if (mounted) UiUtils.showTopSnackBar(context, 'Contraseña de $email actualizada.');
-      } catch (e) {
-        if (mounted) UiUtils.showTopSnackBar(context, 'Fallo administrativo: $e', isError: true);
-      } finally {
-        if (mounted) setState(() => _loading = false);
-      }
-    }
-  }
-
   Future<void> _resetUserPassword(String email) async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -368,7 +343,11 @@ class _AccountsTabState extends State<_AccountsTab> {
       }
     } catch (e) {
       if (mounted) {
-        UiUtils.showTopSnackBar(context, 'Error al solicitar restablecimiento: $e', isError: true);
+        String message = 'Error al solicitar restablecimiento: $e';
+        if (e.toString().contains('email rate limit exceeded')) {
+          message = 'Límite de envíos alcanzado. Por favor, espera un minuto antes de intentar de nuevo.';
+        }
+        UiUtils.showTopSnackBar(context, message, isError: true);
       }
     } finally {
       if (mounted) {
@@ -556,7 +535,7 @@ class _AccountsTabState extends State<_AccountsTab> {
                   children: [
                     const Icon(Icons.account_circle, size: 32),
                     const SizedBox(width: 12),
-                    Text('Mi Cuenta', style: Theme.of(context).textTheme.titleLarge),
+                    Text('Mi Cuenta', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -606,7 +585,13 @@ class _AccountsTabState extends State<_AccountsTab> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Gestión de Perfiles', style: Theme.of(context).textTheme.titleLarge),
+              Row(
+                children: [
+                  Icon(Icons.group_outlined, color: Theme.of(context).colorScheme.primary),
+                  const SizedBox(width: 12),
+                  Text('Gestión de Perfiles', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                ],
+              ),
               FilledButton.icon(
                 onPressed: _showRegisterDialog,
                 icon: const Icon(Icons.person_add),
@@ -708,13 +693,6 @@ class _AccountsTabState extends State<_AccountsTab> {
                                     if (v != null && v != pStatus) _updateProfile(pId, 'status', v);
                                   },
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                tooltip: 'Cambio manual contraseña',
-                                color: Theme.of(context).colorScheme.primary,
-                                icon: const Icon(Icons.key),
-                                onPressed: () => _adminChangeOtherUserPassword(pId, pEmail),
                               ),
                               IconButton(
                                 tooltip: 'Enviar correo restablecimiento',

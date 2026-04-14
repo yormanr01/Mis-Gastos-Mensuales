@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mis_gastos_supabase/core/ui_utils.dart';
 import 'package:mis_gastos_supabase/features/auth/bloc/auth_bloc.dart';
+import 'package:mis_gastos_supabase/features/auth/bloc/auth_event.dart';
 import 'package:mis_gastos_supabase/features/auth/bloc/auth_state.dart';
 import 'package:mis_gastos_supabase/features/data/app_data_cubit.dart';
 import 'package:mis_gastos_supabase/models/app_user.dart';
 import 'package:mis_gastos_supabase/models/records.dart';
+import 'package:mis_gastos_supabase/repositories/auth_repository_supabase.dart';
 import 'package:mis_gastos_supabase/theme/theme_cubit.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -97,40 +100,47 @@ class _DescuentosTabState extends State<_DescuentosTab> {
             children: [
               TextFormField(
                 controller: _water,
-                decoration: const InputDecoration(labelText: 'Descuento agua'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                validator: (v) => v == null || double.tryParse(v.replaceAll(',', '.')) == null ? 'Número inválido' : null,
+                decoration: const InputDecoration(
+                  labelText: 'Descuento Agua (\$)',
+                  prefixIcon: Icon(Icons.water_drop_outlined),
+                ),
+                keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _elec,
-                decoration: const InputDecoration(labelText: 'Descuento electricidad'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                validator: (v) => v == null || double.tryParse(v.replaceAll(',', '.')) == null ? 'Número inválido' : null,
+                decoration: const InputDecoration(
+                  labelText: 'Descuento Electricidad (\$)',
+                  prefixIcon: Icon(Icons.bolt),
+                ),
+                keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _net,
-                decoration: const InputDecoration(labelText: 'Descuento internet'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                validator: (v) => v == null || double.tryParse(v.replaceAll(',', '.')) == null ? 'Número inválido' : null,
+                decoration: const InputDecoration(
+                  labelText: 'Descuento Internet (\$)',
+                  prefixIcon: Icon(Icons.lan_outlined),
+                ),
+                keyboardType: TextInputType.number,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               FilledButton.icon(
-                onPressed: () async {
-                  if (!_formKey.currentState!.validate()) return;
-                  final v = FixedValues(
-                    waterDiscount: double.parse(_water.text.replaceAll(',', '.')),
-                    electricityDiscount: double.parse(_elec.text.replaceAll(',', '.')),
-                    internetDiscount: double.parse(_net.text.replaceAll(',', '.')),
-                  );
-                  await context.read<AppDataCubit>().saveFixedValues(v);
-                  if (context.mounted) {
-                    UiUtils.showTopSnackBar(context, 'Ajustes de descuento guardados');
-                  }
+                onPressed: () {
+                  final water = double.tryParse(_water.text) ?? 0.0;
+                  final elec = double.tryParse(_elec.text) ?? 0.0;
+                  final net = double.tryParse(_net.text) ?? 0.0;
+                  context.read<AppDataCubit>().saveFixedValues(
+                        FixedValues(
+                          waterDiscount: water,
+                          electricityDiscount: elec,
+                          internetDiscount: net,
+                        ),
+                      );
+                  UiUtils.showTopSnackBar(context, 'Descuentos actualizados localmente.');
                 },
                 icon: const Icon(Icons.save),
-                label: const Text('Guardar Descuentos'),
+                label: const Text('Guardar Configuración'),
               ),
             ],
           ),
@@ -197,6 +207,7 @@ class _AccountsTab extends StatefulWidget {
 class _AccountsTabState extends State<_AccountsTab> {
   final _client = Supabase.instance.client;
   final _displayNameController = TextEditingController();
+  final Map<String, TextEditingController> _profileNameControllers = {};
   List<Map<String, dynamic>> _profiles = [];
   bool _loading = true;
   bool _seeded = false;
@@ -215,6 +226,9 @@ class _AccountsTabState extends State<_AccountsTab> {
   @override
   void dispose() {
     _displayNameController.dispose();
+    for (final c in _profileNameControllers.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -232,6 +246,17 @@ class _AccountsTabState extends State<_AccountsTab> {
         if (mounted) {
           setState(() {
             _profiles = List<Map<String, dynamic>>.from(res as List);
+            for (final p in _profiles) {
+              final id = p['id'] as String;
+              final name = p['display_name'] as String? ?? '';
+              if (!_profileNameControllers.containsKey(id)) {
+                _profileNameControllers[id] = TextEditingController(text: name);
+              } else {
+                if (_profileNameControllers[id]!.text != name) {
+                  _profileNameControllers[id]!.text = name;
+                }
+              }
+            }
             _loading = false;
           });
         }
@@ -247,12 +272,109 @@ class _AccountsTabState extends State<_AccountsTab> {
   }
 
   Future<void> _updateProfile(String id, String field, String value) async {
+    final auth = context.read<AuthBloc>().state;
+    final currentUserId = auth is AuthAuthenticated ? auth.user.id : null;
+
     try {
+      if (mounted) setState(() => _loading = true);
+      
       await _client.from('profiles').update({field: value}).eq('id', id);
-      UiUtils.showTopSnackBar(context, 'Perfil actualizado correctamente.');
-      _loadProfiles();
+      
+      if (id == currentUserId && mounted) {
+        context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
+      }
+
+      if (mounted) {
+        UiUtils.showTopSnackBar(context, 'Cambios guardados correctamente.');
+      }
+      await _loadProfiles();
     } catch (e) {
-      UiUtils.showTopSnackBar(context, 'Error al actualizar perfil.', isError: true);
+      if (mounted) {
+        setState(() => _loading = false);
+        UiUtils.showTopSnackBar(context, 'Fallo al actualizar perfil: $e', isError: true);
+      }
+    }
+  }
+
+  Future<void> _adminChangeOtherUserPassword(String userId, String email) async {
+    final controller = TextEditingController();
+    final confirm = await showDialog<String>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text('Nueva contraseña para $email'),
+        content: TextField(
+          controller: controller,
+          obscureText: true,
+          decoration: const InputDecoration(
+            labelText: 'Nueva Contraseña',
+            hintText: 'Mínimo 6 caracteres',
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c), child: const Text('Cancelar')),
+          FilledButton(
+            onPressed: () {
+              if (controller.text.length < 6) {
+                UiUtils.showTopSnackBar(context, 'Mínimo 6 caracteres', isError: true);
+                return;
+              }
+              Navigator.pop(c, controller.text);
+            },
+            child: const Text('Cambiar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != null) {
+      try {
+        setState(() => _loading = true);
+        await context.read<AuthRepositorySupabase>().adminUpdateUserPassword(userId, confirm);
+        if (mounted) UiUtils.showTopSnackBar(context, 'Contraseña de $email actualizada.');
+      } catch (e) {
+        if (mounted) UiUtils.showTopSnackBar(context, 'Fallo administrativo: $e', isError: true);
+      } finally {
+        if (mounted) setState(() => _loading = false);
+      }
+    }
+  }
+
+  Future<void> _resetUserPassword(String email) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Restablecer contraseña'),
+        content: Text('Se enviará un correo a $email con las instrucciones para crear una nueva contraseña.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancelar')),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+             child: const Text('Enviar correo')
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      if (mounted) setState(() => _loading = true);
+      await _client.auth.resetPasswordForEmail(
+        email, 
+        redirectTo: 'https://misgastosmensuales.vercel.app'
+      );
+      if (mounted) {
+        UiUtils.showTopSnackBar(context, 'Correo de restablecimiento enviado con éxito.');
+      }
+    } catch (e) {
+      if (mounted) {
+        UiUtils.showTopSnackBar(context, 'Error al solicitar restablecimiento: $e', isError: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+        _loadProfiles();
+      }
     }
   }
 
@@ -438,7 +560,6 @@ class _AccountsTabState extends State<_AccountsTab> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                const SizedBox(height: 16),
                 const Divider(),
                 const SizedBox(height: 8),
                 TextFormField(
@@ -450,24 +571,12 @@ class _AccountsTabState extends State<_AccountsTab> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                FilledButton.icon(
-                  onPressed: () async {
-                    try {
-                      setState(() => _loading = true);
-                      await _client.from('profiles').update({
-                        'display_name': _displayNameController.text.trim()
-                      }).eq('id', user.id);
-                      if (mounted) {
-                        UiUtils.showTopSnackBar(context, 'Nombre actualizado con éxito.');
-                      }
-                    } catch (e) {
-                      if (mounted) {
-                        UiUtils.showTopSnackBar(context, 'Error al actualizar nombre.', isError: true);
-                      }
-                    } finally {
-                      if (mounted) setState(() => _loading = false);
-                    }
-                  },
+                 FilledButton.icon(
+                  onPressed: () => _updateProfile(
+                    user.id, 
+                    'display_name', 
+                    _displayNameController.text.trim()
+                  ),
                   icon: const Icon(Icons.check),
                   label: const Text('Guardar Nombre'),
                 ),
@@ -481,6 +590,12 @@ class _AccountsTabState extends State<_AccountsTab> {
                 Text(
                   'ID: ${user.id}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.outline),
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: () => GoRouter.of(context).push('/reset-password'),
+                  icon: const Icon(Icons.password),
+                  label: const Text('Cambiar Contraseña'),
                 ),
               ],
             ),
@@ -501,7 +616,7 @@ class _AccountsTabState extends State<_AccountsTab> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Como rol con permisos de edición, puedes crear nuevas cuentas, asignar roles y eliminar usuarios del sistema.',
+            'Como rol con permisos de Administrador, puedes crear nuevas cuentas, asignar roles, modificar nombres y eliminar usuarios del sistema.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
@@ -518,60 +633,105 @@ class _AccountsTabState extends State<_AccountsTab> {
               children: _profiles.map((p) {
                 final pId = p['id'] as String;
                 final pEmail = p['email'] as String? ?? 'Sin email';
+                final pName = p['display_name'] as String? ?? '';
                 final pRole = p['role'] as String? ?? 'Visualización';
                 final pStatus = p['status'] as String? ?? 'Activo';
-
-                // Skip showing the current admin as modifiable? No, they can modify themselves if they want, but could lock themselves out. We will show all.
 
                 return ExpansionTile(
                   leading: CircleAvatar(
                     backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    child: Text(pEmail[0].toUpperCase(), style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+                    child: Text(
+                      (pName.isNotEmpty ? pName[0] : pEmail[0]).toUpperCase(), 
+                      style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                    ),
                   ),
-                  title: Text(pEmail, style: const TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: Text('$pRole • $pStatus'),
+                  title: Text(
+                    pName.isNotEmpty ? pName : pEmail, 
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(pName.isNotEmpty ? '$pEmail • $pRole' : '$pRole • $pStatus'),
                   children: [
                     Container(
                       color: Theme.of(context).colorScheme.surfaceContainerLowest,
                       padding: const EdgeInsets.all(16),
-                      child: Row(
+                      child: Column(
                         children: [
-                          Expanded(
-                            child: DropdownButtonFormField<String>(
-                              value: pRole,
-                              decoration: const InputDecoration(labelText: 'Rol del usuario'),
-                              items: const [
-                                DropdownMenuItem(value: 'Administrador', child: Text('Administrador')),
-                                DropdownMenuItem(value: 'Edición', child: Text('Edición')),
-                                DropdownMenuItem(value: 'Visualización', child: Text('Visualización')),
-                              ],
-                              onChanged: (v) {
-                                if (v != null && v != pRole) _updateProfile(pId, 'role', v);
-                              },
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _profileNameControllers[pId],
+                                  decoration: const InputDecoration(
+                                    labelText: 'Nombre Completo',
+                                    prefixIcon: Icon(Icons.badge_outlined),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton.filledTonal(
+                                tooltip: 'Guardar nombre',
+                                onPressed: () {
+                                  final newName = _profileNameControllers[pId]?.text.trim() ?? '';
+                                  _updateProfile(pId, 'display_name', newName);
+                                },
+                                icon: const Icon(Icons.save_outlined),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: DropdownButtonFormField<String>(
-                              value: pStatus,
-                              decoration: const InputDecoration(labelText: 'Estado activo'),
-                              items: const [
-                                DropdownMenuItem(value: 'Activo', child: Text('Activo')),
-                                DropdownMenuItem(value: 'Inactivo', child: Text('Inactivo')),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  value: pRole,
+                                  decoration: const InputDecoration(labelText: 'Rol del usuario'),
+                                  items: const [
+                                    DropdownMenuItem(value: 'Administrador', child: Text('Administrador')),
+                                    DropdownMenuItem(value: 'Edición', child: Text('Edición')),
+                                    DropdownMenuItem(value: 'Visualización', child: Text('Visualización')),
+                                  ],
+                                  onChanged: (v) {
+                                    if (v != null && v != pRole) _updateProfile(pId, 'role', v);
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  value: pStatus,
+                                  decoration: const InputDecoration(labelText: 'Estado activo'),
+                                  items: const [
+                                    DropdownMenuItem(value: 'Activo', child: Text('Activo')),
+                                    DropdownMenuItem(value: 'Inactivo', child: Text('Inactivo')),
+                                  ],
+                                  onChanged: (v) {
+                                    if (v != null && v != pStatus) _updateProfile(pId, 'status', v);
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                tooltip: 'Cambio manual contraseña',
+                                color: Theme.of(context).colorScheme.primary,
+                                icon: const Icon(Icons.key),
+                                onPressed: () => _adminChangeOtherUserPassword(pId, pEmail),
+                              ),
+                              IconButton(
+                                tooltip: 'Enviar correo restablecimiento',
+                                color: Theme.of(context).colorScheme.tertiary,
+                                icon: const Icon(Icons.lock_reset),
+                                onPressed: () => _resetUserPassword(pEmail),
+                              ),
+                              if (user.id != pId) ...[
+                                IconButton(
+                                  tooltip: 'Eliminar esta cuenta',
+                                  color: Theme.of(context).colorScheme.error,
+                                  icon: const Icon(Icons.delete_forever),
+                                  onPressed: () => _deleteProfile(pId),
+                                ),
                               ],
-                              onChanged: (v) {
-                                if (v != null && v != pStatus) _updateProfile(pId, 'status', v);
-                              },
-                            ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          if (user.id != pId)
-                            IconButton(
-                              tooltip: 'Eliminar esta cuenta',
-                              color: Theme.of(context).colorScheme.error,
-                              icon: const Icon(Icons.delete_forever),
-                              onPressed: () => _deleteProfile(pId),
-                            ),
                         ],
                       ),
                     )

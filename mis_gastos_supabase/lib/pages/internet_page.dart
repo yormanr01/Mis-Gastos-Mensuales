@@ -77,16 +77,17 @@ class _InternetPageState extends State<InternetPage> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           child: InkWell(
                             borderRadius: BorderRadius.circular(20),
-                            onTap: edit ? () async {
+                            onTap: () async {
                               await showInternetFormDialog(
                                 context,
                                 fixed: state.fixedValues,
                                 existing: r,
+                                isReadOnly: !edit,
                                 onSubmit: (draft) {
                                   context.read<AppDataCubit>().updateInternet(draft);
                                 },
                               );
-                            } : null,
+                            },
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                               child: ListTile(

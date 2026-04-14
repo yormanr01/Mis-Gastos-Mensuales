@@ -14,6 +14,7 @@ import 'package:mis_gastos_supabase/pages/electricidad_page.dart';
 import 'package:mis_gastos_supabase/pages/historial_page.dart';
 import 'package:mis_gastos_supabase/pages/internet_page.dart';
 import 'package:mis_gastos_supabase/pages/login_page.dart';
+import 'package:mis_gastos_supabase/pages/reset_password_page.dart';
 
 String? _guardAjustes(BuildContext context, GoRouterState state) {
   final s = context.read<AuthBloc>().state;
@@ -56,6 +57,10 @@ GoRouter createAppRouter(
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (context, state) => const ResetPasswordPage(),
       ),
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),

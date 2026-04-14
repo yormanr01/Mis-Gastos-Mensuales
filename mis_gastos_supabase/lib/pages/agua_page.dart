@@ -77,16 +77,17 @@ class _AguaPageState extends State<AguaPage> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           child: InkWell(
                             borderRadius: BorderRadius.circular(20),
-                            onTap: edit ? () async {
+                            onTap: () async {
                               await showWaterFormDialog(
                                 context,
                                 fixed: state.fixedValues,
                                 existing: r,
+                                isReadOnly: !edit,
                                 onSubmit: (draft) {
                                   context.read<AppDataCubit>().updateWater(draft);
                                 },
                               );
-                            } : null,
+                            },
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                               child: ListTile(

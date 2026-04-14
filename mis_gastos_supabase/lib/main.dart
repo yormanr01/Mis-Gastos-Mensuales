@@ -49,5 +49,8 @@ Future<void> main() async {
   final authRepository = AuthRepositorySupabase();
   final authBloc = AuthBloc(authRepository);
 
-  runApp(MisGastosApp(authBloc: authBloc));
+  runApp(MisGastosApp(
+    authRepository: authRepository,
+    authBloc: authBloc,
+  ));
 }

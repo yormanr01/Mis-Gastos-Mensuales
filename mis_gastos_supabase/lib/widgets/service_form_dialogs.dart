@@ -7,6 +7,7 @@ Future<void> showWaterFormDialog(
   BuildContext context, {
   required FixedValues fixed,
   WaterRecord? existing,
+  bool isReadOnly = false,
   required void Function(WaterRecord draft) onSubmit,
 }) async {
   await showDialog<void>(
@@ -14,6 +15,7 @@ Future<void> showWaterFormDialog(
     builder: (ctx) => _WaterDialog(
       fixed: fixed,
       existing: existing,
+      isReadOnly: isReadOnly,
       onSubmit: onSubmit,
     ),
   );
@@ -23,11 +25,13 @@ class _WaterDialog extends StatefulWidget {
   const _WaterDialog({
     required this.fixed,
     this.existing,
+    this.isReadOnly = false,
     required this.onSubmit,
   });
 
   final FixedValues fixed;
   final WaterRecord? existing;
+  final bool isReadOnly;
   final void Function(WaterRecord draft) onSubmit;
 
   @override
@@ -73,7 +77,9 @@ class _WaterDialogState extends State<_WaterDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.existing == null ? 'Nuevo registro — Agua' : 'Editar — Agua'),
+      title: Text(widget.isReadOnly 
+        ? 'Detalles — Agua' 
+        : (widget.existing == null ? 'Nuevo registro — Agua' : 'Editar — Agua')),
       content: SizedBox(
         width: 500,
         child: SingleChildScrollView(
@@ -83,26 +89,27 @@ class _WaterDialogState extends State<_WaterDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<int>(
-                  initialValue: _year,
+                  value: _year,
                   decoration: const InputDecoration(labelText: 'Año'),
                   items: List.generate(10, (i) {
                     final y = DateTime.now().year + 1 - i;
                     return DropdownMenuItem(value: y, child: Text('$y'));
                   }),
-                  onChanged: (v) => setState(() => _year = v ?? _year),
+                  onChanged: widget.isReadOnly ? null : (v) => setState(() => _year = v ?? _year),
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  initialValue: _month,
+                  value: _month,
                   decoration: const InputDecoration(labelText: 'Mes'),
                   items: months
                       .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                       .toList(),
-                  onChanged: (v) => setState(() => _month = v ?? _month),
+                  onChanged: widget.isReadOnly ? null : (v) => setState(() => _month = v ?? _month),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _invoiced,
+                  enabled: !widget.isReadOnly,
                   decoration: const InputDecoration(labelText: 'Total facturado'),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
@@ -120,6 +127,7 @@ class _WaterDialogState extends State<_WaterDialog> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _discount,
+                  enabled: !widget.isReadOnly,
                   decoration: const InputDecoration(labelText: 'Descuento'),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
@@ -151,7 +159,7 @@ class _WaterDialogState extends State<_WaterDialog> {
                     _status == 'Pagado' ? Icons.check_circle : Icons.pending_actions,
                     color: _status == 'Pagado' ? Colors.green : Colors.orange,
                   ),
-                  onChanged: (v) => setState(() => _status = v ? 'Pagado' : 'Pendiente'),
+                  onChanged: widget.isReadOnly ? null : (v) => setState(() => _status = v ? 'Pagado' : 'Pendiente'),
                   contentPadding: EdgeInsets.zero,
                 ),
               ],
@@ -160,28 +168,29 @@ class _WaterDialogState extends State<_WaterDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-        FilledButton(
-          onPressed: () {
-            if (!_formKey.currentState!.validate()) return;
-            final inv = double.parse(_invoiced.text.replaceAll(',', '.'));
-            final disc = double.parse(_discount.text.replaceAll(',', '.'));
-            final id = widget.existing?.id ?? '';
-            widget.onSubmit(
-              WaterRecord(
-                id: id,
-                year: _year,
-                month: _month,
-                totalInvoiced: inv,
-                discount: disc,
-                totalToPay: double.parse(_totalToPay.toStringAsFixed(2)),
-                status: _status,
-              ),
-            );
-            Navigator.pop(context);
-          },
-          child: const Text('Guardar'),
-        ),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(widget.isReadOnly ? 'Cerrar' : 'Cancelar')),
+        if (!widget.isReadOnly)
+          FilledButton(
+            onPressed: () {
+              if (!_formKey.currentState!.validate()) return;
+              final inv = double.parse(_invoiced.text.replaceAll(',', '.'));
+              final disc = double.parse(_discount.text.replaceAll(',', '.'));
+              final id = widget.existing?.id ?? '';
+              widget.onSubmit(
+                WaterRecord(
+                  id: id,
+                  year: _year,
+                  month: _month,
+                  totalInvoiced: inv,
+                  discount: disc,
+                  totalToPay: double.parse(_totalToPay.toStringAsFixed(2)),
+                  status: _status,
+                ),
+              );
+              Navigator.pop(context);
+            },
+            child: const Text('Guardar'),
+          ),
       ],
     );
   }
@@ -192,6 +201,7 @@ Future<void> showElectricityFormDialog(
   required FixedValues fixed,
   required List<ElectricityRecord> allElectric,
   ElectricityRecord? existing,
+  bool isReadOnly = false,
   required void Function(ElectricityRecord draft) onSubmit,
 }) async {
   await showDialog<void>(
@@ -200,6 +210,7 @@ Future<void> showElectricityFormDialog(
       fixed: fixed,
       allElectric: allElectric,
       existing: existing,
+      isReadOnly: isReadOnly,
       onSubmit: onSubmit,
     ),
   );
@@ -210,12 +221,14 @@ class _ElectricityDialog extends StatefulWidget {
     required this.fixed,
     required this.allElectric,
     this.existing,
+    this.isReadOnly = false,
     required this.onSubmit,
   });
 
   final FixedValues fixed;
   final List<ElectricityRecord> allElectric;
   final ElectricityRecord? existing;
+  final bool isReadOnly;
   final void Function(ElectricityRecord draft) onSubmit;
 
   @override
@@ -296,7 +309,9 @@ class _ElectricityDialogState extends State<_ElectricityDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.existing == null ? 'Nuevo — Electricidad' : 'Editar — Electricidad'),
+      title: Text(widget.isReadOnly 
+        ? 'Detalles — Electricidad' 
+        : (widget.existing == null ? 'Nuevo — Electricidad' : 'Editar — Electricidad')),
       content: SizedBox(
         width: 500,
         child: SingleChildScrollView(
@@ -306,26 +321,27 @@ class _ElectricityDialogState extends State<_ElectricityDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<int>(
-                  initialValue: _year,
+                  value: _year,
                   decoration: const InputDecoration(labelText: 'Año'),
                   items: List.generate(10, (i) {
                     final y = DateTime.now().year + 1 - i;
                     return DropdownMenuItem(value: y, child: Text('$y'));
                   }),
-                  onChanged: (v) => setState(() => _year = v ?? _year),
+                  onChanged: widget.isReadOnly ? null : (v) => setState(() => _year = v ?? _year),
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  initialValue: _month,
+                  value: _month,
                   decoration: const InputDecoration(labelText: 'Mes'),
                   items: months
                       .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                       .toList(),
-                  onChanged: (v) => setState(() => _month = v ?? _month),
+                  onChanged: widget.isReadOnly ? null : (v) => setState(() => _month = v ?? _month),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _invoiced,
+                  enabled: !widget.isReadOnly,
                   decoration: const InputDecoration(labelText: 'Total facturado'),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   onChanged: (_) => setState(() {}),
@@ -334,6 +350,7 @@ class _ElectricityDialogState extends State<_ElectricityDialog> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _kwh,
+                  enabled: !widget.isReadOnly,
                   decoration: const InputDecoration(labelText: 'Consumo kWh'),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   onChanged: (_) => setState(() {}),
@@ -342,6 +359,7 @@ class _ElectricityDialogState extends State<_ElectricityDialog> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _prev,
+                  enabled: !widget.isReadOnly,
                   decoration: const InputDecoration(labelText: 'Contador anterior'),
                   keyboardType: TextInputType.number,
                   onChanged: (_) => setState(() {}),
@@ -350,6 +368,7 @@ class _ElectricityDialogState extends State<_ElectricityDialog> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _curr,
+                  enabled: !widget.isReadOnly,
                   decoration: const InputDecoration(labelText: 'Contador actual'),
                   keyboardType: TextInputType.number,
                   onChanged: (_) => setState(() {}),
@@ -364,6 +383,7 @@ class _ElectricityDialogState extends State<_ElectricityDialog> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _discount,
+                  enabled: !widget.isReadOnly,
                   decoration: const InputDecoration(labelText: 'Descuento'),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   onChanged: (_) => setState(() {}),
@@ -386,7 +406,7 @@ class _ElectricityDialogState extends State<_ElectricityDialog> {
                     _status == 'Pagado' ? Icons.check_circle : Icons.pending_actions,
                     color: _status == 'Pagado' ? Colors.green : Colors.orange,
                   ),
-                  onChanged: (v) => setState(() => _status = v ? 'Pagado' : 'Pendiente'),
+                  onChanged: widget.isReadOnly ? null : (v) => setState(() => _status = v ? 'Pagado' : 'Pendiente'),
                   contentPadding: EdgeInsets.zero,
                 ),
               ],
@@ -395,39 +415,40 @@ class _ElectricityDialogState extends State<_ElectricityDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-        FilledButton(
-          onPressed: () {
-            if (!_formKey.currentState!.validate()) return;
-            final inv = double.parse(_invoiced.text.replaceAll(',', '.'));
-            final kwh = double.parse(_kwh.text.replaceAll(',', '.'));
-            final p = int.parse(_prev.text);
-            final c = int.parse(_curr.text);
-            final disc = double.parse(_discount.text.replaceAll(',', '.'));
-            final kCost = inv > 0 && kwh > 0 ? inv / kwh : 0.0;
-            final cons = c >= p ? c - p : 0;
-            final total = (cons * kCost - disc);
-            final id = widget.existing?.id ?? '';
-            widget.onSubmit(
-              ElectricityRecord(
-                id: id,
-                year: _year,
-                month: _month,
-                totalInvoiced: inv,
-                kwhConsumption: kwh,
-                kwhCost: double.parse(kCost.toStringAsFixed(4)),
-                previousMeter: p,
-                currentMeter: c,
-                consumptionMeter: cons,
-                discount: disc,
-                totalToPay: double.parse((total >= 0 ? total : 0).toStringAsFixed(2)),
-                status: _status,
-              ),
-            );
-            Navigator.pop(context);
-          },
-          child: const Text('Guardar'),
-        ),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(widget.isReadOnly ? 'Cerrar' : 'Cancelar')),
+        if (!widget.isReadOnly)
+          FilledButton(
+            onPressed: () {
+              if (!_formKey.currentState!.validate()) return;
+              final inv = double.parse(_invoiced.text.replaceAll(',', '.'));
+              final kwh = double.parse(_kwh.text.replaceAll(',', '.'));
+              final p = int.parse(_prev.text);
+              final c = int.parse(_curr.text);
+              final disc = double.parse(_discount.text.replaceAll(',', '.'));
+              final kCost = inv > 0 && kwh > 0 ? inv / kwh : 0.0;
+              final cons = c >= p ? c - p : 0;
+              final total = (cons * kCost - disc);
+              final id = widget.existing?.id ?? '';
+              widget.onSubmit(
+                ElectricityRecord(
+                  id: id,
+                  year: _year,
+                  month: _month,
+                  totalInvoiced: inv,
+                  kwhConsumption: kwh,
+                  kwhCost: double.parse(kCost.toStringAsFixed(4)),
+                  previousMeter: p,
+                  currentMeter: c,
+                  consumptionMeter: cons,
+                  discount: disc,
+                  totalToPay: double.parse((total >= 0 ? total : 0).toStringAsFixed(2)),
+                  status: _status,
+                ),
+              );
+              Navigator.pop(context);
+            },
+            child: const Text('Guardar'),
+          ),
       ],
     );
   }
@@ -437,6 +458,7 @@ Future<void> showInternetFormDialog(
   BuildContext context, {
   required FixedValues fixed,
   InternetRecord? existing,
+  bool isReadOnly = false,
   required void Function(InternetRecord draft) onSubmit,
 }) async {
   await showDialog<void>(
@@ -444,6 +466,7 @@ Future<void> showInternetFormDialog(
     builder: (ctx) => _InternetDialog(
       fixed: fixed,
       existing: existing,
+      isReadOnly: isReadOnly,
       onSubmit: onSubmit,
     ),
   );
@@ -453,11 +476,13 @@ class _InternetDialog extends StatefulWidget {
   const _InternetDialog({
     required this.fixed,
     this.existing,
+    this.isReadOnly = false,
     required this.onSubmit,
   });
 
   final FixedValues fixed;
   final InternetRecord? existing;
+  final bool isReadOnly;
   final void Function(InternetRecord draft) onSubmit;
 
   @override
@@ -503,7 +528,9 @@ class _InternetDialogState extends State<_InternetDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.existing == null ? 'Nuevo — Internet' : 'Editar — Internet'),
+      title: Text(widget.isReadOnly 
+        ? 'Detalles — Internet' 
+        : (widget.existing == null ? 'Nuevo — Internet' : 'Editar — Internet')),
       content: SizedBox(
         width: 500,
         child: SingleChildScrollView(
@@ -513,26 +540,27 @@ class _InternetDialogState extends State<_InternetDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<int>(
-                  initialValue: _year,
+                  value: _year,
                   decoration: const InputDecoration(labelText: 'Año'),
                   items: List.generate(10, (i) {
                     final y = DateTime.now().year + 1 - i;
                     return DropdownMenuItem(value: y, child: Text('$y'));
                   }),
-                  onChanged: (v) => setState(() => _year = v ?? _year),
+                  onChanged: widget.isReadOnly ? null : (v) => setState(() => _year = v ?? _year),
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  initialValue: _month,
+                  value: _month,
                   decoration: const InputDecoration(labelText: 'Mes'),
                   items: months
                       .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                       .toList(),
-                  onChanged: (v) => setState(() => _month = v ?? _month),
+                  onChanged: widget.isReadOnly ? null : (v) => setState(() => _month = v ?? _month),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _monthly,
+                  enabled: !widget.isReadOnly,
                   decoration: const InputDecoration(labelText: 'Costo mensual'),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   onChanged: (_) => setState(() {}),
@@ -541,6 +569,7 @@ class _InternetDialogState extends State<_InternetDialog> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _discount,
+                  enabled: !widget.isReadOnly,
                   decoration: const InputDecoration(labelText: 'Descuento'),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   onChanged: (_) => setState(() {}),
@@ -563,7 +592,7 @@ class _InternetDialogState extends State<_InternetDialog> {
                     _status == 'Pagado' ? Icons.check_circle : Icons.pending_actions,
                     color: _status == 'Pagado' ? Colors.green : Colors.orange,
                   ),
-                  onChanged: (v) => setState(() => _status = v ? 'Pagado' : 'Pendiente'),
+                  onChanged: widget.isReadOnly ? null : (v) => setState(() => _status = v ? 'Pagado' : 'Pendiente'),
                   contentPadding: EdgeInsets.zero,
                 ),
               ],
@@ -572,28 +601,29 @@ class _InternetDialogState extends State<_InternetDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-        FilledButton(
-          onPressed: () {
-            if (!_formKey.currentState!.validate()) return;
-            final m = double.parse(_monthly.text.replaceAll(',', '.'));
-            final d = double.parse(_discount.text.replaceAll(',', '.'));
-            final id = widget.existing?.id ?? '';
-            widget.onSubmit(
-              InternetRecord(
-                id: id,
-                year: _year,
-                month: _month,
-                monthlyCost: m,
-                discount: d,
-                totalToPay: double.parse(_totalToPay.toStringAsFixed(2)),
-                status: _status,
-              ),
-            );
-            Navigator.pop(context);
-          },
-          child: const Text('Guardar'),
-        ),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(widget.isReadOnly ? 'Cerrar' : 'Cancelar')),
+        if (!widget.isReadOnly)
+          FilledButton(
+            onPressed: () {
+              if (!_formKey.currentState!.validate()) return;
+              final m = double.parse(_monthly.text.replaceAll(',', '.'));
+              final d = double.parse(_discount.text.replaceAll(',', '.'));
+              final id = widget.existing?.id ?? '';
+              widget.onSubmit(
+                InternetRecord(
+                  id: id,
+                  year: _year,
+                  month: _month,
+                  monthlyCost: m,
+                  discount: d,
+                  totalToPay: double.parse(_totalToPay.toStringAsFixed(2)),
+                  status: _status,
+                ),
+              );
+              Navigator.pop(context);
+            },
+            child: const Text('Guardar'),
+          ),
       ],
     );
   }

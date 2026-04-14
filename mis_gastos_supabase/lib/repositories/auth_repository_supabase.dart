@@ -86,6 +86,47 @@ class AuthRepositorySupabase {
   }
 
   Future<void> signOut() => _client.auth.signOut();
+
+  Future<AppUser?> getCurrentUser() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return null;
+
+    final row = await _client
+        .from('profiles')
+        .select()
+        .eq('id', user.id)
+        .maybeSingle();
+
+    if (row == null) return null;
+
+    final map = Map<String, dynamic>.from(row);
+    return AppUser(
+      id: user.id,
+      email: (map['email'] as String?) ?? user.email ?? '',
+      displayName: map['display_name'] as String?,
+      role: AppUser.roleFromDb(map['role'] as String?),
+      status: AppUser.statusFromDb(map['status'] as String?),
+    );
+  }
+
+  Future<void> updatePassword(String newPassword) async {
+    try {
+      await _client.auth.updateUser(UserAttributes(password: newPassword));
+    } catch (e) {
+      throw AppAuthException('No se pudo actualizar la contraseña: $e');
+    }
+  }
+
+  Future<void> adminUpdateUserPassword(String userId, String newPassword) async {
+    try {
+      await _client.functions.invoke(
+        'admin-change-password',
+        body: {'userId': userId, 'newPassword': newPassword},
+      );
+    } catch (e) {
+      throw AppAuthException('Fallo administrativo: $e');
+    }
+  }
 }
 
 class AppAuthException implements Exception {

@@ -30,3 +30,15 @@ final class AuthLoginRequested extends AuthEvent {
   @override
   List<Object?> get props => [email, password];
 }
+
+final class AuthProfileRefreshRequested extends AuthEvent {
+  const AuthProfileRefreshRequested();
+}
+
+final class AuthPasswordUpdateRequested extends AuthEvent {
+  const AuthPasswordUpdateRequested(this.newPassword);
+  final String newPassword;
+
+  @override
+  List<Object?> get props => [newPassword];
+}

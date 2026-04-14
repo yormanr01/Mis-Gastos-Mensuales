@@ -6,6 +6,7 @@ import 'package:mis_gastos_supabase/models/records.dart';
 import 'package:mis_gastos_supabase/utils/formatters.dart';
 import 'package:mis_gastos_supabase/utils/pdf_generator.dart';
 import 'package:mis_gastos_supabase/core/ui_utils.dart';
+import 'package:mis_gastos_supabase/widgets/service_form_dialogs.dart';
 
 class HistorialPage extends StatefulWidget {
   const HistorialPage({super.key});
@@ -158,28 +159,59 @@ class _HistorialPageState extends State<HistorialPage> {
                                   ],
                                 ),
                                 const SizedBox(height: 20),
-                                _rowLine(
-                                  context,
-                                  'Agua',
-                                  row.water,
-                                  Icons.water_drop,
-                                  Colors.lightBlue,
+                                InkWell(
+                                  onTap: row.waterRec == null ? null : () => showWaterFormDialog(
+                                    context,
+                                    fixed: state.fixedValues,
+                                    existing: row.waterRec,
+                                    isReadOnly: true,
+                                    onSubmit: (_) {},
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: _rowLine(
+                                    context,
+                                    'Agua',
+                                    row.water,
+                                    Icons.water_drop,
+                                    Colors.lightBlue,
+                                  ),
                                 ),
                                 const SizedBox(height: 8),
-                                _rowLine(
-                                  context,
-                                  'Electricidad',
-                                  row.electricity,
-                                  Icons.lightbulb,
-                                  Colors.amber.shade700,
+                                InkWell(
+                                  onTap: row.electricityRec == null ? null : () => showElectricityFormDialog(
+                                    context,
+                                    fixed: state.fixedValues,
+                                    allElectric: state.electricity,
+                                    existing: row.electricityRec,
+                                    isReadOnly: true,
+                                    onSubmit: (_) {},
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: _rowLine(
+                                    context,
+                                    'Electricidad',
+                                    row.electricity,
+                                    Icons.lightbulb,
+                                    Colors.amber.shade700,
+                                  ),
                                 ),
                                 const SizedBox(height: 8),
-                                _rowLine(
-                                  context,
-                                  'Internet',
-                                  row.internet,
-                                  Icons.wifi,
-                                  Colors.teal,
+                                InkWell(
+                                  onTap: row.internetRec == null ? null : () => showInternetFormDialog(
+                                    context,
+                                    fixed: state.fixedValues,
+                                    existing: row.internetRec,
+                                    isReadOnly: true,
+                                    onSubmit: (_) {},
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: _rowLine(
+                                    context,
+                                    'Internet',
+                                    row.internet,
+                                    Icons.wifi,
+                                    Colors.teal,
+                                  ),
                                 ),
                               ],
                             ),
@@ -195,19 +227,24 @@ class _HistorialPageState extends State<HistorialPage> {
   }
 
   Widget _rowLine(BuildContext context, String label, double? v, IconData icon, Color color) {
-    return Row(
-      children: [
-        Icon(icon, color: color, size: 16),
-        const SizedBox(width: 8),
-        Text(label, style: Theme.of(context).textTheme.bodyMedium),
-        const Spacer(),
-        Text(
-          formatMoney(v ?? 0),
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: 8),
+          Text(label, style: Theme.of(context).textTheme.bodyMedium),
+          const Spacer(),
+          Text(
+            formatMoney(v ?? 0),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(width: 4),
+          Icon(Icons.chevron_right, size: 14, color: Theme.of(context).colorScheme.outline),
+        ],
+      ),
     );
   }
 

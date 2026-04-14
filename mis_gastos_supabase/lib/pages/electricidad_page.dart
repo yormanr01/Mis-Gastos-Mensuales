@@ -77,17 +77,18 @@ class _ElectricidadPageState extends State<ElectricidadPage> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           child: InkWell(
                             borderRadius: BorderRadius.circular(20),
-                            onTap: edit ? () async {
+                            onTap: () async {
                               await showElectricityFormDialog(
                                 context,
                                 fixed: state.fixedValues,
                                 allElectric: state.electricity,
                                 existing: r,
+                                isReadOnly: !edit,
                                 onSubmit: (draft) {
                                   context.read<AppDataCubit>().updateElectricity(draft);
                                 },
                               );
-                            } : null,
+                            },
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                               child: ListTile(

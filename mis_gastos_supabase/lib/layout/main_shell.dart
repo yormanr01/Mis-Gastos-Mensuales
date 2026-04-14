@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mis_gastos_supabase/auth/auth_extensions.dart';
+import 'package:mis_gastos_supabase/core/ui_utils.dart';
 import 'package:mis_gastos_supabase/features/auth/bloc/auth_bloc.dart';
 import 'package:mis_gastos_supabase/features/auth/bloc/auth_event.dart';
 import 'package:mis_gastos_supabase/features/data/app_data_cubit.dart';
@@ -34,8 +35,6 @@ class MainShell extends StatelessWidget {
       _ => 'Mis Gastos',
     };
   }
-
-  bool _showBottomNav(String path) => _navPaths.contains(path);
 
   Widget? _fab(BuildContext context, String path) {
     if (!canEditContent(context)) return null;
@@ -86,15 +85,26 @@ class MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final path = GoRouterState.of(context).uri.path;
     final idx = _indexForPath(path);
+    final isDesktop = MediaQuery.sizeOf(context).width >= 600;
 
     return BlocListener<AppDataCubit, AppDataState>(
       listenWhen: (p, c) =>
-          c.errorMessage != null && c.errorMessage != p.errorMessage,
+          (c.errorMessage != null && c.errorMessage != p.errorMessage) ||
+          (c.successMessage != null && c.successMessage != p.successMessage),
       listener: (context, state) {
-        final msg = state.errorMessage;
-        if (msg == null) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-        context.read<AppDataCubit>().clearError();
+        if (state.errorMessage != null) {
+          UiUtils.showTopSnackBar(context, state.errorMessage!, isError: true);
+          context.read<AppDataCubit>().clearError();
+        }
+        if (state.successMessage != null) {
+          final isDelete = state.successMessage!.toLowerCase().contains('eliminado');
+          UiUtils.showTopSnackBar(
+            context, 
+            state.successMessage!,
+            isDelete: isDelete,
+          );
+          context.read<AppDataCubit>().clearSuccess();
+        }
       },
       child: Scaffold(
         appBar: AppBar(
@@ -116,14 +126,28 @@ class MainShell extends StatelessWidget {
                 final items = <PopupMenuEntry<String>>[
                   PopupMenuItem(
                     enabled: false,
-                    child: Text(
-                      user?.user.email ?? '',
-                      style: Theme.of(context).textTheme.bodySmall,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user?.user.displayName ?? 'Usuario',
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        Text(
+                          user?.user.email ?? '',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const PopupMenuDivider(),
                 ];
-                if (user?.user.role == UserRole.edicion) {
+                if (user?.user.role == UserRole.edicion || user?.user.role == UserRole.administrador) {
                   items.add(
                     const PopupMenuItem(
                       value: 'ajustes',
@@ -159,11 +183,52 @@ class MainShell extends StatelessWidget {
             ),
           ],
         ),
-        body: child,
+        body: isDesktop
+            ? Row(
+                children: [
+                  NavigationRail(
+                    selectedIndex: idx,
+                    onDestinationSelected: (i) {
+                      if (i != idx) context.go(_pathForIndex(i));
+                    },
+                    labelType: NavigationRailLabelType.all,
+                    destinations: const [
+                      NavigationRailDestination(
+                        icon: Icon(Icons.dashboard_outlined),
+                        selectedIcon: Icon(Icons.dashboard),
+                        label: Text('Inicio'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.water_drop_outlined),
+                        selectedIcon: Icon(Icons.water_drop),
+                        label: Text('Agua'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.lightbulb_outline),
+                        selectedIcon: Icon(Icons.lightbulb),
+                        label: Text('Luz'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.wifi_outlined),
+                        selectedIcon: Icon(Icons.wifi),
+                        label: Text('Internet'),
+                      ),
+                      NavigationRailDestination(
+                        icon: Icon(Icons.history),
+                        label: Text('Historial'),
+                      ),
+                    ],
+                  ),
+                  const VerticalDivider(thickness: 1, width: 1),
+                  Expanded(child: child),
+                ],
+              )
+            : child,
         floatingActionButton: _fab(context, path),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        bottomNavigationBar: _showBottomNav(path)
-            ? NavigationBar(
+        bottomNavigationBar: isDesktop
+            ? null
+            : NavigationBar(
                 selectedIndex: idx,
                 onDestinationSelected: (i) {
                   if (i != idx) context.go(_pathForIndex(i));
@@ -194,8 +259,7 @@ class MainShell extends StatelessWidget {
                     label: 'Historial',
                   ),
                 ],
-              )
-            : null,
+              ),
       ),
     );
   }

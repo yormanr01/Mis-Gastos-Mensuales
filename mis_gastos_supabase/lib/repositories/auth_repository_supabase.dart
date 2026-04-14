@@ -34,6 +34,7 @@ class AuthRepositorySupabase {
       return AppUser(
         id: user.id,
         email: (map['email'] as String?) ?? user.email ?? '',
+        displayName: map['display_name'] as String?,
         role: AppUser.roleFromDb(map['role'] as String?),
         status: status,
       );

@@ -74,79 +74,88 @@ class _WaterDialogState extends State<_WaterDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.existing == null ? 'Nuevo registro — Agua' : 'Editar — Agua'),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<int>(
-                value: _year,
-                decoration: const InputDecoration(labelText: 'Año'),
-                items: List.generate(10, (i) {
-                  final y = DateTime.now().year + 1 - i;
-                  return DropdownMenuItem(value: y, child: Text('$y'));
-                }),
-                onChanged: (v) => setState(() => _year = v ?? _year),
-              ),
-              DropdownButtonFormField<String>(
-                value: _month,
-                decoration: const InputDecoration(labelText: 'Mes'),
-                items: months
-                    .map((m) => DropdownMenuItem(value: m, child: Text(m)))
-                    .toList(),
-                onChanged: (v) => setState(() => _month = v ?? _month),
-              ),
-              TextFormField(
-                controller: _invoiced,
-                decoration: const InputDecoration(labelText: 'Total facturado'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
-                ],
-                onChanged: (_) => setState(() {}),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Requerido';
-                  if (double.tryParse(v.replaceAll(',', '.')) == null) {
-                    return 'Número inválido';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _discount,
-                decoration: const InputDecoration(labelText: 'Descuento'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
-                ],
-                onChanged: (_) => setState(() {}),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Requerido';
-                  if (double.tryParse(v.replaceAll(',', '.')) == null) {
-                    return 'Número inválido';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Total a pagar: ${_totalToPay.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.titleSmall,
+      content: SizedBox(
+        width: 500,
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<int>(
+                  initialValue: _year,
+                  decoration: const InputDecoration(labelText: 'Año'),
+                  items: List.generate(10, (i) {
+                    final y = DateTime.now().year + 1 - i;
+                    return DropdownMenuItem(value: y, child: Text('$y'));
+                  }),
+                  onChanged: (v) => setState(() => _year = v ?? _year),
                 ),
-              ),
-              DropdownButtonFormField<String>(
-                value: _status,
-                decoration: const InputDecoration(labelText: 'Estado'),
-                items: const [
-                  DropdownMenuItem(value: 'Pendiente', child: Text('Pendiente')),
-                  DropdownMenuItem(value: 'Pagado', child: Text('Pagado')),
-                ],
-                onChanged: (v) => setState(() => _status = v ?? _status),
-              ),
-            ],
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  initialValue: _month,
+                  decoration: const InputDecoration(labelText: 'Mes'),
+                  items: months
+                      .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                      .toList(),
+                  onChanged: (v) => setState(() => _month = v ?? _month),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _invoiced,
+                  decoration: const InputDecoration(labelText: 'Total facturado'),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
+                  ],
+                  onChanged: (_) => setState(() {}),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Requerido';
+                    if (double.tryParse(v.replaceAll(',', '.')) == null) {
+                      return 'Número inválido';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _discount,
+                  decoration: const InputDecoration(labelText: 'Descuento'),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
+                  ],
+                  onChanged: (_) => setState(() {}),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Requerido';
+                    if (double.tryParse(v.replaceAll(',', '.')) == null) {
+                      return 'Número inválido';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Total a pagar: ${_totalToPay.toStringAsFixed(2)}',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  title: const Text('¿Está pagado?'),
+                  subtitle: Text(_status == 'Pagado' ? 'Marcar como Pendiente' : 'Marcar como Pagado'),
+                  value: _status == 'Pagado',
+                  secondary: Icon(
+                    _status == 'Pagado' ? Icons.check_circle : Icons.pending_actions,
+                    color: _status == 'Pagado' ? Colors.green : Colors.orange,
+                  ),
+                  onChanged: (v) => setState(() => _status = v ? 'Pagado' : 'Pendiente'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -288,88 +297,100 @@ class _ElectricityDialogState extends State<_ElectricityDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.existing == null ? 'Nuevo — Electricidad' : 'Editar — Electricidad'),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<int>(
-                value: _year,
-                decoration: const InputDecoration(labelText: 'Año'),
-                items: List.generate(10, (i) {
-                  final y = DateTime.now().year + 1 - i;
-                  return DropdownMenuItem(value: y, child: Text('$y'));
-                }),
-                onChanged: (v) => setState(() => _year = v ?? _year),
-              ),
-              DropdownButtonFormField<String>(
-                value: _month,
-                decoration: const InputDecoration(labelText: 'Mes'),
-                items: months
-                    .map((m) => DropdownMenuItem(value: m, child: Text(m)))
-                    .toList(),
-                onChanged: (v) => setState(() => _month = v ?? _month),
-              ),
-              TextFormField(
-                controller: _invoiced,
-                decoration: const InputDecoration(labelText: 'Total facturado'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                onChanged: (_) => setState(() {}),
-                validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
-              ),
-              TextFormField(
-                controller: _kwh,
-                decoration: const InputDecoration(labelText: 'Consumo kWh'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                onChanged: (_) => setState(() {}),
-                validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
-              ),
-              TextFormField(
-                controller: _prev,
-                decoration: const InputDecoration(labelText: 'Contador anterior'),
-                keyboardType: TextInputType.number,
-                onChanged: (_) => setState(() {}),
-                validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
-              ),
-              TextFormField(
-                controller: _curr,
-                decoration: const InputDecoration(labelText: 'Contador actual'),
-                keyboardType: TextInputType.number,
-                onChanged: (_) => setState(() {}),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Requerido';
-                  final p = int.tryParse(_prev.text) ?? 0;
-                  final c = int.tryParse(v) ?? 0;
-                  if (c < p) return 'El actual debe ser ≥ anterior';
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _discount,
-                decoration: const InputDecoration(labelText: 'Descuento'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                onChanged: (_) => setState(() {}),
-                validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
-              ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Costo/kWh: ${_kwhCost.toStringAsFixed(4)} · Consumo medidor: $_consumptionMeter · Total: ${_totalToPay.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.bodySmall,
+      content: SizedBox(
+        width: 500,
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<int>(
+                  initialValue: _year,
+                  decoration: const InputDecoration(labelText: 'Año'),
+                  items: List.generate(10, (i) {
+                    final y = DateTime.now().year + 1 - i;
+                    return DropdownMenuItem(value: y, child: Text('$y'));
+                  }),
+                  onChanged: (v) => setState(() => _year = v ?? _year),
                 ),
-              ),
-              DropdownButtonFormField<String>(
-                value: _status,
-                decoration: const InputDecoration(labelText: 'Estado'),
-                items: const [
-                  DropdownMenuItem(value: 'Pendiente', child: Text('Pendiente')),
-                  DropdownMenuItem(value: 'Pagado', child: Text('Pagado')),
-                ],
-                onChanged: (v) => setState(() => _status = v ?? _status),
-              ),
-            ],
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  initialValue: _month,
+                  decoration: const InputDecoration(labelText: 'Mes'),
+                  items: months
+                      .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                      .toList(),
+                  onChanged: (v) => setState(() => _month = v ?? _month),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _invoiced,
+                  decoration: const InputDecoration(labelText: 'Total facturado'),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  onChanged: (_) => setState(() {}),
+                  validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _kwh,
+                  decoration: const InputDecoration(labelText: 'Consumo kWh'),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  onChanged: (_) => setState(() {}),
+                  validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _prev,
+                  decoration: const InputDecoration(labelText: 'Contador anterior'),
+                  keyboardType: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                  validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _curr,
+                  decoration: const InputDecoration(labelText: 'Contador actual'),
+                  keyboardType: TextInputType.number,
+                  onChanged: (_) => setState(() {}),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Requerido';
+                    final p = int.tryParse(_prev.text) ?? 0;
+                    final c = int.tryParse(v) ?? 0;
+                    if (c < p) return 'El actual debe ser ≥ anterior';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _discount,
+                  decoration: const InputDecoration(labelText: 'Descuento'),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  onChanged: (_) => setState(() {}),
+                  validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Costo/kWh: ${_kwhCost.toStringAsFixed(4)}\nConsumo medidor: $_consumptionMeter\nTotal: ${_totalToPay.toStringAsFixed(2)}',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  title: const Text('¿Está pagado?'),
+                  subtitle: Text(_status == 'Pagado' ? 'Marcar como Pendiente' : 'Marcar como Pagado'),
+                  value: _status == 'Pagado',
+                  secondary: Icon(
+                    _status == 'Pagado' ? Icons.check_circle : Icons.pending_actions,
+                    color: _status == 'Pagado' ? Colors.green : Colors.orange,
+                  ),
+                  onChanged: (v) => setState(() => _status = v ? 'Pagado' : 'Pendiente'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -483,60 +504,70 @@ class _InternetDialogState extends State<_InternetDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(widget.existing == null ? 'Nuevo — Internet' : 'Editar — Internet'),
-      content: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<int>(
-                value: _year,
-                decoration: const InputDecoration(labelText: 'Año'),
-                items: List.generate(10, (i) {
-                  final y = DateTime.now().year + 1 - i;
-                  return DropdownMenuItem(value: y, child: Text('$y'));
-                }),
-                onChanged: (v) => setState(() => _year = v ?? _year),
-              ),
-              DropdownButtonFormField<String>(
-                value: _month,
-                decoration: const InputDecoration(labelText: 'Mes'),
-                items: months
-                    .map((m) => DropdownMenuItem(value: m, child: Text(m)))
-                    .toList(),
-                onChanged: (v) => setState(() => _month = v ?? _month),
-              ),
-              TextFormField(
-                controller: _monthly,
-                decoration: const InputDecoration(labelText: 'Costo mensual'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                onChanged: (_) => setState(() {}),
-                validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
-              ),
-              TextFormField(
-                controller: _discount,
-                decoration: const InputDecoration(labelText: 'Descuento'),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                onChanged: (_) => setState(() {}),
-                validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Total a pagar: ${_totalToPay.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.titleSmall,
+      content: SizedBox(
+        width: 500,
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<int>(
+                  initialValue: _year,
+                  decoration: const InputDecoration(labelText: 'Año'),
+                  items: List.generate(10, (i) {
+                    final y = DateTime.now().year + 1 - i;
+                    return DropdownMenuItem(value: y, child: Text('$y'));
+                  }),
+                  onChanged: (v) => setState(() => _year = v ?? _year),
                 ),
-              ),
-              DropdownButtonFormField<String>(
-                value: _status,
-                decoration: const InputDecoration(labelText: 'Estado'),
-                items: const [
-                  DropdownMenuItem(value: 'Pendiente', child: Text('Pendiente')),
-                  DropdownMenuItem(value: 'Pagado', child: Text('Pagado')),
-                ],
-                onChanged: (v) => setState(() => _status = v ?? _status),
-              ),
-            ],
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  initialValue: _month,
+                  decoration: const InputDecoration(labelText: 'Mes'),
+                  items: months
+                      .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+                      .toList(),
+                  onChanged: (v) => setState(() => _month = v ?? _month),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _monthly,
+                  decoration: const InputDecoration(labelText: 'Costo mensual'),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  onChanged: (_) => setState(() {}),
+                  validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _discount,
+                  decoration: const InputDecoration(labelText: 'Descuento'),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  onChanged: (_) => setState(() {}),
+                  validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Total a pagar: ${_totalToPay.toStringAsFixed(2)}',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  title: const Text('¿Está pagado?'),
+                  subtitle: Text(_status == 'Pagado' ? 'Marcar como Pendiente' : 'Marcar como Pagado'),
+                  value: _status == 'Pagado',
+                  secondary: Icon(
+                    _status == 'Pagado' ? Icons.check_circle : Icons.pending_actions,
+                    color: _status == 'Pagado' ? Colors.green : Colors.orange,
+                  ),
+                  onChanged: (v) => setState(() => _status = v ? 'Pagado' : 'Pendiente'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ],
+            ),
           ),
         ),
       ),

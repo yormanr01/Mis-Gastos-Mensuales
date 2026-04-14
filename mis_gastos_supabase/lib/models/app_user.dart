@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum UserRole { edicion, visualizacion }
+enum UserRole { edicion, visualizacion, administrador }
 
 enum UserStatus { activo, inactivo }
 
@@ -10,10 +10,12 @@ class AppUser extends Equatable {
     required this.email,
     required this.role,
     required this.status,
+    this.displayName,
   });
 
   final String id;
   final String email;
+  final String? displayName;
   final UserRole role;
   final UserStatus status;
 
@@ -23,6 +25,8 @@ class AppUser extends Equatable {
         return UserRole.edicion;
       case 'Visualización':
         return UserRole.visualizacion;
+      case 'Administrador':
+        return UserRole.administrador;
       default:
         return UserRole.visualizacion;
     }
@@ -39,5 +43,5 @@ class AppUser extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, email, role, status];
+  List<Object?> get props => [id, email, displayName, role, status];
 }

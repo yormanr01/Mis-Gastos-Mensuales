@@ -6,7 +6,7 @@ import 'package:mis_gastos_supabase/models/app_user.dart';
 
 bool canEditContent(BuildContext context) {
   final s = context.read<AuthBloc>().state;
-  return s is AuthAuthenticated && s.user.role == UserRole.edicion;
+  return s is AuthAuthenticated && (s.user.role == UserRole.edicion || s.user.role == UserRole.administrador);
 }
 
 AuthAuthenticated? currentUser(BuildContext context) {

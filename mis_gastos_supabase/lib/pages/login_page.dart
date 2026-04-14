@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mis_gastos_supabase/core/ui_utils.dart';
 import 'package:mis_gastos_supabase/features/auth/bloc/auth_bloc.dart';
 import 'package:mis_gastos_supabase/features/auth/bloc/auth_event.dart';
 import 'package:mis_gastos_supabase/features/auth/bloc/auth_state.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -21,6 +23,75 @@ class _LoginPageState extends State<LoginPage> {
     _email.dispose();
     _password.dispose();
     super.dispose();
+  }
+
+  Future<void> _showRecoveryDialog(BuildContext context) async {
+    final emailController = TextEditingController(text: _email.text);
+    bool isLoading = false;
+    
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            return AlertDialog(
+              title: const Text('Recuperar contraseña'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Ingresa tu correo para enviarte un enlace de recuperación.'),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    enabled: !isLoading,
+                    decoration: const InputDecoration(labelText: 'Correo electrónico'),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading ? null : () => Navigator.pop(ctx),
+                  child: const Text('Cancelar'),
+                ),
+                FilledButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          final email = emailController.text.trim();
+                          if (email.isEmpty) return;
+                          
+                          setState(() => isLoading = true);
+                          try {
+                            await Supabase.instance.client.auth.resetPasswordForEmail(email);
+                            if (ctx.mounted) {
+                              Navigator.pop(ctx);
+                              UiUtils.showTopSnackBar(context, 'Se ha enviado el enlace de recuperación a tu correo.');
+                            }
+                          } catch (e) {
+                            if (ctx.mounted) {
+                              UiUtils.showTopSnackBar(context, 'Error al procesar la solicitud.', isError: true);
+                            }
+                          } finally {
+                            if (ctx.mounted) {
+                              setState(() => isLoading = false);
+                            }
+                          }
+                        },
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Text('Enviar'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -55,14 +126,6 @@ class _LoginPageState extends State<LoginPage> {
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Supabase · Inicia sesión',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.outline,
-                            ),
                       ),
                       const SizedBox(height: 32),
                       TextFormField(
@@ -130,6 +193,11 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               )
                             : const Text('Entrar'),
+                      ),
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: loading ? null : () => _showRecoveryDialog(context),
+                        child: const Text('¿Olvidaste tu contraseña?'),
                       ),
                     ],
                   ),

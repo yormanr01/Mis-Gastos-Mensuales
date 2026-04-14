@@ -8,6 +8,8 @@ import 'package:mis_gastos_supabase/features/auth/bloc/auth_state.dart';
 import 'package:mis_gastos_supabase/features/data/app_data_cubit.dart';
 import 'package:mis_gastos_supabase/repositories/records_repository.dart';
 import 'package:mis_gastos_supabase/theme/app_theme.dart';
+import 'package:mis_gastos_supabase/theme/theme_cubit.dart';
+import 'package:toastification/toastification.dart';
 
 class MisGastosApp extends StatefulWidget {
   const MisGastosApp({
@@ -43,27 +45,35 @@ class _MisGastosAppState extends State<MisGastosApp> {
   Widget build(BuildContext context) {
     return RepositoryProvider(
       create: (_) => RecordsRepository(),
-      child: BlocProvider(
-        create: (context) =>
-            AppDataCubit(context.read<RecordsRepository>()),
-        child: BlocProvider.value(
-          value: widget.authBloc,
-          child: BlocListener<AuthBloc, AuthState>(
-            listener: (context, state) {
-              final data = context.read<AppDataCubit>();
-              if (state is AuthAuthenticated) {
-                data.loadAll();
-              } else if (state is AuthUnauthenticated) {
-                data.clearData();
-              }
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => AppDataCubit(context.read<RecordsRepository>()),
+          ),
+          BlocProvider.value(value: widget.authBloc),
+          BlocProvider(create: (_) => ThemeCubit()),
+        ],
+        child: BlocListener<AuthBloc, AuthState>(
+          listener: (context, state) {
+            final data = context.read<AppDataCubit>();
+            if (state is AuthAuthenticated) {
+              data.loadAll();
+            } else if (state is AuthUnauthenticated) {
+              data.clearData();
+            }
+          },
+          child: BlocBuilder<ThemeCubit, ThemeMode>(
+            builder: (context, themeMode) {
+              return ToastificationWrapper(
+                child: MaterialApp.router(
+                  title: 'Mis Gastos Mensuales',
+                  theme: buildAppTheme(brightness: Brightness.light),
+                  darkTheme: buildAppTheme(brightness: Brightness.dark),
+                  themeMode: themeMode,
+                  routerConfig: _router,
+                ),
+              );
             },
-            child: MaterialApp.router(
-              title: 'Mis Gastos Mensuales',
-              theme: buildAppTheme(brightness: Brightness.light),
-              darkTheme: buildAppTheme(brightness: Brightness.dark),
-              themeMode: ThemeMode.system,
-              routerConfig: _router,
-            ),
           ),
         ),
       ),

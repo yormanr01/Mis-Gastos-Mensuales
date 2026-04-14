@@ -2,7 +2,8 @@
 create table public.profiles (
   id uuid primary key references auth.users on delete cascade,
   email text not null,
-  role text not null check (role in ('Edición', 'Visualización')) default 'Visualización',
+  display_name text,
+  role text not null check (role in ('Administrador', 'Edición', 'Visualización')) default 'Visualización',
   status text not null check (status in ('Activo', 'Inactivo')) default 'Activo'
 );
 
@@ -64,15 +65,24 @@ alter table public.internet_records enable row level security;
 create policy "profiles_select_authenticated" on public.profiles
   for select to authenticated using (true);
 
-create policy "profiles_update_own_or_editor" on public.profiles
+create policy "profiles_update_admin_only" on public.profiles
   for update to authenticated using (
-    auth.uid() = id
-    or exists (
+    exists (
       select 1 from public.profiles p
       where p.id = auth.uid()
-        and p.role = 'Edición'
+        and p.role = 'Administrador'
         and p.status = 'Activo'
     )
+  );
+
+-- Los usuarios aún pueden actualizar su propio email (ejemplo) pero no su rol ni estado
+create policy "profiles_update_self" on public.profiles
+  for update to authenticated 
+  using (auth.uid() = id)
+  with check (
+    auth.uid() = id 
+    and role = (select role from public.profiles where id = auth.uid()) -- El rol no cambia
+    and status = (select status from public.profiles where id = auth.uid()) -- El estado no cambia
   );
 
 create policy "profiles_insert_authenticated" on public.profiles
@@ -97,8 +107,8 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email, role, status)
-  values (new.id, coalesce(new.email, ''), 'Visualización', 'Activo');
+  insert into public.profiles (id, email, display_name, role, status)
+  values (new.id, coalesce(new.email, ''), coalesce(new.raw_user_meta_data->>'full_name', ''), 'Visualización', 'Activo');
   return new;
 end;
 $$;

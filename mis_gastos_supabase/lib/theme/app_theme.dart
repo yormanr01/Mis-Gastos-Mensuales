@@ -7,6 +7,7 @@ abstract final class AppColors {
 }
 
 ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
+  final isDark = brightness == Brightness.dark;
   return ThemeData(
     useMaterial3: true,
     brightness: brightness,
@@ -15,13 +16,14 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
       brightness: brightness,
       primary: AppColors.teal,
       secondary: AppColors.skyBlue,
-      surface: AppColors.aliceBlue,
+      surface: isDark ? const Color(0xFF121212) : AppColors.aliceBlue,
     ),
   ).copyWith(
-    scaffoldBackgroundColor: AppColors.aliceBlue,
-    inputDecorationTheme: const InputDecorationTheme(
-      border: OutlineInputBorder(),
+    scaffoldBackgroundColor: isDark ? const Color(0xFF121212) : AppColors.aliceBlue,
+    inputDecorationTheme: InputDecorationTheme(
+      border: const OutlineInputBorder(),
       filled: true,
+      fillColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
     ),
   );
 }

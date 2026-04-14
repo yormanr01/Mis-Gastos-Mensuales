@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mis_gastos_supabase/features/data/app_data_cubit.dart';
 import 'package:mis_gastos_supabase/models/domain.dart';
+import 'package:mis_gastos_supabase/models/records.dart';
 import 'package:mis_gastos_supabase/utils/formatters.dart';
+import 'package:mis_gastos_supabase/utils/pdf_generator.dart';
+import 'package:mis_gastos_supabase/core/ui_utils.dart';
 
 class HistorialPage extends StatefulWidget {
   const HistorialPage({super.key});
@@ -46,12 +49,19 @@ class _HistorialPageState extends State<HistorialPage> {
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               child: TextField(
                 controller: _search,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search),
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search),
                   hintText: 'Buscar por mes o año',
+                  filled: true,
+                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                 ),
                 onChanged: (_) => setState(() {}),
               ),
@@ -63,11 +73,10 @@ class _HistorialPageState extends State<HistorialPage> {
                         'Añade registros en Agua, Electricidad e Internet.',
                         textAlign: TextAlign.center,
                       ),
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.all(16),
+                    )                    : ListView.separated(
+                      padding: const EdgeInsets.all(24),
                       itemCount: filtered.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      separatorBuilder: (_, _) => const SizedBox(height: 16),
                       itemBuilder: (context, i) {
                         final key = filtered[i];
                         final row = combined[key]!;
@@ -75,53 +84,102 @@ class _HistorialPageState extends State<HistorialPage> {
                         final month = parts[0];
                         final year = parts[1];
                         return Card(
+                          elevation: 0,
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                           child: Padding(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      '$month $year',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            fontWeight: FontWeight.bold,
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          month,
+                                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                        Text(
+                                          year,
+                                          style: TextStyle(
+                                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                            fontWeight: FontWeight.w500,
                                           ),
+                                        ),
+                                      ],
                                     ),
-                                    Text(
-                                      formatMoney(row.total),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleMedium
-                                          ?.copyWith(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .primary,
-                                            fontWeight: FontWeight.bold,
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            formatMoney(row.total),
+                                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                                  color: Theme.of(context).colorScheme.primary,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                           ),
+                                          const SizedBox(width: 8),
+                                          IconButton(
+                                            visualDensity: VisualDensity.compact,
+                                            icon: const Icon(Icons.picture_as_pdf, size: 20),
+                                            color: Theme.of(context).colorScheme.primary,
+                                            onPressed: () async {
+                                              UiUtils.showTopSnackBar(context, 'Generando reporte PDF...');
+                                              try {
+                                                await PdfGenerator.generateMonthlySummary(
+                                                  month: month,
+                                                  year: int.parse(year),
+                                                  water: row.waterRec,
+                                                  electricity: row.electricityRec,
+                                                  internet: row.internetRec,
+                                                  total: row.total,
+                                                );
+                                              } catch (e) {
+                                                if (context.mounted) {
+                                                  UiUtils.showTopSnackBar(context, 'Error al generar PDF: $e', isError: true);
+                                                }
+                                              }
+                                            },
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
-                                const Divider(),
+                                const SizedBox(height: 20),
                                 _rowLine(
                                   context,
                                   'Agua',
                                   row.water,
+                                  Icons.water_drop,
+                                  Colors.lightBlue,
                                 ),
+                                const SizedBox(height: 8),
                                 _rowLine(
                                   context,
                                   'Electricidad',
                                   row.electricity,
+                                  Icons.lightbulb,
+                                  Colors.amber.shade700,
                                 ),
+                                const SizedBox(height: 8),
                                 _rowLine(
                                   context,
                                   'Internet',
                                   row.internet,
+                                  Icons.wifi,
+                                  Colors.teal,
                                 ),
                               ],
                             ),
@@ -136,46 +194,47 @@ class _HistorialPageState extends State<HistorialPage> {
     );
   }
 
-  Widget _rowLine(BuildContext context, String label, double? v) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: Theme.of(context).textTheme.bodySmall),
-          Text(
-            formatMoney(v ?? 0),
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
-      ),
+  Widget _rowLine(BuildContext context, String label, double? v, IconData icon, Color color) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 16),
+        const SizedBox(width: 8),
+        Text(label, style: Theme.of(context).textTheme.bodyMedium),
+        const Spacer(),
+        Text(
+          formatMoney(v ?? 0),
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+        ),
+      ],
     );
   }
 
   Map<String, _Row> _combine(AppDataState state) {
     final map = <String, _Row>{};
-    void add(String month, int year, String kind, double amount) {
-      final key = '$month|$year';
-      map[key] = map[key] ?? _Row();
-      final r = map[key]!;
-      if (kind == 'w') {
-        r.water = amount;
-      } else if (kind == 'e') {
-        r.electricity = amount;
-      } else if (kind == 'i') {
-        r.internet = amount;
-      }
-      r.total = (r.water ?? 0) + (r.electricity ?? 0) + (r.internet ?? 0);
-    }
-
     for (final x in state.water) {
-      add(x.month, x.year, 'w', x.totalToPay);
+      final key = '${x.month}|${x.year}';
+      map[key] = map[key] ?? _Row();
+      map[key]!.water = x.totalToPay;
+      map[key]!.waterRec = x;
     }
     for (final x in state.electricity) {
-      add(x.month, x.year, 'e', x.totalToPay);
+      final key = '${x.month}|${x.year}';
+      map[key] = map[key] ?? _Row();
+      map[key]!.electricity = x.totalToPay;
+      map[key]!.electricityRec = x;
     }
     for (final x in state.internet) {
-      add(x.month, x.year, 'i', x.totalToPay);
+      final key = '${x.month}|${x.year}';
+      map[key] = map[key] ?? _Row();
+      map[key]!.internet = x.totalToPay;
+      map[key]!.internetRec = x;
+    }
+
+    // Recalcular totales
+    for (final r in map.values) {
+      r.total = (r.water ?? 0) + (r.electricity ?? 0) + (r.internet ?? 0);
     }
     return map;
   }
@@ -183,7 +242,10 @@ class _HistorialPageState extends State<HistorialPage> {
 
 class _Row {
   double? water;
+  WaterRecord? waterRec;
   double? electricity;
+  ElectricityRecord? electricityRec;
   double? internet;
+  InternetRecord? internetRec;
   double total = 0;
 }

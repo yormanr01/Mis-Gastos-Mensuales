@@ -17,9 +17,8 @@ import 'package:mis_gastos_supabase/pages/login_page.dart';
 
 String? _guardAjustes(BuildContext context, GoRouterState state) {
   final s = context.read<AuthBloc>().state;
-  if (s is! AuthAuthenticated || s.user.role != UserRole.edicion) {
-    return '/';
-  }
+  if (s is! AuthAuthenticated) return '/';
+  if (s.user.role == UserRole.visualizacion) return '/';
   return null;
 }
 

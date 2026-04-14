@@ -11,6 +11,7 @@ class AppDataState extends Equatable {
     this.fixedValues = const FixedValues(),
     this.loading = false,
     this.errorMessage,
+    this.successMessage,
   });
 
   final List<WaterRecord> water;
@@ -19,6 +20,7 @@ class AppDataState extends Equatable {
   final FixedValues fixedValues;
   final bool loading;
   final String? errorMessage;
+  final String? successMessage;
 
   AppDataState copyWith({
     List<WaterRecord>? water,
@@ -28,6 +30,8 @@ class AppDataState extends Equatable {
     bool? loading,
     String? errorMessage,
     bool clearError = false,
+    String? successMessage,
+    bool clearSuccess = false,
   }) {
     return AppDataState(
       water: water ?? this.water,
@@ -36,12 +40,13 @@ class AppDataState extends Equatable {
       fixedValues: fixedValues ?? this.fixedValues,
       loading: loading ?? this.loading,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      successMessage: clearSuccess ? null : (successMessage ?? this.successMessage),
     );
   }
 
   @override
   List<Object?> get props =>
-      [water, electricity, internet, fixedValues, loading, errorMessage];
+      [water, electricity, internet, fixedValues, loading, errorMessage, successMessage];
 }
 
 class AppDataCubit extends Cubit<AppDataState> {
@@ -50,6 +55,7 @@ class AppDataCubit extends Cubit<AppDataState> {
   final RecordsRepository _repo;
 
   void clearError() => emit(state.copyWith(clearError: true));
+  void clearSuccess() => emit(state.copyWith(clearSuccess: true));
 
   Future<void> loadAll() async {
     emit(state.copyWith(loading: true, clearError: true));
@@ -98,7 +104,7 @@ class AppDataCubit extends Cubit<AppDataState> {
       final created = await _repo.insertWater(draft);
       final list = [...state.water, created];
       list.sort((a, b) => _cmp(a.year, a.month, b.year, b.month));
-      emit(state.copyWith(water: list, clearError: true));
+      emit(state.copyWith(water: list, clearError: true, successMessage: 'Registro de agua agregado exitosamente.'));
     } catch (e) {
       emit(state.copyWith(errorMessage: '$e'));
     }
@@ -118,7 +124,7 @@ class AppDataCubit extends Cubit<AppDataState> {
       await _repo.updateWater(r);
       final list = state.water.map((x) => x.id == r.id ? r : x).toList();
       list.sort((a, b) => _cmp(a.year, a.month, b.year, b.month));
-      emit(state.copyWith(water: list, clearError: true));
+      emit(state.copyWith(water: list, clearError: true, successMessage: 'Registro de agua actualizado exitosamente.'));
     } catch (e) {
       emit(state.copyWith(errorMessage: '$e'));
     }
@@ -130,6 +136,7 @@ class AppDataCubit extends Cubit<AppDataState> {
       emit(state.copyWith(
         water: state.water.where((x) => x.id != id).toList(),
         clearError: true,
+        successMessage: 'Registro de agua eliminado.',
       ));
     } catch (e) {
       emit(state.copyWith(errorMessage: '$e'));
@@ -150,7 +157,7 @@ class AppDataCubit extends Cubit<AppDataState> {
       final created = await _repo.insertElectricity(draft);
       final list = [...state.electricity, created];
       list.sort((a, b) => _cmp(a.year, a.month, b.year, b.month));
-      emit(state.copyWith(electricity: list, clearError: true));
+      emit(state.copyWith(electricity: list, clearError: true, successMessage: 'Registro de electricidad agregado exitosamente.'));
     } catch (e) {
       emit(state.copyWith(errorMessage: '$e'));
     }
@@ -171,7 +178,7 @@ class AppDataCubit extends Cubit<AppDataState> {
       await _repo.updateElectricity(r);
       final list = state.electricity.map((x) => x.id == r.id ? r : x).toList();
       list.sort((a, b) => _cmp(a.year, a.month, b.year, b.month));
-      emit(state.copyWith(electricity: list, clearError: true));
+      emit(state.copyWith(electricity: list, clearError: true, successMessage: 'Registro de electricidad actualizado exitosamente.'));
     } catch (e) {
       emit(state.copyWith(errorMessage: '$e'));
     }
@@ -183,6 +190,7 @@ class AppDataCubit extends Cubit<AppDataState> {
       emit(state.copyWith(
         electricity: state.electricity.where((x) => x.id != id).toList(),
         clearError: true,
+        successMessage: 'Registro de electricidad eliminado.',
       ));
     } catch (e) {
       emit(state.copyWith(errorMessage: '$e'));
@@ -203,7 +211,7 @@ class AppDataCubit extends Cubit<AppDataState> {
       final created = await _repo.insertInternet(draft);
       final list = [...state.internet, created];
       list.sort((a, b) => _cmp(a.year, a.month, b.year, b.month));
-      emit(state.copyWith(internet: list, clearError: true));
+      emit(state.copyWith(internet: list, clearError: true, successMessage: 'Registro de internet agregado exitosamente.'));
     } catch (e) {
       emit(state.copyWith(errorMessage: '$e'));
     }
@@ -224,7 +232,7 @@ class AppDataCubit extends Cubit<AppDataState> {
       await _repo.updateInternet(r);
       final list = state.internet.map((x) => x.id == r.id ? r : x).toList();
       list.sort((a, b) => _cmp(a.year, a.month, b.year, b.month));
-      emit(state.copyWith(internet: list, clearError: true));
+      emit(state.copyWith(internet: list, clearError: true, successMessage: 'Registro de internet actualizado exitosamente.'));
     } catch (e) {
       emit(state.copyWith(errorMessage: '$e'));
     }
@@ -236,6 +244,7 @@ class AppDataCubit extends Cubit<AppDataState> {
       emit(state.copyWith(
         internet: state.internet.where((x) => x.id != id).toList(),
         clearError: true,
+        successMessage: 'Registro de internet eliminado.',
       ));
     } catch (e) {
       emit(state.copyWith(errorMessage: '$e'));

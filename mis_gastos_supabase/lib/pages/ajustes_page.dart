@@ -399,8 +399,8 @@ class _AccountsTabState extends State<_AccountsTab> {
 
     try {
       if (mounted) setState(() => _loading = true);
-      await _client.from('profiles').delete().eq('id', id);
-      if (mounted) UiUtils.showTopSnackBar(context, 'Perfil eliminado con éxito.');
+      await context.read<AuthRepositorySupabase>().adminDeleteUser(id);
+      if (mounted) UiUtils.showTopSnackBar(context, 'Cuenta eliminada permanentemente.');
       _loadProfiles();
     } catch (e) {
       if (mounted) {

@@ -127,6 +127,17 @@ class AuthRepositorySupabase {
       throw AppAuthException('Fallo administrativo: $e');
     }
   }
+
+  Future<void> adminDeleteUser(String userId) async {
+    try {
+      await _client.functions.invoke(
+        'admin-delete-user',
+        body: {'userId': userId},
+      );
+    } catch (e) {
+      throw AppAuthException('Fallo al eliminar usuario: $e');
+    }
+  }
 }
 
 class AppAuthException implements Exception {

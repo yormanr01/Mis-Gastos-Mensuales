@@ -142,6 +142,7 @@ class _LoginPageState extends State<LoginPage> {
                           }
                           return null;
                         },
+                        onFieldSubmitted: (_) => _login(context, loading),
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -158,6 +159,7 @@ class _LoginPageState extends State<LoginPage> {
                           }
                           return null;
                         },
+                        onFieldSubmitted: (_) => _login(context, loading),
                       ),
                       if (errorText != null) ...[
                         const SizedBox(height: 16),
@@ -170,19 +172,7 @@ class _LoginPageState extends State<LoginPage> {
                       ],
                       const SizedBox(height: 24),
                       FilledButton(
-                        onPressed: loading
-                            ? null
-                            : () {
-                                if (!_formKey.currentState!.validate()) {
-                                  return;
-                                }
-                                context.read<AuthBloc>().add(
-                                      AuthLoginRequested(
-                                        email: _email.text,
-                                        password: _password.text,
-                                      ),
-                                    );
-                              },
+                        onPressed: loading ? null : () => _login(context, loading),
                         child: loading
                             ? const SizedBox(
                                 height: 22,
@@ -194,11 +184,6 @@ class _LoginPageState extends State<LoginPage> {
                               )
                             : const Text('Entrar'),
                       ),
-                      const SizedBox(height: 16),
-                      TextButton(
-                        onPressed: loading ? null : () => _showRecoveryDialog(context),
-                        child: const Text('¿Olvidaste tu contraseña?'),
-                      ),
                     ],
                   ),
                 );
@@ -208,5 +193,18 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  void _login(BuildContext context, bool loading) {
+    if (loading) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    context.read<AuthBloc>().add(
+          AuthLoginRequested(
+            email: _email.text,
+            password: _password.text,
+          ),
+        );
   }
 }

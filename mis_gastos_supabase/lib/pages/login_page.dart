@@ -111,56 +111,62 @@ class _LoginPageState extends State<LoginPage> {
 
                 return Form(
                   key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Icon(
-                        Icons.account_balance_wallet_outlined,
-                        size: 56,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Mis Gastos Mensuales',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 32),
-                      TextFormField(
-                        controller: _email,
-                        keyboardType: TextInputType.emailAddress,
-                        autofillHints: const [AutofillHints.email],
-                        enabled: !loading,
-                        decoration: const InputDecoration(
-                          labelText: 'Correo electrónico',
+                  child: AutofillGroup(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Icon(
+                          Icons.account_balance_wallet_outlined,
+                          size: 56,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Introduce tu correo.';
-                          }
-                          return null;
-                        },
-                        onFieldSubmitted: (_) => _login(context, loading),
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _password,
-                        obscureText: true,
-                        autofillHints: const [AutofillHints.password],
-                        enabled: !loading,
-                        decoration: const InputDecoration(
-                          labelText: 'Contraseña',
+                        const SizedBox(height: 16),
+                        Text(
+                          'Mis Gastos Mensuales',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) {
-                            return 'Introduce tu contraseña.';
-                          }
-                          return null;
-                        },
-                        onFieldSubmitted: (_) => _login(context, loading),
-                      ),
+                        const SizedBox(height: 32),
+                        TextFormField(
+                          controller: _email,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          autofillHints: const [
+                            AutofillHints.username,
+                            AutofillHints.email,
+                          ],
+                          enabled: !loading,
+                          decoration: const InputDecoration(
+                            labelText: 'Correo electrónico',
+                          ),
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) {
+                              return 'Introduce tu correo.';
+                            }
+                            return null;
+                          },
+                          onFieldSubmitted: (_) => _login(context, loading),
+                        ),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: _password,
+                          obscureText: true,
+                          textInputAction: TextInputAction.done,
+                          autofillHints: const [AutofillHints.currentPassword],
+                          enabled: !loading,
+                          decoration: const InputDecoration(
+                            labelText: 'Contraseña',
+                          ),
+                          validator: (v) {
+                            if (v == null || v.isEmpty) {
+                              return 'Introduce tu contraseña.';
+                            }
+                            return null;
+                          },
+                          onFieldSubmitted: (_) => _login(context, loading),
+                        ),
                       if (errorText != null) ...[
                         const SizedBox(height: 16),
                         Text(

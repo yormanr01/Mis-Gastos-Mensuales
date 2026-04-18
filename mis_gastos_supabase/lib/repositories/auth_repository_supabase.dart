@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRepositorySupabase {
   AuthRepositorySupabase({SupabaseClient? client})
-      : _client = client ?? Supabase.instance.client;
+    : _client = client ?? Supabase.instance.client;
 
   final SupabaseClient _client;
 
@@ -117,7 +117,10 @@ class AuthRepositorySupabase {
     }
   }
 
-  Future<void> adminUpdateUserPassword(String userId, String newPassword) async {
+  Future<void> adminUpdateUserPassword(
+    String userId,
+    String newPassword,
+  ) async {
     try {
       await _client.functions.invoke(
         'admin-change-password',

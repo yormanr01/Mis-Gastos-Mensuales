@@ -89,7 +89,7 @@ class _WaterDialogState extends State<_WaterDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<int>(
-                  value: _year,
+                  initialValue: _year,
                   decoration: const InputDecoration(labelText: 'Año'),
                   items: List.generate(10, (i) {
                     final y = DateTime.now().year + 1 - i;
@@ -99,7 +99,7 @@ class _WaterDialogState extends State<_WaterDialog> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _month,
+                  initialValue: _month,
                   decoration: const InputDecoration(labelText: 'Mes'),
                   items: months
                       .map((m) => DropdownMenuItem(value: m, child: Text(m)))
@@ -321,7 +321,7 @@ class _ElectricityDialogState extends State<_ElectricityDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<int>(
-                  value: _year,
+                  initialValue: _year,
                   decoration: const InputDecoration(labelText: 'Año'),
                   items: List.generate(10, (i) {
                     final y = DateTime.now().year + 1 - i;
@@ -331,7 +331,7 @@ class _ElectricityDialogState extends State<_ElectricityDialog> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _month,
+                  initialValue: _month,
                   decoration: const InputDecoration(labelText: 'Mes'),
                   items: months
                       .map((m) => DropdownMenuItem(value: m, child: Text(m)))
@@ -540,7 +540,7 @@ class _InternetDialogState extends State<_InternetDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 DropdownButtonFormField<int>(
-                  value: _year,
+                  initialValue: _year,
                   decoration: const InputDecoration(labelText: 'Año'),
                   items: List.generate(10, (i) {
                     final y = DateTime.now().year + 1 - i;
@@ -550,7 +550,7 @@ class _InternetDialogState extends State<_InternetDialog> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _month,
+                  initialValue: _month,
                   decoration: const InputDecoration(labelText: 'Mes'),
                   items: months
                       .map((m) => DropdownMenuItem(value: m, child: Text(m)))

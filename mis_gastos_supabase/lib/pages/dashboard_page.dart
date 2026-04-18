@@ -61,13 +61,19 @@ class _DashboardPageState extends State<DashboardPage> {
 
         // Group data points
         final Map<int, double> mapW = {};
-        for (final r in w) mapW[_monthToIndex(r.month)] = r.totalToPay;
+        for (final r in w) {
+          mapW[_monthToIndex(r.month)] = r.totalToPay;
+        }
         
         final Map<int, double> mapE = {};
-        for (final r in e) mapE[_monthToIndex(r.month)] = r.totalToPay;
+        for (final r in e) {
+          mapE[_monthToIndex(r.month)] = r.totalToPay;
+        }
 
         final Map<int, double> mapI = {};
-        for (final r in i) mapI[_monthToIndex(r.month)] = r.totalToPay;
+        for (final r in i) {
+          mapI[_monthToIndex(r.month)] = r.totalToPay;
+        }
 
         // Generate spots
         final spotsW = List.generate(12, (index) => FlSpot(index.toDouble(), mapW[index] ?? 0));

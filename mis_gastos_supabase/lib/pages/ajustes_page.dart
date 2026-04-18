@@ -27,15 +27,13 @@ class AjustesPage extends StatelessWidget {
               Tab(text: 'Diseño', icon: Icon(Icons.palette)),
               Tab(text: 'Cuentas', icon: Icon(Icons.manage_accounts)),
             ],
-            dividerColor: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
+            dividerColor: Theme.of(
+              context,
+            ).colorScheme.outlineVariant.withValues(alpha: 0.5),
           ),
           const Expanded(
             child: TabBarView(
-              children: [
-                _DescuentosTab(),
-                _ThemeTab(),
-                _AccountsTab(),
-              ],
+              children: [_DescuentosTab(), _ThemeTab(), _AccountsTab()],
             ),
           ),
         ],
@@ -83,11 +81,16 @@ class _DescuentosTabState extends State<_DescuentosTab> {
       children: [
         Row(
           children: [
-            Icon(Icons.savings_outlined, color: Theme.of(context).colorScheme.primary),
+            Icon(
+              Icons.savings_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             const SizedBox(width: 12),
             Text(
               'Descuentos por defecto',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -95,8 +98,8 @@ class _DescuentosTabState extends State<_DescuentosTab> {
         Text(
           'Configura montos base a descontar automáticamente al añadir nuevos registros.',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: 24),
         Form(
@@ -137,13 +140,16 @@ class _DescuentosTabState extends State<_DescuentosTab> {
                   final elec = double.tryParse(_elec.text) ?? 0.0;
                   final net = double.tryParse(_net.text) ?? 0.0;
                   context.read<AppDataCubit>().saveFixedValues(
-                        FixedValues(
-                          waterDiscount: water,
-                          electricityDiscount: elec,
-                          internetDiscount: net,
-                        ),
-                      );
-                  UiUtils.showTopSnackBar(context, 'Descuentos actualizados localmente.');
+                    FixedValues(
+                      waterDiscount: water,
+                      electricityDiscount: elec,
+                      internetDiscount: net,
+                    ),
+                  );
+                  UiUtils.showTopSnackBar(
+                    context,
+                    'Descuentos actualizados localmente.',
+                  );
                 },
                 icon: const Icon(Icons.save),
                 label: const Text('Guardar Configuración'),
@@ -168,11 +174,16 @@ class _ThemeTab extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.palette_outlined, color: Theme.of(context).colorScheme.primary),
+                Icon(
+                  Icons.palette_outlined,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
                 const SizedBox(width: 12),
                 Text(
                   'Tema de la Aplicación',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -180,38 +191,89 @@ class _ThemeTab extends StatelessWidget {
             Text(
               'Personaliza cómo luce la vista de la interfaz.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 24),
-            Center(
-              child: SegmentedButton<ThemeMode>(
-                segments: const [
-                  ButtonSegment(
-                    value: ThemeMode.system,
-                    icon: Icon(Icons.brightness_auto),
-                    label: Text('Auto'),
-                  ),
-                  ButtonSegment(
-                    value: ThemeMode.light,
-                    icon: Icon(Icons.light_mode),
-                    label: Text('Claro'),
-                  ),
-                  ButtonSegment(
-                    value: ThemeMode.dark,
-                    icon: Icon(Icons.dark_mode),
-                    label: Text('Oscuro'),
-                  ),
-                ],
-                selected: {mode},
-                onSelectionChanged: (Set<ThemeMode> newSelection) {
-                  context.read<ThemeCubit>().setTheme(newSelection.first);
-                },
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _ThemeModeButton(
+                  icon: Icons.brightness_auto,
+                  label: 'Auto',
+                  selected: mode == ThemeMode.system,
+                  onTap: () =>
+                      context.read<ThemeCubit>().setTheme(ThemeMode.system),
+                ),
+                const SizedBox(height: 12),
+                _ThemeModeButton(
+                  icon: Icons.light_mode,
+                  label: 'Claro',
+                  selected: mode == ThemeMode.light,
+                  onTap: () =>
+                      context.read<ThemeCubit>().setTheme(ThemeMode.light),
+                ),
+                const SizedBox(height: 12),
+                _ThemeModeButton(
+                  icon: Icons.dark_mode,
+                  label: 'Oscuro',
+                  selected: mode == ThemeMode.dark,
+                  onTap: () =>
+                      context.read<ThemeCubit>().setTheme(ThemeMode.dark),
+                ),
+              ],
             ),
           ],
         );
       },
+    );
+  }
+}
+
+class _ThemeModeButton extends StatelessWidget {
+  const _ThemeModeButton({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = selected
+        ? FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          )
+        : OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          );
+
+    return SizedBox(
+      width: double.infinity,
+      child: selected
+          ? FilledButton.icon(
+              style: style,
+              onPressed: onTap,
+              icon: Icon(icon),
+              label: Text(label),
+            )
+          : OutlinedButton.icon(
+              style: style,
+              onPressed: onTap,
+              icon: Icon(icon),
+              label: Text(label),
+            ),
     );
   }
 }
@@ -281,7 +343,11 @@ class _AccountsTabState extends State<_AccountsTab> {
       } catch (e) {
         if (mounted) {
           setState(() => _loading = false);
-          UiUtils.showTopSnackBar(context, 'No se pudieron cargar los perfiles. Revisa permisos DB.', isError: true);
+          UiUtils.showTopSnackBar(
+            context,
+            'No se pudieron cargar los perfiles. Revisa permisos DB.',
+            isError: true,
+          );
         }
       }
     } else {
@@ -295,9 +361,9 @@ class _AccountsTabState extends State<_AccountsTab> {
 
     try {
       if (mounted) setState(() => _loading = true);
-      
+
       await _client.from('profiles').update({field: value}).eq('id', id);
-      
+
       if (id == currentUserId && mounted) {
         context.read<AuthBloc>().add(const AuthProfileRefreshRequested());
       }
@@ -309,7 +375,11 @@ class _AccountsTabState extends State<_AccountsTab> {
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
-        UiUtils.showTopSnackBar(context, 'Fallo al actualizar perfil: $e', isError: true);
+        UiUtils.showTopSnackBar(
+          context,
+          'Fallo al actualizar perfil: $e',
+          isError: true,
+        );
       }
     }
   }
@@ -319,12 +389,17 @@ class _AccountsTabState extends State<_AccountsTab> {
       context: context,
       builder: (c) => AlertDialog(
         title: const Text('Restablecer contraseña'),
-        content: Text('Se enviará un correo a $email con las instrucciones para crear una nueva contraseña.'),
+        content: Text(
+          'Se enviará un correo a $email con las instrucciones para crear una nueva contraseña.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Cancelar'),
+          ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-             child: const Text('Enviar correo')
+            child: const Text('Enviar correo'),
           ),
         ],
       ),
@@ -335,17 +410,21 @@ class _AccountsTabState extends State<_AccountsTab> {
     try {
       if (mounted) setState(() => _loading = true);
       await _client.auth.resetPasswordForEmail(
-        email, 
-        redirectTo: 'https://misgastosmensuales.vercel.app'
+        email,
+        redirectTo: 'https://misgastosmensuales.vercel.app',
       );
       if (mounted) {
-        UiUtils.showTopSnackBar(context, 'Correo de restablecimiento enviado con éxito.');
+        UiUtils.showTopSnackBar(
+          context,
+          'Correo de restablecimiento enviado con éxito.',
+        );
       }
     } catch (e) {
       if (mounted) {
         String message = 'Error al solicitar restablecimiento: $e';
         if (e.toString().contains('email rate limit exceeded')) {
-          message = 'Límite de envíos alcanzado. Por favor, espera un minuto antes de intentar de nuevo.';
+          message =
+              'Límite de envíos alcanzado. Por favor, espera un minuto antes de intentar de nuevo.';
         }
         UiUtils.showTopSnackBar(context, message, isError: true);
       }
@@ -362,13 +441,20 @@ class _AccountsTabState extends State<_AccountsTab> {
       context: context,
       builder: (c) => AlertDialog(
         title: const Text('¿Eliminar perfil?'),
-        content: const Text('Esto quitará el acceso de la aplicación a esta persona y borrará su registro público permanentemente.'),
+        content: const Text(
+          'Esto quitará el acceso de la aplicación a esta persona y borrará su registro público permanentemente.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Cancelar'),
+          ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
             onPressed: () => Navigator.pop(c, true),
-             child: const Text('Eliminar')
+            child: const Text('Eliminar'),
           ),
         ],
       ),
@@ -379,13 +465,119 @@ class _AccountsTabState extends State<_AccountsTab> {
     try {
       if (mounted) setState(() => _loading = true);
       await context.read<AuthRepositorySupabase>().adminDeleteUser(id);
-      if (mounted) UiUtils.showTopSnackBar(context, 'Cuenta eliminada permanentemente.');
-      _loadProfiles();
+      if (mounted) {
+        UiUtils.showTopSnackBar(context, 'Cuenta eliminada permanentemente.');
+      }
+      await _loadProfiles();
     } catch (e) {
       if (mounted) {
-        setState(() => _loading = false);
-        UiUtils.showTopSnackBar(context, 'Error al purgar cuenta: $e', isError: true);
+        UiUtils.showTopSnackBar(
+          context,
+          'Error al purgar cuenta: $e',
+          isError: true,
+        );
       }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _showChangeUserPasswordDialog(String id, String email) async {
+    final password = TextEditingController();
+    final confirm = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Cambiar contraseña'),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Introduce una nueva contraseña para $email.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: password,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Nueva contraseña',
+                  prefixIcon: Icon(Icons.lock_outline),
+                ),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Requerido';
+                  if (v.length < 6) return 'Mínimo 6 caracteres';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: confirm,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Confirmar contraseña',
+                  prefixIcon: Icon(Icons.lock_reset),
+                ),
+                validator: (v) {
+                  if (v != password.text) return 'No coinciden';
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.pop(c, true);
+              }
+            },
+            child: const Text('Cambiar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) {
+      password.dispose();
+      confirm.dispose();
+      return;
+    }
+
+    try {
+      if (mounted) setState(() => _loading = true);
+      await context.read<AuthRepositorySupabase>().adminUpdateUserPassword(
+        id,
+        password.text,
+      );
+      if (mounted) {
+        UiUtils.showTopSnackBar(
+          context,
+          'Contraseña actualizada correctamente.',
+        );
+      }
+      await _loadProfiles();
+    } catch (e) {
+      if (mounted) {
+        UiUtils.showTopSnackBar(
+          context,
+          'Error al cambiar contraseña: $e',
+          isError: true,
+        );
+      }
+    } finally {
+      password.dispose();
+      confirm.dispose();
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -408,18 +600,29 @@ class _AccountsTabState extends State<_AccountsTab> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.tertiaryContainer.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(8)
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.tertiaryContainer.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline, color: Theme.of(context).colorScheme.tertiary, size: 20),
+                    Icon(
+                      Icons.info_outline,
+                      color: Theme.of(context).colorScheme.tertiary,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Si la confirmación de correo está activada en Supabase, el usuario deberá revisar su bandeja de entrada antes de poder entrar.',
-                        style: TextStyle(color: Theme.of(context).colorScheme.onTertiaryContainer, fontSize: 13),
+                        style: TextStyle(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onTertiaryContainer,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ],
@@ -441,7 +644,8 @@ class _AccountsTabState extends State<_AccountsTab> {
                   labelText: 'Correo electrónico',
                   prefixIcon: Icon(Icons.email_outlined),
                 ),
-                validator: (v) => v!.isEmpty || !v.contains('@') ? 'Correo no válido' : null,
+                validator: (v) =>
+                    v!.isEmpty || !v.contains('@') ? 'Correo no válido' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -455,20 +659,31 @@ class _AccountsTabState extends State<_AccountsTab> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: role,
+                initialValue: role,
                 decoration: const InputDecoration(labelText: 'Rol Inicial'),
                 items: const [
-                  DropdownMenuItem(value: 'Administrador', child: Text('Administrador')),
+                  DropdownMenuItem(
+                    value: 'Administrador',
+                    child: Text('Administrador'),
+                  ),
                   DropdownMenuItem(value: 'Edición', child: Text('Edición')),
-                  DropdownMenuItem(value: 'Visualización', child: Text('Visualización')),
+                  DropdownMenuItem(
+                    value: 'Visualización',
+                    child: Text('Visualización'),
+                  ),
                 ],
-                onChanged: (v) { if (v != null) role = v; },
+                onChanged: (v) {
+                  if (v != null) role = v;
+                },
               ),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(c),
+            child: const Text('Cancelar'),
+          ),
           FilledButton(
             onPressed: () async {
               if (!formKey.currentState!.validate()) return;
@@ -476,28 +691,32 @@ class _AccountsTabState extends State<_AccountsTab> {
               try {
                 if (mounted) setState(() => _loading = true);
                 final res = await _client.auth.signUp(
-                  email: email.text.trim(), 
+                  email: email.text.trim(),
                   password: password.text,
-                  data: {
-                    'role': role,
-                    'full_name': fullName.text.trim(),
-                  },
+                  data: {'role': role, 'full_name': fullName.text.trim()},
                 );
 
                 if (mounted) {
                   if (res.session == null) {
                     UiUtils.showTopSnackBar(
-                      context, 
+                      context,
                       'Usuario registrado. Debe confirmar su correo para activar la cuenta.',
                     );
                   } else {
-                    UiUtils.showTopSnackBar(context, 'Usuario registrado con éxito.');
+                    UiUtils.showTopSnackBar(
+                      context,
+                      'Usuario registrado con éxito.',
+                    );
                   }
                   _loadProfiles();
                 }
               } catch (e) {
                 if (mounted) {
-                  UiUtils.showTopSnackBar(context, 'Fallo al registrar: $e', isError: true);
+                  UiUtils.showTopSnackBar(
+                    context,
+                    'Fallo al registrar: $e',
+                    isError: true,
+                  );
                 }
               } finally {
                 if (mounted) setState(() => _loading = false);
@@ -525,7 +744,9 @@ class _AccountsTabState extends State<_AccountsTab> {
       children: [
         Card(
           elevation: 0,
-          color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+          color: Theme.of(
+            context,
+          ).colorScheme.primaryContainer.withValues(alpha: 0.3),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -535,7 +756,12 @@ class _AccountsTabState extends State<_AccountsTab> {
                   children: [
                     const Icon(Icons.account_circle, size: 32),
                     const SizedBox(width: 12),
-                    Text('Mi Cuenta', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(
+                      'Mi Cuenta',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -550,11 +776,11 @@ class _AccountsTabState extends State<_AccountsTab> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                 FilledButton.icon(
+                FilledButton.icon(
                   onPressed: () => _updateProfile(
-                    user.id, 
-                    'display_name', 
-                    _displayNameController.text.trim()
+                    user.id,
+                    'display_name',
+                    _displayNameController.text.trim(),
                   ),
                   icon: const Icon(Icons.check),
                   label: const Text('Guardar Nombre'),
@@ -563,12 +789,19 @@ class _AccountsTabState extends State<_AccountsTab> {
                 const Divider(),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(user.email, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('Rol de sistema: ${user.role.name.toUpperCase()}'),
+                  title: Text(
+                    user.email,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    'Rol de sistema: ${user.role.name.toUpperCase()}',
+                  ),
                 ),
                 Text(
                   'ID: ${user.id}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.outline),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 OutlinedButton.icon(
@@ -587,9 +820,17 @@ class _AccountsTabState extends State<_AccountsTab> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.group_outlined, color: Theme.of(context).colorScheme.primary),
+                  Icon(
+                    Icons.group_outlined,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   const SizedBox(width: 12),
-                  Text('Gestión de Perfiles', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Gestión de Perfiles',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
               FilledButton.icon(
@@ -603,8 +844,8 @@ class _AccountsTabState extends State<_AccountsTab> {
           Text(
             'Como rol con permisos de Administrador, puedes crear nuevas cuentas, asignar roles, modificar nombres y eliminar usuarios del sistema.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 24),
           Card(
@@ -612,7 +853,9 @@ class _AccountsTabState extends State<_AccountsTab> {
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+              side: BorderSide(
+                color: Theme.of(context).colorScheme.outlineVariant,
+              ),
             ),
             child: Column(
               children: _profiles.map((p) {
@@ -624,20 +867,28 @@ class _AccountsTabState extends State<_AccountsTab> {
 
                 return ExpansionTile(
                   leading: CircleAvatar(
-                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     child: Text(
-                      (pName.isNotEmpty ? pName[0] : pEmail[0]).toUpperCase(), 
-                      style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                      (pName.isNotEmpty ? pName[0] : pEmail[0]).toUpperCase(),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                     ),
                   ),
                   title: Text(
-                    pName.isNotEmpty ? pName : pEmail, 
+                    pName.isNotEmpty ? pName : pEmail,
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  subtitle: Text(pName.isNotEmpty ? '$pEmail • $pRole' : '$pRole • $pStatus'),
+                  subtitle: Text(
+                    pName.isNotEmpty ? '$pEmail • $pRole' : '$pRole • $pStatus',
+                  ),
                   children: [
                     Container(
-                      color: Theme.of(context).colorScheme.surfaceContainerLowest,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerLowest,
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
@@ -656,7 +907,10 @@ class _AccountsTabState extends State<_AccountsTab> {
                               IconButton.filledTonal(
                                 tooltip: 'Guardar nombre',
                                 onPressed: () {
-                                  final newName = _profileNameControllers[pId]?.text.trim() ?? '';
+                                  final newName =
+                                      _profileNameControllers[pId]?.text
+                                          .trim() ??
+                                      '';
                                   _updateProfile(pId, 'display_name', newName);
                                 },
                                 icon: const Icon(Icons.save_outlined),
@@ -668,31 +922,61 @@ class _AccountsTabState extends State<_AccountsTab> {
                             children: [
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  value: pRole,
-                                  decoration: const InputDecoration(labelText: 'Rol del usuario'),
+                                  initialValue: pRole,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Rol del usuario',
+                                  ),
                                   items: const [
-                                    DropdownMenuItem(value: 'Administrador', child: Text('Administrador')),
-                                    DropdownMenuItem(value: 'Edición', child: Text('Edición')),
-                                    DropdownMenuItem(value: 'Visualización', child: Text('Visualización')),
+                                    DropdownMenuItem(
+                                      value: 'Administrador',
+                                      child: Text('Administrador'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'Edición',
+                                      child: Text('Edición'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'Visualización',
+                                      child: Text('Visualización'),
+                                    ),
                                   ],
                                   onChanged: (v) {
-                                    if (v != null && v != pRole) _updateProfile(pId, 'role', v);
+                                    if (v != null && v != pRole) {
+                                      _updateProfile(pId, 'role', v);
+                                    }
                                   },
                                 ),
                               ),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: DropdownButtonFormField<String>(
-                                  value: pStatus,
-                                  decoration: const InputDecoration(labelText: 'Estado activo'),
+                                  initialValue: pStatus,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Estado activo',
+                                  ),
                                   items: const [
-                                    DropdownMenuItem(value: 'Activo', child: Text('Activo')),
-                                    DropdownMenuItem(value: 'Inactivo', child: Text('Inactivo')),
+                                    DropdownMenuItem(
+                                      value: 'Activo',
+                                      child: Text('Activo'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'Inactivo',
+                                      child: Text('Inactivo'),
+                                    ),
                                   ],
                                   onChanged: (v) {
-                                    if (v != null && v != pStatus) _updateProfile(pId, 'status', v);
+                                    if (v != null && v != pStatus) {
+                                      _updateProfile(pId, 'status', v);
+                                    }
                                   },
                                 ),
+                              ),
+                              IconButton(
+                                tooltip: 'Cambiar contraseña',
+                                color: Theme.of(context).colorScheme.primary,
+                                icon: const Icon(Icons.key),
+                                onPressed: () =>
+                                    _showChangeUserPasswordDialog(pId, pEmail),
                               ),
                               IconButton(
                                 tooltip: 'Enviar correo restablecimiento',
@@ -712,12 +996,12 @@ class _AccountsTabState extends State<_AccountsTab> {
                           ),
                         ],
                       ),
-                    )
+                    ),
                   ],
                 );
               }).toList(),
             ),
-          )
+          ),
         ],
       ],
     );

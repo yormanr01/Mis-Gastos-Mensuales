@@ -8,6 +8,7 @@ import 'package:mis_gastos_supabase/utils/pdf_generator.dart';
 import 'package:mis_gastos_supabase/core/ui_utils.dart';
 import 'package:mis_gastos_supabase/widgets/service_form_dialogs.dart';
 import 'package:mis_gastos_supabase/features/auth/bloc/auth_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:mis_gastos_supabase/features/auth/bloc/auth_state.dart';
 import 'package:mis_gastos_supabase/models/app_user.dart';
 
@@ -60,7 +61,9 @@ class _HistorialPageState extends State<HistorialPage> {
                   prefixIcon: const Icon(Icons.search),
                   hintText: 'Buscar por mes o año',
                   filled: true,
-                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  fillColor: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -77,7 +80,8 @@ class _HistorialPageState extends State<HistorialPage> {
                         'Añade registros en Agua, Electricidad e Internet.',
                         textAlign: TextAlign.center,
                       ),
-                    )                    : ListView.separated(
+                    )
+                  : ListView.separated(
                       padding: const EdgeInsets.all(24),
                       itemCount: filtered.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 16),
@@ -89,38 +93,56 @@ class _HistorialPageState extends State<HistorialPage> {
                         final year = parts[1];
                         return Card(
                           elevation: 0,
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withValues(alpha: 0.3),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                           child: Padding(
                             padding: const EdgeInsets.all(20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           month,
-                                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleLarge
+                                              ?.copyWith(
                                                 fontWeight: FontWeight.bold,
                                               ),
                                         ),
                                         Text(
                                           year,
                                           style: TextStyle(
-                                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                       ],
                                     ),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary
+                                            .withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Row(
@@ -128,30 +150,101 @@ class _HistorialPageState extends State<HistorialPage> {
                                         children: [
                                           Text(
                                             formatMoney(row.total),
-                                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                                  color: Theme.of(context).colorScheme.primary,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleMedium
+                                                ?.copyWith(
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).colorScheme.primary,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                           ),
                                           const SizedBox(width: 8),
                                           IconButton(
-                                            visualDensity: VisualDensity.compact,
-                                            icon: const Icon(Icons.picture_as_pdf, size: 20),
-                                            color: Theme.of(context).colorScheme.primary,
+                                            visualDensity:
+                                                VisualDensity.compact,
+                                            icon: const Icon(
+                                              Icons.picture_as_pdf,
+                                              size: 20,
+                                            ),
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
                                             onPressed: () async {
-                                              UiUtils.showTopSnackBar(context, 'Generando reporte PDF...');
+                                              UiUtils.showTopSnackBar(
+                                                context,
+                                                'Generando reporte PDF...',
+                                              );
                                               try {
                                                 await PdfGenerator.generateMonthlySummary(
                                                   month: month,
                                                   year: int.parse(year),
                                                   water: row.waterRec,
-                                                  electricity: row.electricityRec,
+                                                  electricity:
+                                                      row.electricityRec,
                                                   internet: row.internetRec,
                                                   total: row.total,
                                                 );
                                               } catch (e) {
                                                 if (context.mounted) {
-                                                  UiUtils.showTopSnackBar(context, 'Error al generar PDF: $e', isError: true);
+                                                  UiUtils.showTopSnackBar(
+                                                    context,
+                                                    'Error al generar PDF: $e',
+                                                    isError: true,
+                                                  );
+                                                }
+                                              }
+                                            },
+                                          ),
+                                          IconButton(
+                                            visualDensity:
+                                                VisualDensity.compact,
+                                            icon: const Icon(
+                                              Icons.send,
+                                              size: 20,
+                                            ),
+                                            color: Colors.green.shade700,
+                                            onPressed: () async {
+                                              UiUtils.showTopSnackBar(
+                                                context,
+                                                'Preparando mensaje para WhatsApp...',
+                                              );
+                                              final message =
+                                                  _buildWhatsappReportText(
+                                                    month,
+                                                    year,
+                                                    row,
+                                                  );
+                                              final uri = Uri(
+                                                scheme: 'https',
+                                                host: 'wa.me',
+                                                queryParameters: {
+                                                  'text': message,
+                                                },
+                                              );
+                                              try {
+                                                final launched =
+                                                    await launchUrl(
+                                                      uri,
+                                                      mode: LaunchMode
+                                                          .externalApplication,
+                                                    );
+                                                if (!launched &&
+                                                    context.mounted) {
+                                                  UiUtils.showTopSnackBar(
+                                                    context,
+                                                    'No se pudo abrir WhatsApp.',
+                                                    isError: true,
+                                                  );
+                                                }
+                                              } catch (e) {
+                                                if (context.mounted) {
+                                                  UiUtils.showTopSnackBar(
+                                                    context,
+                                                    'Error al abrir WhatsApp: $e',
+                                                    isError: true,
+                                                  );
                                                 }
                                               }
                                             },
@@ -163,19 +256,29 @@ class _HistorialPageState extends State<HistorialPage> {
                                 ),
                                 const SizedBox(height: 20),
                                 InkWell(
-                                  onTap: row.waterRec == null ? null : () {
-                                    final auth = context.read<AuthBloc>().state;
-                                    final canEdit = auth is AuthAuthenticated && 
-                                        (auth.user.role == UserRole.administrador || auth.user.role == UserRole.edicion);
-                                    
-                                    showWaterFormDialog(
-                                      context,
-                                      fixed: state.fixedValues,
-                                      existing: row.waterRec,
-                                      isReadOnly: !canEdit,
-                                      onSubmit: (draft) => context.read<AppDataCubit>().updateWater(draft),
-                                    );
-                                  },
+                                  onTap: row.waterRec == null
+                                      ? null
+                                      : () {
+                                          final auth = context
+                                              .read<AuthBloc>()
+                                              .state;
+                                          final canEdit =
+                                              auth is AuthAuthenticated &&
+                                              (auth.user.role ==
+                                                      UserRole.administrador ||
+                                                  auth.user.role ==
+                                                      UserRole.edicion);
+
+                                          showWaterFormDialog(
+                                            context,
+                                            fixed: state.fixedValues,
+                                            existing: row.waterRec,
+                                            isReadOnly: !canEdit,
+                                            onSubmit: (draft) => context
+                                                .read<AppDataCubit>()
+                                                .updateWater(draft),
+                                          );
+                                        },
                                   borderRadius: BorderRadius.circular(8),
                                   child: _rowLine(
                                     context,
@@ -187,20 +290,30 @@ class _HistorialPageState extends State<HistorialPage> {
                                 ),
                                 const SizedBox(height: 8),
                                 InkWell(
-                                  onTap: row.electricityRec == null ? null : () {
-                                    final auth = context.read<AuthBloc>().state;
-                                    final canEdit = auth is AuthAuthenticated && 
-                                        (auth.user.role == UserRole.administrador || auth.user.role == UserRole.edicion);
+                                  onTap: row.electricityRec == null
+                                      ? null
+                                      : () {
+                                          final auth = context
+                                              .read<AuthBloc>()
+                                              .state;
+                                          final canEdit =
+                                              auth is AuthAuthenticated &&
+                                              (auth.user.role ==
+                                                      UserRole.administrador ||
+                                                  auth.user.role ==
+                                                      UserRole.edicion);
 
-                                    showElectricityFormDialog(
-                                      context,
-                                      fixed: state.fixedValues,
-                                      allElectric: state.electricity,
-                                      existing: row.electricityRec,
-                                      isReadOnly: !canEdit,
-                                      onSubmit: (draft) => context.read<AppDataCubit>().updateElectricity(draft),
-                                    );
-                                  },
+                                          showElectricityFormDialog(
+                                            context,
+                                            fixed: state.fixedValues,
+                                            allElectric: state.electricity,
+                                            existing: row.electricityRec,
+                                            isReadOnly: !canEdit,
+                                            onSubmit: (draft) => context
+                                                .read<AppDataCubit>()
+                                                .updateElectricity(draft),
+                                          );
+                                        },
                                   borderRadius: BorderRadius.circular(8),
                                   child: _rowLine(
                                     context,
@@ -212,19 +325,29 @@ class _HistorialPageState extends State<HistorialPage> {
                                 ),
                                 const SizedBox(height: 8),
                                 InkWell(
-                                  onTap: row.internetRec == null ? null : () {
-                                    final auth = context.read<AuthBloc>().state;
-                                    final canEdit = auth is AuthAuthenticated && 
-                                        (auth.user.role == UserRole.administrador || auth.user.role == UserRole.edicion);
+                                  onTap: row.internetRec == null
+                                      ? null
+                                      : () {
+                                          final auth = context
+                                              .read<AuthBloc>()
+                                              .state;
+                                          final canEdit =
+                                              auth is AuthAuthenticated &&
+                                              (auth.user.role ==
+                                                      UserRole.administrador ||
+                                                  auth.user.role ==
+                                                      UserRole.edicion);
 
-                                    showInternetFormDialog(
-                                      context,
-                                      fixed: state.fixedValues,
-                                      existing: row.internetRec,
-                                      isReadOnly: !canEdit,
-                                      onSubmit: (draft) => context.read<AppDataCubit>().updateInternet(draft),
-                                    );
-                                  },
+                                          showInternetFormDialog(
+                                            context,
+                                            fixed: state.fixedValues,
+                                            existing: row.internetRec,
+                                            isReadOnly: !canEdit,
+                                            onSubmit: (draft) => context
+                                                .read<AppDataCubit>()
+                                                .updateInternet(draft),
+                                          );
+                                        },
                                   borderRadius: BorderRadius.circular(8),
                                   child: _rowLine(
                                     context,
@@ -247,7 +370,13 @@ class _HistorialPageState extends State<HistorialPage> {
     );
   }
 
-  Widget _rowLine(BuildContext context, String label, double? v, IconData icon, Color color) {
+  Widget _rowLine(
+    BuildContext context,
+    String label,
+    double? v,
+    IconData icon,
+    Color color,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: Row(
@@ -258,15 +387,75 @@ class _HistorialPageState extends State<HistorialPage> {
           const Spacer(),
           Text(
             formatMoney(v ?? 0),
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(width: 4),
-          Icon(Icons.chevron_right, size: 14, color: Theme.of(context).colorScheme.outline),
+          Icon(
+            Icons.chevron_right,
+            size: 14,
+            color: Theme.of(context).colorScheme.outline,
+          ),
         ],
       ),
     );
+  }
+
+  String _buildWhatsappReportText(String month, String year, _Row row) {
+    final buffer = StringBuffer();
+    buffer.writeln('*Resumen de gastos — $month $year*');
+    buffer.writeln('');
+    buffer.writeln('*AGUA:*');
+    if (row.waterRec != null) {
+      buffer.writeln(
+        '• Monto facturado: ${formatMoney(row.waterRec!.totalInvoiced)}',
+      );
+      buffer.writeln('• Descuento: ${formatMoney(row.waterRec!.discount)}');
+      buffer.writeln(
+        '• Total a pagar: *${formatMoney(row.waterRec!.totalToPay)}*',
+      );
+    } else {
+      buffer.writeln('- No disponible');
+    }
+    buffer.writeln('');
+    buffer.writeln('*ELECTRICIDAD:*');
+    if (row.electricityRec != null) {
+      buffer.writeln(
+        '• Lectura anterior: ${row.electricityRec!.previousMeter}',
+      );
+      buffer.writeln('• Lectura actual: ${row.electricityRec!.currentMeter}');
+      buffer.writeln(
+        '• Consumo medidor: ${row.electricityRec!.consumptionMeter}',
+      );
+      buffer.writeln(
+        '• Precio kWh: ${formatMoney(row.electricityRec!.kwhCost)}',
+      );
+      buffer.writeln(
+        '• Descuento: ${formatMoney(row.electricityRec!.discount)}',
+      );
+      buffer.writeln(
+        '• Total a pagar: *${formatMoney(row.electricityRec!.totalToPay)}*',
+      );
+    } else {
+      buffer.writeln('- No disponible');
+    }
+    buffer.writeln('');
+    buffer.writeln('*INTERNET:*');
+    if (row.internetRec != null) {
+      buffer.writeln(
+        '• Costo del plan: ${formatMoney(row.internetRec!.monthlyCost)}',
+      );
+      buffer.writeln('• Descuento: ${formatMoney(row.internetRec!.discount)}');
+      buffer.writeln(
+        '• Total a pagar: *${formatMoney(row.internetRec!.totalToPay)}*',
+      );
+    } else {
+      buffer.writeln('- No disponible');
+    }
+    buffer.writeln('');
+    buffer.writeln('TOTAL GENERAL DEL PERIODO: *${formatMoney(row.total)}*');
+    return buffer.toString();
   }
 
   Map<String, _Row> _combine(AppDataState state) {

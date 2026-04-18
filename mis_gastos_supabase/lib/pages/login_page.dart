@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _showRecoveryDialog(BuildContext context) async {
     final emailController = TextEditingController(text: _email.text);
     bool isLoading = false;
-    
+
     await showDialog(
       context: context,
       builder: (ctx) {
@@ -40,13 +40,17 @@ class _LoginPageState extends State<LoginPage> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Ingresa tu correo para enviarte un enlace de recuperación.'),
+                  const Text(
+                    'Ingresa tu correo para enviarte un enlace de recuperación.',
+                  ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
                     enabled: !isLoading,
-                    decoration: const InputDecoration(labelText: 'Correo electrónico'),
+                    decoration: const InputDecoration(
+                      labelText: 'Correo electrónico',
+                    ),
                   ),
                 ],
               ),
@@ -61,17 +65,25 @@ class _LoginPageState extends State<LoginPage> {
                       : () async {
                           final email = emailController.text.trim();
                           if (email.isEmpty) return;
-                          
+
                           setState(() => isLoading = true);
                           try {
-                            await Supabase.instance.client.auth.resetPasswordForEmail(email);
+                            await Supabase.instance.client.auth
+                                .resetPasswordForEmail(email);
                             if (ctx.mounted) {
                               Navigator.pop(ctx);
-                              UiUtils.showTopSnackBar(context, 'Se ha enviado el enlace de recuperación a tu correo.');
+                              UiUtils.showTopSnackBar(
+                                context,
+                                'Se ha enviado el enlace de recuperación a tu correo.',
+                              );
                             }
                           } catch (e) {
                             if (ctx.mounted) {
-                              UiUtils.showTopSnackBar(context, 'Error al procesar la solicitud.', isError: true);
+                              UiUtils.showTopSnackBar(
+                                context,
+                                'Error al procesar la solicitud.',
+                                isError: true,
+                              );
                             }
                           } finally {
                             if (ctx.mounted) {
@@ -83,7 +95,10 @@ class _LoginPageState extends State<LoginPage> {
                       ? const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : const Text('Enviar'),
                 ),
@@ -155,7 +170,7 @@ class _LoginPageState extends State<LoginPage> {
                           controller: _password,
                           obscureText: _obscurePassword,
                           textInputAction: TextInputAction.done,
-                          autofillHints: const [AutofillHints.currentPassword],
+                          autofillHints: const [AutofillHints.password],
                           enabled: !loading,
                           decoration: InputDecoration(
                             labelText: 'Contraseña',
@@ -164,12 +179,23 @@ class _LoginPageState extends State<LoginPage> {
                                 _obscurePassword
                                     ? Icons.visibility_off
                                     : Icons.visibility,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                               onPressed: () {
                                 setState(() {
                                   _obscurePassword = !_obscurePassword;
                                 });
                               },
+                              splashRadius: 18,
+                              tooltip: _obscurePassword
+                                  ? 'Mostrar contraseña'
+                                  : 'Ocultar contraseña',
+                            ),
+                            suffixIconConstraints: const BoxConstraints(
+                              minWidth: 40,
+                              minHeight: 40,
                             ),
                           ),
                           validator: (v) {
@@ -180,30 +206,33 @@ class _LoginPageState extends State<LoginPage> {
                           },
                           onFieldSubmitted: (_) => _login(context, loading),
                         ),
-                      if (errorText != null) ...[
-                        const SizedBox(height: 16),
-                        Text(
-                          errorText,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
+                        if (errorText != null) ...[
+                          const SizedBox(height: 16),
+                          Text(
+                            errorText,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
                           ),
+                        ],
+                        const SizedBox(height: 24),
+                        FilledButton(
+                          onPressed: loading
+                              ? null
+                              : () => _login(context, loading),
+                          child: loading
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text('Entrar'),
                         ),
                       ],
-                      const SizedBox(height: 24),
-                      FilledButton(
-                        onPressed: loading ? null : () => _login(context, loading),
-                        child: loading
-                            ? const SizedBox(
-                                height: 22,
-                                width: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text('Entrar'),
-                      ),
-                    ],
+                    ),
                   ),
                 );
               },
@@ -220,10 +249,7 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
     context.read<AuthBloc>().add(
-          AuthLoginRequested(
-            email: _email.text,
-            password: _password.text,
-          ),
-        );
+      AuthLoginRequested(email: _email.text, password: _password.text),
+    );
   }
 }

@@ -14,7 +14,13 @@ class MainShell extends StatelessWidget {
 
   final Widget child;
 
-  static const _navPaths = ['/', '/agua', '/electricidad', '/internet', '/historial'];
+  static const _navPaths = [
+    '/',
+    '/agua',
+    '/electricidad',
+    '/internet',
+    '/historial',
+  ];
 
   int _indexForPath(String path) {
     final i = _navPaths.indexOf(path);
@@ -66,17 +72,17 @@ class MainShell extends StatelessWidget {
 
     return switch (path) {
       '/agua' => FloatingActionButton(
-          onPressed: openWater,
-          child: const Icon(Icons.add),
-        ),
+        onPressed: openWater,
+        child: const Icon(Icons.add),
+      ),
       '/electricidad' => FloatingActionButton(
-          onPressed: openElec,
-          child: const Icon(Icons.add),
-        ),
+        onPressed: openElec,
+        child: const Icon(Icons.add),
+      ),
       '/internet' => FloatingActionButton(
-          onPressed: openNet,
-          child: const Icon(Icons.add),
-        ),
+        onPressed: openNet,
+        child: const Icon(Icons.add),
+      ),
       _ => null,
     };
   }
@@ -97,9 +103,11 @@ class MainShell extends StatelessWidget {
           context.read<AppDataCubit>().clearError();
         }
         if (state.successMessage != null) {
-          final isDelete = state.successMessage!.toLowerCase().contains('eliminado');
+          final isDelete = state.successMessage!.toLowerCase().contains(
+            'eliminado',
+          );
           UiUtils.showTopSnackBar(
-            context, 
+            context,
             state.successMessage!,
             isDelete: isDelete,
           );
@@ -131,23 +139,28 @@ class MainShell extends StatelessWidget {
                       children: [
                         Text(
                           user?.user.displayName ?? 'Usuario',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
                         ),
                         Text(
                           user?.user.email ?? '',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
                         ),
                       ],
                     ),
                   ),
                   const PopupMenuDivider(),
                 ];
-                if (user?.user.role == UserRole.edicion || user?.user.role == UserRole.administrador) {
+                if (user?.user.role == UserRole.edicion ||
+                    user?.user.role == UserRole.administrador) {
                   items.add(
                     const PopupMenuItem(
                       value: 'ajustes',
@@ -189,7 +202,7 @@ class MainShell extends StatelessWidget {
                   NavigationRail(
                     selectedIndex: idx,
                     onDestinationSelected: (i) {
-                      if (i != idx) context.go(_pathForIndex(i));
+                      context.go(_pathForIndex(i));
                     },
                     labelType: NavigationRailLabelType.all,
                     destinations: const [
@@ -231,7 +244,7 @@ class MainShell extends StatelessWidget {
             : NavigationBar(
                 selectedIndex: idx,
                 onDestinationSelected: (i) {
-                  if (i != idx) context.go(_pathForIndex(i));
+                  context.go(_pathForIndex(i));
                 },
                 destinations: const [
                   NavigationDestination(

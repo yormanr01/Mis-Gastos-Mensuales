@@ -19,31 +19,49 @@ serve(async (req) => {
 
   try {
     const { userId, newPassword } = await req.json()
-    if (!userId || !newPassword) throw new Error('userId y newPassword son requeridos')
+    console.log(`[admin-change-password] Recibido: userId=${userId}`)
+    
+    if (!userId || !newPassword) {
+      throw new Error('userId y newPassword son requeridos')
+    }
 
     const serviceRoleKey = Deno.env.get('SERVICE_ROLE_KEY')
-    if (!serviceRoleKey) throw new Error('SERVICE_ROLE_KEY no configurado')
+    if (!serviceRoleKey) {
+      console.error('[admin-change-password] SERVICE_ROLE_KEY no configurado')
+      throw new Error('SERVICE_ROLE_KEY no configurado en las variables de entorno')
+    }
 
-    const adminClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      serviceRoleKey
-    )
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    if (!supabaseUrl) {
+      console.error('[admin-change-password] SUPABASE_URL no configurado')
+      throw new Error('SUPABASE_URL no configurado')
+    }
 
+    console.log(`[admin-change-password] Conectando a: ${supabaseUrl}`)
+    const adminClient = createClient(supabaseUrl, serviceRoleKey)
+
+    console.log(`[admin-change-password] Intentando actualizar contraseña para userId: ${userId}`)
     const { error: updateError } = await adminClient.auth.admin.updateUserById(
       userId,
       { password: newPassword }
     )
 
-    if (updateError) throw updateError
+    if (updateError) {
+      console.error(`[admin-change-password] Error de actualización:`, updateError)
+      throw updateError
+    }
 
+    console.log(`[admin-change-password] Contraseña actualizada correctamente para: ${userId}`)
     return new Response(
       JSON.stringify({ message: 'Contraseña actualizada correctamente' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
 
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error(`[admin-change-password] Error capturado:`, errorMessage)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: errorMessage }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
     )
   }

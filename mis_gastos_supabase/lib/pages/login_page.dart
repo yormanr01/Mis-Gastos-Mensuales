@@ -17,6 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -152,12 +153,24 @@ class _LoginPageState extends State<LoginPage> {
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _password,
-                          obscureText: true,
+                          obscureText: _obscurePassword,
                           textInputAction: TextInputAction.done,
                           autofillHints: const [AutofillHints.currentPassword],
                           enabled: !loading,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: 'Contraseña',
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
                           ),
                           validator: (v) {
                             if (v == null || v.isEmpty) {

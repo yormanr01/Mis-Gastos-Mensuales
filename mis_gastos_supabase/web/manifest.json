@@ -3,7 +3,7 @@
     "short_name": "Mis Gastos",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#FFFFFF",
+    "background_color": "#008080",
     "theme_color": "#008080",
     "description": "Registro de gastos de servicios (Supabase).",
     "orientation": "portrait-primary",

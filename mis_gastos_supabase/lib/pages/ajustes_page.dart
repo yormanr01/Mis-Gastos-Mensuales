@@ -1,3 +1,5 @@
+import 'package:csv/csv.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -10,7 +12,7 @@ import 'package:mis_gastos_supabase/models/app_user.dart';
 import 'package:mis_gastos_supabase/models/records.dart';
 import 'package:mis_gastos_supabase/repositories/auth_repository_supabase.dart';
 import 'package:mis_gastos_supabase/theme/theme_cubit.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AjustesPage extends StatelessWidget {
   const AjustesPage({super.key});
@@ -18,7 +20,7 @@ class AjustesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Column(
         children: [
           TabBar(
@@ -26,6 +28,7 @@ class AjustesPage extends StatelessWidget {
               Tab(text: 'Descuentos', icon: Icon(Icons.percent)),
               Tab(text: 'Diseño', icon: Icon(Icons.palette)),
               Tab(text: 'Cuentas', icon: Icon(Icons.manage_accounts)),
+              Tab(text: 'Respaldo', icon: Icon(Icons.backup)),
             ],
             dividerColor: Theme.of(
               context,
@@ -33,7 +36,12 @@ class AjustesPage extends StatelessWidget {
           ),
           const Expanded(
             child: TabBarView(
-              children: [_DescuentosTab(), _ThemeTab(), _AccountsTab()],
+              children: [
+                _DescuentosTab(),
+                _ThemeTab(),
+                _AccountsTab(),
+                _RespaldoTab(),
+              ],
             ),
           ),
         ],
@@ -285,7 +293,7 @@ class _AccountsTab extends StatefulWidget {
 }
 
 class _AccountsTabState extends State<_AccountsTab> {
-  final _client = Supabase.instance.client;
+  final _client = sb.Supabase.instance.client;
   final _displayNameController = TextEditingController();
   final Map<String, TextEditingController> _profileNameControllers = {};
   List<Map<String, dynamic>> _profiles = [];
@@ -1005,5 +1013,247 @@ class _AccountsTabState extends State<_AccountsTab> {
         ],
       ],
     );
+  }
+}
+
+class _RespaldoTab extends StatelessWidget {
+  const _RespaldoTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.backup_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Respaldo de Datos',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Exporta tus registros a un archivo CSV para respaldo o importa datos desde un archivo CSV.',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 24),
+        FilledButton.icon(
+          onPressed: () => _exportToCsv(context),
+          icon: const Icon(Icons.download),
+          label: const Text('Crear Respaldo (CSV)'),
+        ),
+        const SizedBox(height: 16),
+        OutlinedButton.icon(
+          onPressed: () => _importFromCsv(context),
+          icon: const Icon(Icons.upload),
+          label: const Text('Restaurar desde CSV'),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _exportToCsv(BuildContext context) async {
+    final cubit = context.read<AppDataCubit>();
+    final state = cubit.state;
+
+    // Preparar datos
+    final waterData = state.water
+        .map(
+          (r) => [
+            'water',
+            r.month,
+            r.year,
+            r.totalInvoiced,
+            r.discount,
+            r.totalToPay,
+            r.status,
+          ],
+        )
+        .toList();
+
+    final electricityData = state.electricity
+        .map(
+          (r) => [
+            'electricity',
+            r.month,
+            r.year,
+            r.totalInvoiced,
+            r.kwhConsumption,
+            r.kwhCost,
+            r.previousMeter,
+            r.currentMeter,
+            r.consumptionMeter,
+            r.discount,
+            r.totalToPay,
+            r.status,
+          ],
+        )
+        .toList();
+
+    final internetData = state.internet
+        .map(
+          (r) => [
+            'internet',
+            r.month,
+            r.year,
+            r.monthlyCost,
+            r.discount,
+            r.totalToPay,
+            r.status,
+          ],
+        )
+        .toList();
+
+    final allData = [
+      [
+        'type',
+        'month',
+        'year',
+        'total_invoiced',
+        'kwh_consumption_or_monthly_cost',
+        'kwh_cost',
+        'previous_meter',
+        'current_meter',
+        'consumption_meter',
+        'discount',
+        'total_to_pay',
+        'status',
+      ],
+      ...waterData,
+      ...electricityData,
+      ...internetData,
+    ];
+
+    final csv = ListToCsvConverter().convert(allData);
+
+    final dataUrl = 'data:text/csv;charset=utf-8,${Uri.encodeComponent(csv)}';
+    final uri = Uri.parse(dataUrl);
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+      UiUtils.showTopSnackBar(context, 'Respaldo descargado.');
+    } else {
+      // Fallback al dialog
+      await showDialog(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: const Text('Respaldo CSV'),
+          content: SingleChildScrollView(child: SelectableText(csv)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        ),
+      );
+      UiUtils.showTopSnackBar(
+        context,
+        'Respaldo generado. Copia el contenido del diálogo.',
+      );
+    }
+  }
+
+  Future<void> _importFromCsv(BuildContext context) async {
+    final result = await FilePicker().pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+    );
+
+    if (result == null || result.files.isEmpty) return;
+
+    final file = result.files.first;
+    final csvString = String.fromCharCodes(file.bytes!);
+
+    try {
+      final csvData = CsvToListConverter().convert(csvString);
+
+      if (csvData.isEmpty || csvData[0][0] != 'type') {
+        throw 'Formato CSV inválido';
+      }
+
+      final cubit = context.read<AppDataCubit>();
+
+      for (final row in csvData.skip(1)) {
+        final type = row[0] as String;
+        final month = row[1] as String;
+        final year = row[2] as int;
+
+        switch (type) {
+          case 'water':
+            final totalInvoiced = (row[3] as num).toDouble();
+            final discount = (row[4] as num).toDouble();
+            final totalToPay = (row[5] as num).toDouble();
+            final status = row[6] as String;
+            await cubit.addWater(
+              WaterRecord(
+                id: '',
+                year: year,
+                month: month,
+                totalInvoiced: totalInvoiced,
+                discount: discount,
+                totalToPay: totalToPay,
+                status: status,
+              ),
+            );
+          case 'electricity':
+            final totalInvoiced = (row[3] as num).toDouble();
+            final kwhConsumption = (row[4] as num).toDouble();
+            final kwhCost = (row[5] as num).toDouble();
+            final previousMeter = (row[6] as num).toInt();
+            final currentMeter = (row[7] as num).toInt();
+            final consumptionMeter = (row[8] as num).toInt();
+            final discount = (row[9] as num).toDouble();
+            final totalToPay = (row[10] as num).toDouble();
+            final status = row[11] as String;
+            await cubit.addElectricity(
+              ElectricityRecord(
+                id: '',
+                year: year,
+                month: month,
+                totalInvoiced: totalInvoiced,
+                kwhConsumption: kwhConsumption,
+                kwhCost: kwhCost,
+                previousMeter: previousMeter,
+                currentMeter: currentMeter,
+                consumptionMeter: consumptionMeter,
+                discount: discount,
+                totalToPay: totalToPay,
+                status: status,
+              ),
+            );
+          case 'internet':
+            final monthlyCost = (row[3] as num).toDouble();
+            final discount = (row[4] as num).toDouble();
+            final totalToPay = (row[5] as num).toDouble();
+            final status = row[6] as String;
+            await cubit.addInternet(
+              InternetRecord(
+                id: '',
+                year: year,
+                month: month,
+                monthlyCost: monthlyCost,
+                discount: discount,
+                totalToPay: totalToPay,
+                status: status,
+              ),
+            );
+        }
+      }
+
+      UiUtils.showTopSnackBar(context, 'Datos restaurados exitosamente.');
+    } catch (e) {
+      UiUtils.showTopSnackBar(context, 'Error al restaurar: $e', isError: true);
+    }
   }
 }

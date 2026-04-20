@@ -404,7 +404,7 @@ class _HistorialPageState extends State<HistorialPage> {
 
   String _buildWhatsappReportText(String month, String year, _Row row) {
     final buffer = StringBuffer();
-    buffer.writeln('*Resumen de gastos — $month $year*');
+    buffer.writeln('*Resumen de servicios — $month $year*');
     buffer.writeln('');
     buffer.writeln('*AGUA:*');
     if (row.waterRec != null) {

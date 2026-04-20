@@ -120,7 +120,7 @@ class _DescuentosTabState extends State<_DescuentosTab> {
                 controller: _elec,
                 decoration: const InputDecoration(
                   labelText: 'Descuento Electricidad (\$)',
-                  prefixIcon: Icon(Icons.bolt),
+                  prefixIcon: Icon(Icons.lightbulb_outline),
                 ),
                 keyboardType: TextInputType.number,
               ),
@@ -129,7 +129,7 @@ class _DescuentosTabState extends State<_DescuentosTab> {
                 controller: _net,
                 decoration: const InputDecoration(
                   labelText: 'Descuento Internet (\$)',
-                  prefixIcon: Icon(Icons.lan_outlined),
+                  prefixIcon: Icon(Icons.wifi_outlined),
                 ),
                 keyboardType: TextInputType.number,
               ),

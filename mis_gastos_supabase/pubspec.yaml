@@ -46,6 +46,7 @@ dependencies:
   pdf: ^3.12.0
   printing: ^5.14.3
   url_launcher: ^6.1.15
+  flutter_native_splash: ^2.4.7
 
 dev_dependencies:
   flutter_test:
@@ -57,6 +58,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+
+flutter_native_splash:
+  color: "#FFFFFF"
+  image: web/icons/Icon-512.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mis_gastos_supabase/core/backup_io_stub.dart'
+    if (dart.library.html) 'package:mis_gastos_supabase/core/backup_io_web.dart'
+    as backup_io;
 import 'package:mis_gastos_supabase/core/ui_utils.dart';
 import 'package:mis_gastos_supabase/features/auth/bloc/auth_bloc.dart';
 import 'package:mis_gastos_supabase/features/auth/bloc/auth_event.dart';
@@ -18,13 +21,14 @@ class AjustesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Column(
         children: [
           TabBar(
             tabs: const [
               Tab(text: 'Descuentos', icon: Icon(Icons.percent)),
               Tab(text: 'Diseño', icon: Icon(Icons.palette)),
+              Tab(text: 'Respaldo', icon: Icon(Icons.backup_outlined)),
               Tab(text: 'Cuentas', icon: Icon(Icons.manage_accounts)),
             ],
             dividerColor: Theme.of(
@@ -33,7 +37,12 @@ class AjustesPage extends StatelessWidget {
           ),
           const Expanded(
             child: TabBarView(
-              children: [_DescuentosTab(), _ThemeTab(), _AccountsTab()],
+              children: [
+                _DescuentosTab(),
+                _ThemeTab(),
+                _BackupTab(),
+                _AccountsTab(),
+              ],
             ),
           ),
         ],
@@ -275,6 +284,411 @@ class _ThemeModeButton extends StatelessWidget {
               label: Text(label),
             ),
     );
+  }
+}
+
+class _BackupTab extends StatelessWidget {
+  const _BackupTab();
+
+  static const List<String> _header = [
+    'tipo',
+    'id',
+    'year',
+    'month',
+    'total_invoiced',
+    'kwh_consumption',
+    'kwh_cost',
+    'previous_meter',
+    'current_meter',
+    'consumption_meter',
+    'monthly_cost',
+    'discount',
+    'total_to_pay',
+    'status',
+    'water_discount',
+    'electricity_discount',
+    'internet_discount',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.backup_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Respaldo CSV',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Crea un archivo CSV con todos los servicios y descuentos. '
+          'También puedes restaurar desde un respaldo previo.',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 24),
+        Card(
+          elevation: 0,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Crear respaldo',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Descarga un CSV con Agua, Electricidad, Internet y descuentos.',
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: () => _createBackup(context),
+                  icon: const Icon(Icons.download),
+                  label: const Text('Descargar CSV'),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Card(
+          elevation: 0,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Restaurar respaldo',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Importa un CSV válido para restaurar/actualizar los datos.',
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: () => _restoreBackup(context),
+                  icon: const Icon(Icons.upload_file),
+                  label: const Text('Restaurar desde CSV'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _createBackup(BuildContext context) async {
+    try {
+      final state = context.read<AppDataCubit>().state;
+      final rows = <List<String>>[_header];
+      final fixed = state.fixedValues;
+      rows.add([
+        'fixed_values',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        fixed.waterDiscount.toString(),
+        fixed.electricityDiscount.toString(),
+        fixed.internetDiscount.toString(),
+      ]);
+      for (final r in state.water) {
+        rows.add([
+          'water',
+          r.id,
+          '${r.year}',
+          r.month,
+          '${r.totalInvoiced}',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '${r.discount}',
+          '${r.totalToPay}',
+          r.status,
+          '',
+          '',
+          '',
+        ]);
+      }
+      for (final r in state.electricity) {
+        rows.add([
+          'electricity',
+          r.id,
+          '${r.year}',
+          r.month,
+          '${r.totalInvoiced}',
+          '${r.kwhConsumption}',
+          '${r.kwhCost}',
+          '${r.previousMeter}',
+          '${r.currentMeter}',
+          '${r.consumptionMeter}',
+          '',
+          '${r.discount}',
+          '${r.totalToPay}',
+          r.status,
+          '',
+          '',
+          '',
+        ]);
+      }
+      for (final r in state.internet) {
+        rows.add([
+          'internet',
+          r.id,
+          '${r.year}',
+          r.month,
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '${r.monthlyCost}',
+          '${r.discount}',
+          '${r.totalToPay}',
+          r.status,
+          '',
+          '',
+          '',
+        ]);
+      }
+
+      final csv = rows.map((r) => r.map(_escapeCsv).join(',')).join('\n');
+      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-');
+      await backup_io.downloadCsvFile(
+        'respaldo-mis-gastos-$timestamp.csv',
+        csv,
+      );
+      if (context.mounted) {
+        UiUtils.showTopSnackBar(
+          context,
+          'Respaldo CSV descargado correctamente.',
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        UiUtils.showTopSnackBar(
+          context,
+          'No se pudo crear el respaldo CSV: $e',
+          isError: true,
+        );
+      }
+    }
+  }
+
+  Future<void> _restoreBackup(BuildContext context) async {
+    try {
+      final cubit = context.read<AppDataCubit>();
+      final content = await backup_io.pickCsvFileContent();
+      if (content == null || content.trim().isEmpty) return;
+      final parsed = _parseCsv(content);
+      if (parsed.isEmpty) {
+        throw const FormatException('El CSV está vacío.');
+      }
+      final header = parsed.first.map(_normalizeHeaderCell).toList();
+      if (!_isValidHeader(header)) {
+        throw const FormatException('CSV inválido. Encabezado no reconocido.');
+      }
+      final water = <WaterRecord>[];
+      final electricity = <ElectricityRecord>[];
+      final internet = <InternetRecord>[];
+      var fixed = const FixedValues();
+      var idx = 0;
+      for (final row in parsed.skip(1)) {
+        idx++;
+        if (row.isEmpty || row.first.trim().isEmpty) continue;
+        final type = row.first.trim().toLowerCase();
+        String cell(int i) => i < row.length ? row[i].trim() : '';
+        int parseInt(String v, {int fallback = 0}) =>
+            int.tryParse(v) ?? fallback;
+        double parseDouble(String v, {double fallback = 0}) =>
+            double.tryParse(v.replaceAll(',', '.')) ?? fallback;
+        String fallbackId() =>
+            'csv-${DateTime.now().microsecondsSinceEpoch}-$idx';
+        if (type == 'fixed_values') {
+          fixed = FixedValues(
+            waterDiscount: parseDouble(cell(14)),
+            electricityDiscount: parseDouble(cell(15)),
+            internetDiscount: parseDouble(cell(16)),
+          );
+          continue;
+        }
+        if (type == 'water') {
+          water.add(
+            WaterRecord(
+              id: cell(1).isEmpty ? fallbackId() : cell(1),
+              year: parseInt(cell(2), fallback: DateTime.now().year),
+              month: cell(3).isEmpty ? 'Enero' : cell(3),
+              totalInvoiced: parseDouble(cell(4)),
+              discount: parseDouble(cell(11)),
+              totalToPay: parseDouble(cell(12)),
+              status: cell(13).isEmpty ? 'Pendiente' : cell(13),
+            ),
+          );
+          continue;
+        }
+        if (type == 'electricity') {
+          electricity.add(
+            ElectricityRecord(
+              id: cell(1).isEmpty ? fallbackId() : cell(1),
+              year: parseInt(cell(2), fallback: DateTime.now().year),
+              month: cell(3).isEmpty ? 'Enero' : cell(3),
+              totalInvoiced: parseDouble(cell(4)),
+              kwhConsumption: parseDouble(cell(5)),
+              kwhCost: parseDouble(cell(6)),
+              previousMeter: parseInt(cell(7)),
+              currentMeter: parseInt(cell(8)),
+              consumptionMeter: parseInt(cell(9)),
+              discount: parseDouble(cell(11)),
+              totalToPay: parseDouble(cell(12)),
+              status: cell(13).isEmpty ? 'Pendiente' : cell(13),
+            ),
+          );
+          continue;
+        }
+        if (type == 'internet') {
+          internet.add(
+            InternetRecord(
+              id: cell(1).isEmpty ? fallbackId() : cell(1),
+              year: parseInt(cell(2), fallback: DateTime.now().year),
+              month: cell(3).isEmpty ? 'Enero' : cell(3),
+              monthlyCost: parseDouble(cell(10)),
+              discount: parseDouble(cell(11)),
+              totalToPay: parseDouble(cell(12)),
+              status: cell(13).isEmpty ? 'Pendiente' : cell(13),
+            ),
+          );
+        }
+      }
+      await cubit.restoreBackup(
+        water: water,
+        electricity: electricity,
+        internet: internet,
+        fixedValues: fixed,
+      );
+    } catch (e) {
+      if (context.mounted) {
+        UiUtils.showTopSnackBar(
+          context,
+          'No se pudo restaurar el CSV: $e',
+          isError: true,
+        );
+      }
+    }
+  }
+
+  String _escapeCsv(String value) {
+    if (value.contains(',') || value.contains('"') || value.contains('\n')) {
+      return '"${value.replaceAll('"', '""')}"';
+    }
+    return value;
+  }
+
+  bool _isValidHeader(List<String> header) {
+    if (header.isEmpty) return false;
+    if (header.first != 'tipo') return false;
+    final required = {
+      'id',
+      'year',
+      'month',
+      'discount',
+      'total_to_pay',
+      'status',
+    };
+    return required.every(header.contains);
+  }
+
+  String _normalizeHeaderCell(String cell) {
+    return cell
+        .trim()
+        .toLowerCase()
+        .replaceAll('\ufeff', '')
+        .replaceAll(' ', '_');
+  }
+
+  List<List<String>> _parseCsv(String input) {
+    final delimiter = _detectDelimiter(input);
+    final rows = <List<String>>[];
+    final currentRow = <String>[];
+    final cell = StringBuffer();
+    var inQuotes = false;
+    for (var i = 0; i < input.length; i++) {
+      final ch = input[i];
+      if (ch == '"') {
+        if (inQuotes && i + 1 < input.length && input[i + 1] == '"') {
+          cell.write('"');
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+        continue;
+      }
+      if (ch == delimiter && !inQuotes) {
+        currentRow.add(cell.toString());
+        cell.clear();
+        continue;
+      }
+      if ((ch == '\n' || ch == '\r') && !inQuotes) {
+        if (ch == '\r' && i + 1 < input.length && input[i + 1] == '\n') {
+          i++;
+        }
+        currentRow.add(cell.toString());
+        cell.clear();
+        if (currentRow.any((v) => v.isNotEmpty)) {
+          rows.add(List<String>.from(currentRow));
+        }
+        currentRow.clear();
+        continue;
+      }
+      cell.write(ch);
+    }
+    if (cell.isNotEmpty || currentRow.isNotEmpty) {
+      currentRow.add(cell.toString());
+      rows.add(List<String>.from(currentRow));
+    }
+    return rows;
+  }
+
+  String _detectDelimiter(String input) {
+    final firstLine = input
+        .split(RegExp(r'\r?\n'))
+        .firstWhere((l) => l.trim().isNotEmpty, orElse: () => '');
+    final commas = ','.allMatches(firstLine).length;
+    final semicolons = ';'.allMatches(firstLine).length;
+    return semicolons > commas ? ';' : ',';
   }
 }
 

@@ -61,7 +61,9 @@ dev_dependencies:
 
 flutter_native_splash:
   color: "#FFFFFF"
-  image: web/icons/Icon-512.png
+  color_dark: "#121212"
+  image: web/icons/splash-logo-light.png
+  image_dark: web/icons/splash-logo-dark.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

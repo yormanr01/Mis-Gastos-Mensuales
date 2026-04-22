@@ -171,8 +171,12 @@ class _WaterDialogState extends State<_WaterDialog> {
         TextButton(onPressed: () => Navigator.pop(context), child: Text(widget.isReadOnly ? 'Cerrar' : 'Cancelar')),
         if (!widget.isReadOnly)
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               if (!_formKey.currentState!.validate()) return;
+              if (widget.existing != null) {
+                final confirm = await _confirmSave(context);
+                if (!confirm || !context.mounted) return;
+              }
               final inv = double.parse(_invoiced.text.replaceAll(',', '.'));
               final disc = double.parse(_discount.text.replaceAll(',', '.'));
               final id = widget.existing?.id ?? '';
@@ -418,8 +422,12 @@ class _ElectricityDialogState extends State<_ElectricityDialog> {
         TextButton(onPressed: () => Navigator.pop(context), child: Text(widget.isReadOnly ? 'Cerrar' : 'Cancelar')),
         if (!widget.isReadOnly)
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               if (!_formKey.currentState!.validate()) return;
+              if (widget.existing != null) {
+                final confirm = await _confirmSave(context);
+                if (!confirm || !context.mounted) return;
+              }
               final inv = double.parse(_invoiced.text.replaceAll(',', '.'));
               final kwh = double.parse(_kwh.text.replaceAll(',', '.'));
               final p = int.parse(_prev.text);
@@ -604,8 +612,12 @@ class _InternetDialogState extends State<_InternetDialog> {
         TextButton(onPressed: () => Navigator.pop(context), child: Text(widget.isReadOnly ? 'Cerrar' : 'Cancelar')),
         if (!widget.isReadOnly)
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               if (!_formKey.currentState!.validate()) return;
+              if (widget.existing != null) {
+                final confirm = await _confirmSave(context);
+                if (!confirm || !context.mounted) return;
+              }
               final m = double.parse(_monthly.text.replaceAll(',', '.'));
               final d = double.parse(_discount.text.replaceAll(',', '.'));
               final id = widget.existing?.id ?? '';
@@ -627,4 +639,25 @@ class _InternetDialogState extends State<_InternetDialog> {
       ],
     );
   }
+}
+
+Future<bool> _confirmSave(BuildContext context) async {
+  final res = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Confirmar actualización'),
+      content: const Text('¿Estás seguro de que deseas actualizar los datos de este registro?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: const Text('Confirmar'),
+        ),
+      ],
+    ),
+  );
+  return res == true;
 }

@@ -23,7 +23,7 @@ class AcercaPage extends StatelessWidget {
               child: Column(
                 children: [
                   Icon(
-                    Icons.account_balance_wallet_outlined,
+                    Icons.account_balance_wallet,
                     size: 64,
                     color: Theme.of(context).colorScheme.primary,
                   ),

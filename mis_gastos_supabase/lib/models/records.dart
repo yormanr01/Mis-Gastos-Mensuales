@@ -34,19 +34,29 @@ class WaterRecord extends Equatable {
   }
 
   Map<String, dynamic> toInsert() => {
-        'year': year,
-        'month': month,
-        'total_invoiced': totalInvoiced,
-        'discount': discount,
-        'total_to_pay': totalToPay,
-        'status': status,
-      };
+    if (id.isNotEmpty) 'id': id,
+    'year': year,
+    'month': month,
+    'total_invoiced': totalInvoiced,
+    'discount': discount,
+    'total_to_pay': totalToPay,
+    'status': status,
+  };
+
+  Map<String, dynamic> toRow() => {'id': id, ...toInsert()};
 
   Map<String, dynamic> toUpdate() => toInsert();
 
   @override
-  List<Object?> get props =>
-      [id, year, month, totalInvoiced, discount, totalToPay, status];
+  List<Object?> get props => [
+    id,
+    year,
+    month,
+    totalInvoiced,
+    discount,
+    totalToPay,
+    status,
+  ];
 }
 
 class ElectricityRecord extends Equatable {
@@ -96,36 +106,39 @@ class ElectricityRecord extends Equatable {
   }
 
   Map<String, dynamic> toInsert() => {
-        'year': year,
-        'month': month,
-        'total_invoiced': totalInvoiced,
-        'kwh_consumption': kwhConsumption,
-        'kwh_cost': kwhCost,
-        'previous_meter': previousMeter,
-        'current_meter': currentMeter,
-        'consumption_meter': consumptionMeter,
-        'discount': discount,
-        'total_to_pay': totalToPay,
-        'status': status,
-      };
+    if (id.isNotEmpty) 'id': id,
+    'year': year,
+    'month': month,
+    'total_invoiced': totalInvoiced,
+    'kwh_consumption': kwhConsumption,
+    'kwh_cost': kwhCost,
+    'previous_meter': previousMeter,
+    'current_meter': currentMeter,
+    'consumption_meter': consumptionMeter,
+    'discount': discount,
+    'total_to_pay': totalToPay,
+    'status': status,
+  };
+
+  Map<String, dynamic> toRow() => {'id': id, ...toInsert()};
 
   Map<String, dynamic> toUpdate() => toInsert();
 
   @override
   List<Object?> get props => [
-        id,
-        year,
-        month,
-        totalInvoiced,
-        kwhConsumption,
-        kwhCost,
-        previousMeter,
-        currentMeter,
-        consumptionMeter,
-        discount,
-        totalToPay,
-        status,
-      ];
+    id,
+    year,
+    month,
+    totalInvoiced,
+    kwhConsumption,
+    kwhCost,
+    previousMeter,
+    currentMeter,
+    consumptionMeter,
+    discount,
+    totalToPay,
+    status,
+  ];
 }
 
 class InternetRecord extends Equatable {
@@ -160,19 +173,29 @@ class InternetRecord extends Equatable {
   }
 
   Map<String, dynamic> toInsert() => {
-        'year': year,
-        'month': month,
-        'monthly_cost': monthlyCost,
-        'discount': discount,
-        'total_to_pay': totalToPay,
-        'status': status,
-      };
+    if (id.isNotEmpty) 'id': id,
+    'year': year,
+    'month': month,
+    'monthly_cost': monthlyCost,
+    'discount': discount,
+    'total_to_pay': totalToPay,
+    'status': status,
+  };
+
+  Map<String, dynamic> toRow() => {'id': id, ...toInsert()};
 
   Map<String, dynamic> toUpdate() => toInsert();
 
   @override
-  List<Object?> get props =>
-      [id, year, month, monthlyCost, discount, totalToPay, status];
+  List<Object?> get props => [
+    id,
+    year,
+    month,
+    monthlyCost,
+    discount,
+    totalToPay,
+    status,
+  ];
 }
 
 class FixedValues extends Equatable {
@@ -198,7 +221,22 @@ class FixedValues extends Equatable {
     );
   }
 
+  Map<String, dynamic> toMap() => {
+    'water_discount': waterDiscount,
+    'electricity_discount': electricityDiscount,
+    'internet_discount': internetDiscount,
+  };
+
+  factory FixedValues.fromMap(Map<String, dynamic> map) => FixedValues(
+    waterDiscount: (map['water_discount'] as num?)?.toDouble() ?? 0,
+    electricityDiscount: (map['electricity_discount'] as num?)?.toDouble() ?? 0,
+    internetDiscount: (map['internet_discount'] as num?)?.toDouble() ?? 0,
+  );
+
   @override
-  List<Object?> get props =>
-      [waterDiscount, electricityDiscount, internetDiscount];
+  List<Object?> get props => [
+    waterDiscount,
+    electricityDiscount,
+    internetDiscount,
+  ];
 }

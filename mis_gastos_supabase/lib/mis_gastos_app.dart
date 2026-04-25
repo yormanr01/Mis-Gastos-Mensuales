@@ -13,6 +13,7 @@ import 'package:mis_gastos_supabase/theme/theme_cubit.dart';
 import 'package:mis_gastos_supabase/repositories/auth_repository_supabase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:toastification/toastification.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 class MisGastosApp extends StatefulWidget {
   const MisGastosApp({
@@ -71,12 +72,14 @@ class _MisGastosAppState extends State<MisGastosApp> {
           BlocProvider(create: (_) => ThemeCubit()),
         ],
         child: BlocListener<AuthBloc, app_auth.AuthState>(
-          listener: (context, state) {
+          listener: (context, state) async {
             final data = context.read<AppDataCubit>();
             if (state is app_auth.AuthAuthenticated) {
-              data.loadAll();
+              await data.loadAll();
+              FlutterNativeSplash.remove();
             } else if (state is app_auth.AuthUnauthenticated) {
               data.clearData();
+              FlutterNativeSplash.remove();
             }
           },
           child: BlocBuilder<ThemeCubit, ThemeMode>(

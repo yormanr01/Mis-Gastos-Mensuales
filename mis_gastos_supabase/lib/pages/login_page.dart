@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mis_gastos_supabase/core/ui_utils.dart';
 import 'package:mis_gastos_supabase/features/auth/bloc/auth_bloc.dart';
 import 'package:mis_gastos_supabase/features/auth/bloc/auth_event.dart';
+import 'package:flutter/services.dart';
 import 'package:mis_gastos_supabase/features/auth/bloc/auth_state.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 
@@ -248,6 +249,7 @@ class _LoginPageState extends State<LoginPage> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+    TextInput.finishAutofillContext();
     context.read<AuthBloc>().add(
       AuthLoginRequested(email: _email.text, password: _password.text),
     );

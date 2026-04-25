@@ -8,9 +8,11 @@ import 'package:mis_gastos_supabase/features/auth/bloc/auth_bloc.dart';
 import 'package:mis_gastos_supabase/mis_gastos_app.dart';
 import 'package:mis_gastos_supabase/repositories/auth_repository_supabase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   url_strategy.configureUrlStrategy();
 
   if (!SupabaseEnv.isConfigured) {

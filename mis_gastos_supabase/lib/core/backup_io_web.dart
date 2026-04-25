@@ -4,7 +4,7 @@ import 'dart:html' as html;
 import 'dart:typed_data';
 
 Future<void> downloadCsvFile(String filename, String content) async {
-  final bytes = Uint8List.fromList(utf8.encode('\uFEFF' + content));
+  final bytes = Uint8List.fromList(utf8.encode('\uFEFF$content'));
   final blob = html.Blob([bytes], 'text/csv;charset=utf-8');
   final url = html.Url.createObjectUrlFromBlob(blob);
   final anchor = html.AnchorElement(href: url)

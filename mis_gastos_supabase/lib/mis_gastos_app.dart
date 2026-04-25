@@ -71,17 +71,7 @@ class _MisGastosAppState extends State<MisGastosApp> {
           BlocProvider.value(value: widget.authBloc),
           BlocProvider(create: (_) => ThemeCubit()),
         ],
-        child: BlocListener<AuthBloc, app_auth.AuthState>(
-          listener: (context, state) async {
-            final data = context.read<AppDataCubit>();
-            if (state is app_auth.AuthAuthenticated) {
-              await data.loadAll();
-              FlutterNativeSplash.remove();
-            } else if (state is app_auth.AuthUnauthenticated) {
-              data.clearData();
-              FlutterNativeSplash.remove();
-            }
-          },
+        child: _AppInitializer(
           child: BlocBuilder<ThemeCubit, ThemeMode>(
             builder: (context, themeMode) {
               return ToastificationWrapper(
@@ -97,6 +87,46 @@ class _MisGastosAppState extends State<MisGastosApp> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _AppInitializer extends StatefulWidget {
+  const _AppInitializer({required this.child});
+  final Widget child;
+
+  @override
+  State<_AppInitializer> createState() => _AppInitializerState();
+}
+
+class _AppInitializerState extends State<_AppInitializer> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final authState = context.read<AuthBloc>().state;
+      _handleAuthState(authState);
+    });
+  }
+
+  Future<void> _handleAuthState(app_auth.AuthState state) async {
+    if (!mounted) return;
+    final data = context.read<AppDataCubit>();
+    if (state is app_auth.AuthAuthenticated) {
+      await data.loadAll();
+      FlutterNativeSplash.remove();
+    } else if (state is app_auth.AuthUnauthenticated) {
+      data.clearData();
+      FlutterNativeSplash.remove();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<AuthBloc, app_auth.AuthState>(
+      listener: (context, state) => _handleAuthState(state),
+      child: widget.child,
     );
   }
 }
